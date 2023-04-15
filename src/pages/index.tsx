@@ -1,8 +1,6 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
 import { Button, buttonVariants } from "~/components/ui/button";
-import { env } from "../env.mjs";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 
