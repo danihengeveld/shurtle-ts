@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 import { env } from "./env.mjs";
 
 // Set the paths that require the user to be signed in
-const privatePaths = ["/dashboard"];
+const privatePaths = ["/dashboard", "/preview"];
 
 const isPrivate = (path: string) => {
   return privatePaths.find((x) =>
@@ -35,7 +35,7 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    "/((?!static|.*\\..*|_next|favicon.ico).*)",
+    "/(.*?trpc.*?|(?!static|.*\\..*|_next|favicon.ico).*)",
     "/",
   ],
 };

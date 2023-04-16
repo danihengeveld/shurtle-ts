@@ -12,6 +12,9 @@
   "dependencies": {
     "@clerk/nextjs": "^4.16.2",
     "@prisma/client": "^4.12.0",
+    "@radix-ui/react-avatar": "^1.0.2",
+    "@radix-ui/react-label": "^2.0.1",
+    "@radix-ui/react-toast": "^1.1.3",
     "@tanstack/react-query": "^4.28.0",
     "@trpc/client": "^10.18.0",
     "@trpc/next": "^10.18.0",
@@ -19,6 +22,7 @@
     "@trpc/server": "^10.18.0",
     "class-variance-authority": "^0.5.2",
     "clsx": "^1.2.1",
+    "formik": "^2.2.9",
     "lucide-react": "^0.144.0",
     "next": "^13.2.4",
     "next-axiom": "^0.17.0",
@@ -27,7 +31,8 @@
     "superjson": "1.12.2",
     "tailwind-merge": "^1.12.0",
     "tailwindcss-animate": "^1.0.5",
-    "zod": "^3.21.4"
+    "zod": "^3.21.4",
+    "zod-formik-adapter": "^1.2.0"
   },
   "devDependencies": {
     "@types/eslint": "^8.21.3",

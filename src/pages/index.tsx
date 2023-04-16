@@ -1,8 +1,10 @@
+import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
+import { ArrowRight } from "lucide-react";
 import { type NextPage } from "next";
 import Head from "next/head";
+import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { SignOutButton, useUser } from "@clerk/nextjs";
-import { SignInButton } from "@clerk/nextjs";
 
 const Home: NextPage = () => {
   const user = useUser();
@@ -11,31 +13,53 @@ const Home: NextPage = () => {
     <>
       <Head>
         <title>Shurtle</title>
-        <meta
-          name="description"
-          content="Shurtle. The open source url shortener."
-        />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="grid h-screen place-items-center">
-        <div>
+      <main className="grid h-screen place-items-center text-center">
+        <div className="flex flex-col items-center">
+          <h1 className="mb-4 text-8xl font-bold">Shurtle</h1>
+          <p className="mb-8 px-4 text-xl">
+            This website is currently under construction. Come back later!
+          </p>
           {!user.isSignedIn && (
-            <SignInButton>
-              <Button variant="default" size="lg">
-                Sign in
-              </Button>
-            </SignInButton>
+            <>
+              <p className="mb-6 px-4 text-lg">Sign in to see the preview!</p>
+              <SignInButton>
+                <Button
+                  variant="default"
+                  size="lg"
+                  className="text-md font-semibold"
+                >
+                  Sign in
+                </Button>
+              </SignInButton>
+            </>
           )}
           {user.isSignedIn && (
             <div className="flex flex-col items-center">
-              <h3 className="tracking-light scroll-m-20 text-2xl font-semibold">
-                Welcome {user.user.fullName}!
-              </h3>
-              <p className="mt-6 text-lg leading-7">
-                This website is currently under construction. Come back later!
-              </p>
+              <div className="flex flex-row items-center">
+                <h3 className="scroll-m-20 text-2xl font-semibold">
+                  Hi {user.user.fullName}!
+                </h3>
+                <Avatar className="ml-3">
+                  <AvatarImage src={user.user.profileImageUrl} />
+                  <AvatarFallback>
+                    {user.user.firstName?.[0]}
+                    {user.user.lastName?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <Link href="/preview">
+                <Button size="lg" className="text-md mt-6 w-fit font-semibold">
+                  To the preview{" "}
+                  <ArrowRight className="ml-2 h-4 w-4"></ArrowRight>
+                </Button>
+              </Link>
               <SignOutButton>
-                <Button variant="default" size="lg" className="mt-6">
+                <Button
+                  variant="subtle"
+                  size="lg"
+                  className="text-md mt-6 w-fit font-semibold"
+                >
                   Sign out
                 </Button>
               </SignOutButton>
