@@ -18,7 +18,7 @@ export const shurtleRouter = createTRPCRouter({
   getBySlug: publicProcedure
     .input(
       z.object({
-        slug: z.string().nonempty(),
+        slug: z.string(),
       })
     )
     .query(async ({ input, ctx }) => {
