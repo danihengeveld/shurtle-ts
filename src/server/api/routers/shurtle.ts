@@ -40,14 +40,19 @@ export const shurtleRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        url: z.string().url(),
-        slug: z.string(),
+        url: z.string().url({ message: "Must be a valid URL!" }),
+        slug: z
+          .string({ required_error: "Cannot be empty!" })
+          .regex(/^[a-z0-9](-?[a-z0-9])*$/, {
+            message:
+              "Invalid slug!",
+          }),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const existing = await ctx.prisma.shurtle.findUnique({
         where: {
-          slug: input.slug.toLowerCase(),
+          slug: input.slug,
         },
         select: {
           slug: true,
@@ -63,7 +68,7 @@ export const shurtleRouter = createTRPCRouter({
 
       const result = await ctx.prisma.shurtle.create({
         data: {
-          slug: input.slug.toLowerCase(),
+          slug: input.slug,
           url: input.url,
         },
       });

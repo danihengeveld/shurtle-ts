@@ -17,7 +17,11 @@ import { ToastAction } from "./ui/toast";
 
 const shurtleFormSchema = z.object({
   url: z.string().url({ message: "Must be a valid URL!" }),
-  slug: z.string({ required_error: "Cannot be empty!" }),
+  slug: z
+    .string({ required_error: "Cannot be empty!" })
+    .regex(/^[a-z0-9](-?[a-z0-9])*$/, {
+      message: "Invalid slug!",
+    }),
 });
 
 type ShurtleFormInputs = RouterInputs["shurtle"]["create"];
@@ -28,6 +32,7 @@ const ShurtleForm = () => {
 
   const shurtleMutation = api.shurtle.create.useMutation({
     onSettled: (data, error) => {
+      console.log(error?.message)
       if (error) {
         if (error.data?.code == "CONFLICT") {
           toast({
@@ -54,7 +59,7 @@ const ShurtleForm = () => {
         toast({
           title: "You shurtled it!",
           description: `The shurtle: ${data.slug}, is live now!`,
-          action: <ToastAction altText="Yes">Yeahh</ToastAction>
+          action: <ToastAction altText="Yes">Yeahh</ToastAction>,
         });
       }
     },
@@ -115,7 +120,7 @@ const ShurtleForm = () => {
             </div>
             <div className="grid items-center gap-1.5">
               <Label htmlFor="url" className="text-base">
-                Short URL
+                Slug
               </Label>
               <Field
                 as={Input}
@@ -126,7 +131,7 @@ const ShurtleForm = () => {
                 disabled={shurtleMutation.isLoading}
               />
               <div className="flex flex-row justify-between">
-                <p className="text-sm text-slate-500">Enter the short URL.</p>
+                <p className="text-sm text-slate-500">Enter the slug (short URL).</p>
                 {!!errors.slug && touched.slug && (
                   <p className="text-sm text-red-400">{errors.slug}</p>
                 )}

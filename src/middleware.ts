@@ -14,8 +14,16 @@ const isPrivate = (path: string) => {
   );
 };
 
+const isApi = (path: string) => {
+  return path.startsWith("/api");
+};
+
 export default withClerkMiddleware(async (req: NextRequest) => {
-  if (!isPrivate(req.nextUrl.pathname) && req.nextUrl.pathname !== "/") {
+  if (
+    !isPrivate(req.nextUrl.pathname) &&
+    !isApi(req.nextUrl.pathname) &&
+    req.nextUrl.pathname !== "/"
+  ) {
     const client = new Client({
       url: env.DATABASE_URL,
     });
