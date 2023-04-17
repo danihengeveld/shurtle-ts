@@ -8,7 +8,7 @@ const Preview: NextPage = () => {
       <Head>
         <title>Shurtle Preview</title>
       </Head>
-      <main className="grid h-screen place-items-center">
+      <main className="grid h-screen place-items-center px-4">
         <ShurtleForm />
       </main>
     </>

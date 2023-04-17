@@ -27,10 +27,18 @@ const ShurtleForm = () => {
   const shurtleMutation = api.shurtle.create.useMutation({
     onSettled: (data, error) => {
       if (error) {
+        if (error.data?.code == "CONFLICT") {
+          toast({
+            variant: "destructive",
+            title: "Uh oh! I'm afraid this one is already taken.",
+            description: error.message,
+          });
+        }
         toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
-          description: error.message,
+          description:
+            "Something went wrong on our side. Please have another go at it!",
           action: <ToastAction altText="Try it again!">Try again!</ToastAction>,
         });
       } else if (data) {
