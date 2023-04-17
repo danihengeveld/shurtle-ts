@@ -1,9 +1,10 @@
 "use client";
 
 import { Label } from "@radix-ui/react-label";
-import { Field, Form, Formik } from "formik";
+import { Field, Form, Formik, type FormikProps } from "formik";
 import { Loader2 } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
+import { useRef } from "react";
 import { z } from "zod";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { useToast } from "~/hooks/ui/use-toast";
@@ -22,6 +23,7 @@ const shurtleFormSchema = z.object({
 type ShurtleFormInputs = RouterInputs["shurtle"]["create"];
 
 const ShurtleForm = () => {
+  const formikRef = useRef<FormikProps<ShurtleFormInputs>>(null);
   const { toast } = useToast();
 
   const shurtleMutation = api.shurtle.create.useMutation({
@@ -42,6 +44,7 @@ const ShurtleForm = () => {
           action: <ToastAction altText="Try it again!">Try again!</ToastAction>,
         });
       } else if (data) {
+        formikRef.current?.resetForm();
         toast({
           title: "You shurtled it!",
           description: `The shurtle: ${data.slug}, is live now!`,
@@ -61,6 +64,7 @@ const ShurtleForm = () => {
       }}
       validateOnBlur={true}
       validationSchema={toFormikValidationSchema(shurtleFormSchema)}
+      innerRef={formikRef}
     >
       {(formikState) => {
         const errors = formikState.errors;
@@ -93,6 +97,7 @@ const ShurtleForm = () => {
                 id="url"
                 name="url"
                 placeholder="https://github.com/danihengeveld"
+                disabled={shurtleMutation.isLoading}
               />
               <div className="flex flex-row justify-between">
                 <p className="text-sm text-slate-500">Enter the full URL.</p>
@@ -111,6 +116,7 @@ const ShurtleForm = () => {
                 id="slug"
                 name="slug"
                 placeholder="gh-danih"
+                disabled={shurtleMutation.isLoading}
               />
               <div className="flex flex-row justify-between">
                 <p className="text-sm text-slate-500">Enter the short URL.</p>
