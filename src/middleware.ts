@@ -2,6 +2,8 @@ import { getAuth, withClerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { env } from "./env.mjs";
+import { Client } from "@planetscale/database";
+import { type Shurtle } from "@prisma/client";
 
 // Set the paths that require the user to be signed in
 const privatePaths = ["/dashboard", "/preview"];
@@ -12,10 +14,35 @@ const isPrivate = (path: string) => {
   );
 };
 
-export default withClerkMiddleware((req: NextRequest) => {
-  if (!isPrivate(req.nextUrl.pathname)) {
-    return NextResponse.next();
+export default withClerkMiddleware(async (req: NextRequest) => {
+  if (!isPrivate(req.nextUrl.pathname) && req.nextUrl.pathname !== "/") {
+    const client = new Client({
+      url: env.DATABASE_URL,
+    });
+    const conn = client.connection();
+
+    const queryResult = await conn.execute(
+      "select * from Shurtle where slug = :slug",
+      { slug: req.nextUrl.pathname.replace("/", "") },
+      { as: "object" }
+    );
+
+    if (queryResult.size < 1) {
+      return NextResponse.redirect(
+        req.nextUrl.href.replace(req.nextUrl.pathname, "/")
+      );
+    }
+
+    const url = (queryResult.rows[0] as Shurtle).url;
+
+    await conn.execute(
+      "update Shurtle set hits = hits + 1 where slug = :slug",
+      { slug: req.nextUrl.pathname }
+    );
+
+    return NextResponse.redirect(url);
   }
+
   const { userId } = getAuth(req);
 
   if (!userId) {

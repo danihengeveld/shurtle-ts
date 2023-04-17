@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^4.16.2",
+    "@planetscale/database": "^1.7.0",
     "@prisma/client": "^4.12.0",
     "@radix-ui/react-avatar": "^1.0.2",
     "@radix-ui/react-label": "^2.0.1",

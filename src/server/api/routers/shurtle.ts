@@ -47,7 +47,7 @@ export const shurtleRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const existing = await ctx.prisma.shurtle.findUnique({
         where: {
-          slug: input.slug,
+          slug: input.slug.toLowerCase(),
         },
         select: {
           slug: true,
@@ -62,7 +62,10 @@ export const shurtleRouter = createTRPCRouter({
       }
 
       const result = await ctx.prisma.shurtle.create({
-        data: input,
+        data: {
+          slug: input.slug.toLowerCase(),
+          url: input.url,
+        },
       });
 
       return result;
