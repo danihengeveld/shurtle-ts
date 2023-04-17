@@ -73,5 +73,4 @@ export const config = {
     "/(.*?trpc.*?|(?!static|.*\\..*|_next|favicon.ico).*)",
     "/",
   ],
-  regions: ["lhr1"],
 };
