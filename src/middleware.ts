@@ -48,11 +48,7 @@ export default withClerkMiddleware(async (req: NextRequest) => {
   if (!userId) {
     const signInUrl = new URL(env.NEXT_PUBLIC_CLERK_SIGNIN_URL);
     signInUrl.searchParams.set("redirect_url", req.url);
-    return NextResponse.redirect(signInUrl, {
-      headers: {
-        "cache-control": "public, maxage=604800, s-maxage=604800, stale-while-revalidate=86400"
-      }
-    });
+    return NextResponse.redirect(signInUrl);
   }
   return NextResponse.next();
 });
