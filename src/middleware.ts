@@ -50,7 +50,7 @@ export default withClerkMiddleware(async (req: NextRequest) => {
     signInUrl.searchParams.set("redirect_url", req.url);
     return NextResponse.redirect(signInUrl, {
       headers: {
-        "cache-control": "public, s-maxage=604800, stale-while-revalidate=86400"
+        "cache-control": "public, maxage=604800, s-maxage=604800, stale-while-revalidate=86400"
       }
     });
   }
