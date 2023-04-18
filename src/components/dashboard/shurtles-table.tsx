@@ -8,7 +8,7 @@ type Shurtles = RouterOutputs["shurtle"]["getAllForUser"];
 
 const ShurtlesTable: FC<{ shurtles: Shurtles }> = ({ shurtles }) => {
   return (
-    <table className="min-w-full text-left text-sm font-light">
+    <table className="min-w-full text-left text-sm">
       <thead className="border-b font-medium">
         <tr>
           <th scope="col" className="py-4 pl-2">
