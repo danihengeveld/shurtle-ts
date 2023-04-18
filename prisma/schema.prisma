@@ -15,6 +15,11 @@ model Shurtle {
     slug      String   @id @db.VarChar(255)
     url       String   @db.VarChar(255)
     hits      Int      @default(0)
+
+    creatorId String @db.VarChar(255)
+
     createdAt DateTime @default(now())
     lastHitAt DateTime? @updatedAt()
+
+    @@index([creatorId, createdAt(sort: Desc)])
 }

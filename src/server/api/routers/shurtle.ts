@@ -7,14 +7,31 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
+const sortOrder = z.enum(["asc", "desc"]).optional();
+
 export const shurtleRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.shurtle.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  }),
+  getAllForUser: protectedProcedure
+    .input(
+      z
+        .object({
+          orderBy: z
+            .object({
+              hits: sortOrder,
+              createdAt: sortOrder,
+              lastHitAt: sortOrder,
+            })
+            .optional(),
+        })
+        .optional()
+    )
+    .query(async ({ input, ctx }) => {
+      return await ctx.prisma.shurtle.findMany({
+        where: {
+          creatorId: ctx.auth.userId,
+        },
+        orderBy: input?.orderBy,
+      });
+    }),
   getBySlug: publicProcedure
     .input(
       z.object({
@@ -44,8 +61,7 @@ export const shurtleRouter = createTRPCRouter({
         slug: z
           .string({ required_error: "Cannot be empty!" })
           .regex(/^[a-z0-9](-?[a-z0-9])*$/, {
-            message:
-              "Invalid slug!",
+            message: "Invalid slug!",
           }),
       })
     )
@@ -70,6 +86,7 @@ export const shurtleRouter = createTRPCRouter({
         data: {
           slug: input.slug,
           url: input.url,
+          creatorId: ctx.auth.userId,
         },
       });
 

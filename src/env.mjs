@@ -6,7 +6,7 @@ import { z } from "zod";
  */
 const server = z.object({
   DATABASE_URL: z.string().url(),
-  CLERK_SECRET_KEY: z.string().nonempty(),
+  CLERK_SECRET_KEY: z.string(),
   NODE_ENV: z.enum(["development", "test", "production"]),
 });
 
@@ -15,8 +15,8 @@ const server = z.object({
  * built with invalid env vars. To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 const client = z.object({
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().nonempty(),
-  NEXT_PUBLIC_CLERK_SIGNIN_URL: z.string().nonempty(),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
+  NEXT_PUBLIC_CLERK_SIGNIN_URL: z.string(),
 });
 
 /**

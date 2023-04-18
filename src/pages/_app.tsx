@@ -7,6 +7,7 @@ import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 import { Toaster } from "~/components/ui/toaster";
+import { ThemeProvider } from "next-themes";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,10 +23,12 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           }
         `}
       </style>
-      <ClerkProvider {...pageProps}>
-        <Component {...pageProps} />
-        <Toaster />
-      </ClerkProvider>
+      <ThemeProvider attribute="class">
+        <ClerkProvider {...pageProps}>
+          <Component {...pageProps} />
+          <Toaster />
+        </ClerkProvider>
+      </ThemeProvider>
     </>
   );
 };

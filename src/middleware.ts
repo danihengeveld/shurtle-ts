@@ -41,14 +41,14 @@ export default withClerkMiddleware(async (req: NextRequest) => {
       );
     }
 
-    const url = (queryResult.rows[0] as Shurtle).url;
+    const shurtle = queryResult.rows[0] as Shurtle;
 
     await conn.execute(
       "update Shurtle set hits = hits + 1 where slug = :slug",
-      { slug: req.nextUrl.pathname }
+      { slug: shurtle.slug }
     );
 
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(shurtle.url);
   }
 
   const { userId } = getAuth(req);

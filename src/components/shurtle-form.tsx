@@ -4,7 +4,7 @@ import { Label } from "@radix-ui/react-label";
 import { Field, Form, Formik, type FormikProps } from "formik";
 import { Loader2 } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
-import { useRef } from "react";
+import { useRef, type FC } from "react";
 import { z } from "zod";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { useToast } from "~/hooks/ui/use-toast";
@@ -26,7 +26,7 @@ const shurtleFormSchema = z.object({
 
 type ShurtleFormInputs = RouterInputs["shurtle"]["create"];
 
-const ShurtleForm = () => {
+const ShurtleForm: FC = () => {
   const formikRef = useRef<FormikProps<ShurtleFormInputs>>(null);
   const { toast } = useToast();
 
@@ -83,7 +83,7 @@ const ShurtleForm = () => {
         const touched = formikState.touched;
 
         return (
-          <Form className="grid w-full max-w-sm items-center gap-4 rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-800/50 dark:shadow-slate-800/50">
+          <Form className="grid w-full max-w-sm items-center gap-4 rounded-2xl border p-6">
             <div className="flex flex-row items-center justify-between">
               <h1 className="mb-4 text-4xl font-bold">Shurtle</h1>
               <div className="relative h-12 w-12">
@@ -112,9 +112,9 @@ const ShurtleForm = () => {
                 disabled={shurtleMutation.isLoading}
               />
               <div className="flex flex-row justify-between">
-                <p className="text-sm text-slate-500">Enter the full URL.</p>
+                <p className="text-sm text-muted-foreground">Enter the full URL.</p>
                 {!!errors.url && touched.url && (
-                  <p className="text-sm text-red-400">{errors.url}</p>
+                  <p className="text-sm text-destructive">{errors.url}</p>
                 )}
               </div>
             </div>
@@ -131,9 +131,9 @@ const ShurtleForm = () => {
                 disabled={shurtleMutation.isLoading}
               />
               <div className="flex flex-row justify-between">
-                <p className="text-sm text-slate-500">Enter the slug (short URL).</p>
+                <p className="text-sm text-muted-foreground">Enter the slug (short URL).</p>
                 {!!errors.slug && touched.slug && (
-                  <p className="text-sm text-red-400">{errors.slug}</p>
+                  <p className="text-sm text-destructive">{errors.slug}</p>
                 )}
               </div>
             </div>

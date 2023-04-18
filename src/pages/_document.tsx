@@ -18,7 +18,7 @@ class MyDocument extends Document {
   }
   render(): ReactElement {
     return (
-      <Html data-theme="dark">
+      <Html>
         <Head>
           <meta
             name="description"
@@ -26,7 +26,7 @@ class MyDocument extends Document {
           />
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <body className="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
+        <body>
           <Main />
           <NextScript />
         </body>
