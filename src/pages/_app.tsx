@@ -1,13 +1,14 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/react";
 import { type AppType } from "next/app";
 import { Inter } from "next/font/google";
 export { reportWebVitals } from "next-axiom";
 
 import { api } from "~/utils/api";
 
-import "~/styles/globals.css";
-import { Toaster } from "~/components/ui/toaster";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "~/components/ui/toaster";
+import "~/styles/globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <ClerkProvider {...pageProps}>
           <Component {...pageProps} />
           <Toaster />
+          <Analytics />
         </ClerkProvider>
       </ThemeProvider>
     </>
