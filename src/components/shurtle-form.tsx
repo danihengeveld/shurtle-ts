@@ -67,7 +67,7 @@ const ShurtleForm: FC = () => {
         toast({
           title: "You shurtled it!",
           description: `The shurtle: ${data.slug}, is live now!`,
-          action: <ToastAction altText="Yes" onClick={(e) => {
+          action: <ToastAction altText="Yes" onClick={() => {
             void navigator.clipboard.writeText(`https://shurtle.app/${data.slug}`);
           }}>Copy</ToastAction>,
           duration: 3000
