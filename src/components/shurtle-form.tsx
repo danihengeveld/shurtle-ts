@@ -34,7 +34,7 @@ const ShurtleForm: FC = () => {
     onSettled: (data, error) => {
       console.log(error?.message)
       if (error) {
-        if (error.data?.code == "CONFLICT") {
+        if (error.data?.code === "CONFLICT") {
           toast({
             variant: "destructive",
             title: "Uh oh! I'm afraid this one is already taken.",
@@ -43,15 +43,23 @@ const ShurtleForm: FC = () => {
               <ToastAction altText="Try another!">Try another!</ToastAction>
             ),
           });
+        } else if (error.data?.code === "TOO_MANY_REQUESTS"){
+          toast({
+            variant: "destructive",
+            title: "Uh oh! I'm afraid you are hitting the rate limiters.",
+            description: error.message,
+            action: (
+              <ToastAction altText="I'll wait!">Try another!</ToastAction>
+            ),
+          });
         } else {
           toast({
             variant: "destructive",
             title: "Uh oh! Something went wrong.",
-            description:
-              "Something went wrong on our side. Please have another go at it!",
+            description: "Something went wrong on our side. Please have another go at it!",
             action: (
               <ToastAction altText="Try it again!">Try again!</ToastAction>
-            ),
+            )
           });
         }
       } else if (data) {
@@ -59,7 +67,10 @@ const ShurtleForm: FC = () => {
         toast({
           title: "You shurtled it!",
           description: `The shurtle: ${data.slug}, is live now!`,
-          action: <ToastAction altText="Yes">Yeahh</ToastAction>,
+          action: <ToastAction altText="Yes" onClick={(e) => {
+            void navigator.clipboard.writeText(`https://shurtle.app/${data.slug}`);
+          }}>Copy</ToastAction>,
+          duration: 3000
         });
       }
     },

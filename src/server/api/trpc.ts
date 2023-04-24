@@ -24,6 +24,7 @@ import { prisma } from "~/server/db";
 
 interface InnerTRPCContext {
   auth: SignedInAuthObject | SignedOutAuthObject;
+  req: NextApiRequest;
 }
 
 /**
@@ -36,10 +37,11 @@ interface InnerTRPCContext {
  *
  * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
  */
-const createInnerTRPCContext = ({ auth }: InnerTRPCContext) => {
+const createInnerTRPCContext = ({ auth, req }: InnerTRPCContext) => {
   return {
     auth,
     prisma,
+    req,
   };
 };
 
@@ -50,7 +52,7 @@ const createInnerTRPCContext = ({ auth }: InnerTRPCContext) => {
  * @see https://trpc.io/docs/context
  */
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext({ auth: getAuth(opts.req) });
+  return createInnerTRPCContext({ auth: getAuth(opts.req), req: opts.req });
 };
 
 /**
@@ -63,6 +65,7 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
 import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { NextApiRequest } from "next";
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
