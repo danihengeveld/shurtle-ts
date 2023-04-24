@@ -34,6 +34,7 @@ export default withClerkMiddleware(async (req: NextRequest) => {
     const shurtle = await db
       .selectFrom("Shurtle")
       .select(["slug", "url"])
+      .where("slug", "=", req.nextUrl.pathname.replace("/", ""))
       .executeTakeFirst();
 
     if (!shurtle) {
