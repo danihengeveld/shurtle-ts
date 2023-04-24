@@ -1,9 +1,10 @@
 import { getAuth, withClerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { Kysely } from "kysely";
+import { PlanetScaleDialect } from "kysely-planetscale";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { env } from "./env.mjs";
-import { Client } from "@planetscale/database";
-import { type Shurtle } from "@prisma/client";
+import { type ShurtleDatabase } from "./lib/shurtle-kysely-types.js";
 
 // Set the paths that do not result to redirection
 const reservedPaths = ["/dashboard", "/preview"];
@@ -24,29 +25,30 @@ export default withClerkMiddleware(async (req: NextRequest) => {
     !isApi(req.nextUrl.pathname) &&
     req.nextUrl.pathname !== "/"
   ) {
-    const client = new Client({
-      url: env.DATABASE_URL,
+    const db = new Kysely<ShurtleDatabase>({
+      dialect: new PlanetScaleDialect({
+        url: env.DATABASE_URL,
+      }),
     });
-    const conn = client.connection();
 
-    const queryResult = await conn.execute(
-      "select * from Shurtle where slug = :slug",
-      { slug: req.nextUrl.pathname.replace("/", "") },
-      { as: "object" }
-    );
+    const shurtle = await db
+      .selectFrom("Shurtle")
+      .select(["slug", "url"])
+      .executeTakeFirst();
 
-    if (queryResult.size < 1) {
+    if (!shurtle) {
       return NextResponse.redirect(
         req.nextUrl.href.replace(req.nextUrl.pathname, "/")
       );
     }
 
-    const shurtle = queryResult.rows[0] as Shurtle;
-
-    await conn.execute(
-      "update Shurtle set hits = hits + 1 where slug = :slug",
-      { slug: shurtle.slug }
-    );
+    await db
+      .updateTable("Shurtle")
+      .set(({ bxp }) => ({
+        hits: bxp("hits", "+", 1),
+      }))
+      .where("slug", "=", shurtle.slug)
+      .executeTakeFirst();
 
     return NextResponse.redirect(shurtle.url);
   }
