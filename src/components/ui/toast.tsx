@@ -7,7 +7,7 @@ import {
   type ElementRef,
   type ReactElement,
 } from "react";
-import { cn } from "../../utils/cn";
+import { cn } from "../../lib/cn";
 
 const ToastProvider = ToastPrimitives.Provider;
 

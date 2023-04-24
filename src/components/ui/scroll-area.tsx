@@ -7,7 +7,7 @@ import {
   type ComponentPropsWithoutRef,
   type ElementRef,
 } from "react";
-import { cn } from "../../utils/cn";
+import { cn } from "../../lib/cn";
 
 const ScrollArea = forwardRef<
   ElementRef<typeof ScrollAreaPrimitive.Root>,

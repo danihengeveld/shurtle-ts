@@ -7,7 +7,7 @@ import {
   type ElementRef,
   forwardRef,
 } from "react";
-import { cn } from "../../utils/cn";
+import { cn } from "../../lib/cn";
 
 const Avatar = forwardRef<
   ElementRef<typeof AvatarPrimitive.Root>,
