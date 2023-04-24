@@ -4,14 +4,36 @@ import ShurtlesTable from "~/components/dashboard/shurtles-table";
 import StatCard from "~/components/dashboard/stat-card";
 import NavMenu from "~/components/nav-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { ToastAction } from "~/components/ui/toast";
+import { useToast } from "~/hooks/ui/use-toast";
 import { api } from "~/utils/api";
 
 const Dashboard: NextPage = () => {
-  const shurtles = api.shurtle.getAllForUser.useQuery({
-    orderBy: {
-      createdAt: "desc",
+  const { toast } = useToast();
+
+  const shurtles = api.shurtle.getAllForUser.useQuery(
+    {
+      orderBy: {
+        createdAt: "desc",
+      },
     },
-  });
+    {
+      onError(error) {
+        if (error.data?.code === "TOO_MANY_REQUESTS") {
+          toast({
+            variant: "destructive",
+            title: "Uh oh! I'm afraid you are hitting the rate limiters.",
+            description: error.message,
+            action: (
+              <ToastAction altText="I'll wait!">I&apos;ll wait!</ToastAction>
+            ),
+          });
+        }
+      },
+      retry: 1,
+    }
+  );
+
   return (
     <>
       <Head>

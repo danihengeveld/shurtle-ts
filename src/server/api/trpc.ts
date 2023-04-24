@@ -14,16 +14,18 @@
  *
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { getAuth } from "@clerk/nextjs/server";
 import type {
   SignedInAuthObject,
   SignedOutAuthObject,
 } from "@clerk/nextjs/api";
+import { getAuth } from "@clerk/nextjs/server";
+import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
+import { type NextApiRequest } from "next";
 import { prisma } from "~/server/db";
 
 interface InnerTRPCContext {
   auth: SignedInAuthObject | SignedOutAuthObject;
+  req: NextApiRequest;
 }
 
 /**
@@ -36,10 +38,11 @@ interface InnerTRPCContext {
  *
  * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
  */
-const createInnerTRPCContext = ({ auth }: InnerTRPCContext) => {
+const createInnerTRPCContext = ({ auth, req }: InnerTRPCContext) => {
   return {
     auth,
     prisma,
+    req,
   };
 };
 
@@ -50,7 +53,7 @@ const createInnerTRPCContext = ({ auth }: InnerTRPCContext) => {
  * @see https://trpc.io/docs/context
  */
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext({ auth: getAuth(opts.req) });
+  return createInnerTRPCContext({ auth: getAuth(opts.req), req: opts.req });
 };
 
 /**

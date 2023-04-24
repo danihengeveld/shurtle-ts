@@ -1,11 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { limitOrThrow, rateLimits } from "../../../utils/ratelimiter";
 
 const sortOrder = z.enum(["asc", "desc"]).optional();
 
@@ -25,6 +22,10 @@ export const shurtleRouter = createTRPCRouter({
         .optional()
     )
     .query(async ({ input, ctx }) => {
+      const userId = ctx.auth.userId;
+
+      await limitOrThrow(rateLimits.private, userId);
+
       return await ctx.prisma.shurtle.findMany({
         where: {
           creatorId: ctx.auth.userId,
@@ -32,28 +33,7 @@ export const shurtleRouter = createTRPCRouter({
         orderBy: input?.orderBy,
       });
     }),
-  getBySlug: publicProcedure
-    .input(
-      z.object({
-        slug: z.string(),
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      const shurtle = await ctx.prisma.shurtle.findUnique({
-        where: {
-          slug: input.slug,
-        },
-      });
 
-      if (!shurtle) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Shurtle for slug ${input.slug} does not exist.`,
-        });
-      }
-
-      return shurtle;
-    }),
   create: protectedProcedure
     .input(
       z.object({
@@ -66,6 +46,10 @@ export const shurtleRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      const userId = ctx.auth.userId;
+
+      await limitOrThrow(rateLimits.create, userId);
+
       const existing = await ctx.prisma.shurtle.findUnique({
         where: {
           slug: input.slug,
@@ -91,5 +75,50 @@ export const shurtleRouter = createTRPCRouter({
       });
 
       return result;
+    }),
+
+  deleteBySlug: protectedProcedure
+    .input(
+      z.object({
+        slug: z
+          .string({ required_error: "Cannot be empty!" })
+          .regex(/^[a-z0-9](-?[a-z0-9])*$/, {
+            message: "Invalid slug!",
+          }),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.auth.userId;
+
+      await limitOrThrow(rateLimits.private, userId);
+
+      const shurtle = await ctx.prisma.shurtle.findFirst({
+        where: {
+          AND: [
+            {
+              slug: input.slug,
+            },
+            {
+              creatorId: userId,
+            },
+          ],
+        },
+        select: {
+          slug: true,
+        },
+      });
+
+      if (!shurtle) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Shurtle for slug ${input.slug} and creator id ${userId} does not exist.`,
+        });
+      }
+
+      await ctx.prisma.shurtle.delete({
+        where: {
+          slug: shurtle.slug,
+        },
+      });
     }),
 });
