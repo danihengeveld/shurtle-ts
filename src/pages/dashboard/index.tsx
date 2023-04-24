@@ -4,7 +4,6 @@ import ShurtlesTable from "~/components/dashboard/shurtles-table";
 import StatCard from "~/components/dashboard/stat-card";
 import NavMenu from "~/components/nav-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { api } from "~/utils/api";
 
 const Dashboard: NextPage = () => {
