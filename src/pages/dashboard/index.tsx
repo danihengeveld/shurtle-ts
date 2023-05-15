@@ -1,6 +1,7 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import ShurtlesTable from "~/components/dashboard/shurtles-table";
+import { shurtlesTableColumns } from "~/components/dashboard/shurtles-table/columns";
+import { DataTable } from "~/components/dashboard/shurtles-table/data-table";
 import StatCard from "~/components/dashboard/stat-card";
 import NavMenu from "~/components/nav-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -50,9 +51,12 @@ const Dashboard: NextPage = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl">Your Shurtles</CardTitle>
                 </CardHeader>
-                <CardContent className="overflow-scroll">
+                <CardContent>
                   {shurtles.isSuccess && (
-                    <ShurtlesTable shurtles={shurtles.data} />
+                    <DataTable
+                      columns={shurtlesTableColumns}
+                      data={shurtles.data}
+                    />
                   )}
                 </CardContent>
               </Card>
