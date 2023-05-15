@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { DataTableColumnHeader } from "~/components/utils/data-table/column-header";
 import Date from "~/components/utils/date";
+import { truncate } from "~/lib/truncate";
 import { type RouterOutputs } from "~/utils/api";
 
 export type Shurtle = RouterOutputs["shurtle"]["getAllForUser"][0];
@@ -19,7 +20,7 @@ export const shurtlesTableColumns: ColumnDef<Shurtle>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Hits" />
     ),
-    cell: (info: CellContext<Shurtle, number>) => (
+    cell: (info) => (
       <div className="font-semibold">{info.getValue()}</div>
     ),
   }) as ColumnDef<Shurtle>,
@@ -30,8 +31,8 @@ export const shurtlesTableColumns: ColumnDef<Shurtle>[] = [
     header: "Url",
     cell: (info) => (
       <Link href={info.getValue()}>
-        <Button variant="link" className="p-0 font-normal">
-          {info.getValue()}
+        <Button variant="link" className="p-0 font-normal whitespace-nowrap">
+            {truncate(info.getValue(), 50)}
         </Button>
       </Link>
     ),
