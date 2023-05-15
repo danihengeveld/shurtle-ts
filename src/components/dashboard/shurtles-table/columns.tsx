@@ -6,6 +6,7 @@ import {
 
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
+import { DataTableColumnHeader } from "~/components/utils/data-table/column-header";
 import Date from "~/components/utils/date";
 import { type RouterOutputs } from "~/utils/api";
 
@@ -15,7 +16,9 @@ const columnHelper = createColumnHelper<Shurtle>();
 
 export const shurtlesTableColumns: ColumnDef<Shurtle>[] = [
   columnHelper.accessor("hits", {
-    header: "Hits",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Hits" />
+    ),
     cell: (info: CellContext<Shurtle, number>) => (
       <div className="font-semibold">{info.getValue()}</div>
     ),
@@ -34,11 +37,15 @@ export const shurtlesTableColumns: ColumnDef<Shurtle>[] = [
     ),
   }) as ColumnDef<Shurtle>,
   columnHelper.accessor("lastHitAt", {
-    header: "Last hit at",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Last hit at" />
+    ),
     cell: (info) => <Date date={info.getValue()} />,
   }) as ColumnDef<Shurtle>,
   columnHelper.accessor("createdAt", {
-    header: "Created at",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created at" />
+    ),
     cell: (info) => <Date date={info.getValue()} />,
   }) as ColumnDef<Shurtle>,
 ];
