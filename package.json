@@ -10,7 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@clerk/nextjs": "^4.16.2",
+    "@clerk/nextjs": "^4.21.4",
     "@planetscale/database": "^1.7.0",
     "@prisma/client": "^4.13.0",
     "@radix-ui/react-avatar": "^1.0.2",
