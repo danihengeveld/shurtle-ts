@@ -9,7 +9,7 @@ import { ToastAction } from "~/components/ui/toast";
 import { useToast } from "~/hooks/ui/use-toast";
 import { api } from "~/utils/api";
 
-const Dashboard: NextPage = () => {
+const DashboardPage: NextPage = () => {
   const { toast } = useToast();
 
   const shurtles = api.shurtle.getAllForUser.useQuery(
@@ -102,4 +102,4 @@ const Dashboard: NextPage = () => {
   );
 };
 
-export default Dashboard;
+export default DashboardPage;

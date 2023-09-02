@@ -40,12 +40,12 @@ const NavMenu: FC = () => {
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
-              <Link href="/preview" legacyBehavior passHref>
+              <Link href="/create" legacyBehavior passHref>
                 <NavigationMenuLink
                   className={navigationMenuTriggerStyle()}
-                  active={router.asPath === "/preview"}
+                  active={router.asPath === "/create"}
                 >
-                  Shurtle Preview
+                  Shurtle
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>

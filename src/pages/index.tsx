@@ -18,11 +18,11 @@ const Home: NextPage = () => {
         <div className="flex flex-col items-center">
           <h1 className="mb-4 text-8xl font-bold">Shurtle</h1>
           <p className="mb-8 px-4 text-xl">
-            This website is currently under construction. Come back later!
+            The open source, blazingly fast URL shortener.
           </p>
           {!user.isSignedIn && (
             <>
-              <p className="mb-6 px-4 text-lg">Sign in to see the preview!</p>
+              <p className="mb-6 px-4 text-lg">Sign in to try it out!</p>
               <SignInButton>
                 <Button
                   variant="default"

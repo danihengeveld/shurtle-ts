@@ -22,7 +22,7 @@ class MyDocument extends Document {
         <Head>
           <meta
             name="description"
-            content="Shurtle. The open source url shortener."
+            content="Shurtle. The open source, blazingly fast URL shortener."
           />
           <link rel="icon" href="/favicon.ico" />
         </Head>

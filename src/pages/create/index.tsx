@@ -3,11 +3,11 @@ import Head from "next/head";
 import NavMenu from "~/components/nav-menu";
 import ShurtleForm from "~/components/shurtle-form";
 
-const Preview: NextPage = () => {
+const ShurtlePage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Shurtle Preview</title>
+        <title>Shurtle</title>
       </Head>
 
       <main className="container mx-auto flex h-screen flex-col pt-6">
@@ -21,4 +21,4 @@ const Preview: NextPage = () => {
   );
 };
 
-export default Preview;
+export default ShurtlePage;

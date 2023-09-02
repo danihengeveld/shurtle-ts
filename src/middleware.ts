@@ -9,7 +9,7 @@ import { env } from "./env.mjs";
 import { type ShurtleDatabase } from "./lib/shurtle-kysely-types.js";
 
 // Set the paths that do not result to redirection
-const reservedPaths = ["/dashboard", "/preview"];
+const reservedPaths = ["/dashboard", "/create"];
 
 const isReserved = (path: string) => {
   return reservedPaths.find((x) =>
