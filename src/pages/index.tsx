@@ -48,9 +48,9 @@ const Home: NextPage = () => {
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <Link href="/preview">
+              <Link href="/create">
                 <Button size="lg" className="text-md mt-6 w-fit font-semibold">
-                  To the preview{" "}
+                  Try it out! {" "}
                   <ArrowRight className="ml-2 h-4 w-4"></ArrowRight>
                 </Button>
               </Link>
