@@ -46,7 +46,7 @@
     "superjson": "1.12.3",
     "tailwind-merge": "^1.12.0",
     "tailwindcss-animate": "^1.0.5",
-    "zod": "^3.21.4",
+    "zod": "^3.22.3",
     "zod-formik-adapter": "^1.2.0"
   },
   "devDependencies": {
