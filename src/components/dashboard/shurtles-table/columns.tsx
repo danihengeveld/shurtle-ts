@@ -1,8 +1,4 @@
-import {
-  createColumnHelper,
-  type CellContext,
-  type ColumnDef,
-} from "@tanstack/react-table";
+import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
@@ -11,7 +7,7 @@ import Date from "~/components/utils/date";
 import { truncate } from "~/lib/truncate";
 import { type RouterOutputs } from "~/utils/api";
 
-export type Shurtle = RouterOutputs["shurtle"]["getAllForUser"][0];
+export type Shurtle = RouterOutputs["shurtle"]["get"]["allForUser"][0];
 
 const columnHelper = createColumnHelper<Shurtle>();
 
@@ -20,9 +16,7 @@ export const shurtlesTableColumns: ColumnDef<Shurtle>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Hits" />
     ),
-    cell: (info) => (
-      <div className="font-semibold">{info.getValue()}</div>
-    ),
+    cell: (info) => <div className="font-semibold">{info.getValue()}</div>,
   }) as ColumnDef<Shurtle>,
   columnHelper.accessor("slug", {
     header: "Slug",
@@ -31,8 +25,8 @@ export const shurtlesTableColumns: ColumnDef<Shurtle>[] = [
     header: "Url",
     cell: (info) => (
       <Link href={info.getValue()}>
-        <Button variant="link" className="p-0 font-normal whitespace-nowrap">
-            {truncate(info.getValue(), 50)}
+        <Button variant="link" className="whitespace-nowrap p-0 font-normal">
+          {truncate(info.getValue(), 50)}
         </Button>
       </Link>
     ),
