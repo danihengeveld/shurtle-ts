@@ -1,15 +1,14 @@
-import { getAuth, withClerkMiddleware } from "@clerk/nextjs/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { Kysely } from "kysely";
 import { PlanetScaleDialect } from "kysely-planetscale";
-import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { env } from "./env.mjs";
 import { type ShurtleDatabase } from "./lib/shurtle-kysely-types.js";
+import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 
 // Set the paths that do not result to redirection
-const reservedPaths = ["/dashboard", "/create"];
+const reservedPaths = ["/", "/dashboard", "/create"];
 
 const isReserved = (path: string) => {
   return reservedPaths.find((x) =>
@@ -21,19 +20,18 @@ const isApi = (path: string) => {
   return path.startsWith("/api");
 };
 
-export default withClerkMiddleware(
-  async (req: NextRequest, event: NextFetchEvent) => {
+export default authMiddleware({
+  async afterAuth(auth, req, evt) {
     if (
       !isReserved(req.nextUrl.pathname) &&
-      !isApi(req.nextUrl.pathname) &&
-      req.nextUrl.pathname !== "/"
+      !isApi(req.nextUrl.pathname)
     ) {
       const ip = req.ip ?? "127.0.0.1";
 
       const { success, pending, limit, reset, remaining } =
         await ratelimit.limit(ip);
 
-      event.waitUntil(pending);
+        evt.waitUntil(pending);
 
       if (!success) {
         return addRatelimitHeaders(
@@ -84,21 +82,19 @@ export default withClerkMiddleware(
         reset,
         remaining
       );
-    }
-
-    if (req.nextUrl.pathname !== "/") {
-      const { userId } = getAuth(req);
-
-      if (!userId) {
-        const signInUrl = new URL(env.NEXT_PUBLIC_CLERK_SIGNIN_URL);
-        signInUrl.searchParams.set("redirect_url", req.url);
-        return NextResponse.redirect(signInUrl);
-      }
+    } else if (
+        !isApi(req.nextUrl.pathname) && 
+        isReserved(req.nextUrl.pathname) && 
+        req.nextUrl.pathname !== "/" && !auth.userId
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return redirectToSignIn({returnBackUrl: req.url})
     }
 
     return NextResponse.next();
-  }
-);
+  },
+  publicRoutes: ["/"]
+});
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -121,15 +117,5 @@ const addRatelimitHeaders = (
 };
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next
-     * - static (static files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    "/(.*?trpc.*?|(?!static|.*\\..*|_next|favicon.ico).*)",
-    "/",
-  ],
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };
