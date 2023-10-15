@@ -1,3 +1,8 @@
+import { TRPCError, initTRPC } from "@trpc/server";
+import superjson from "superjson";
+import { ZodError } from "zod";
+import { db } from "~/db";
+
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
  * 1. You want to modify request context (see Part 1).
@@ -21,7 +26,6 @@ import type {
 import { getAuth } from "@clerk/nextjs/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type NextApiRequest } from "next";
-import { prisma } from "~/server/db";
 
 interface InnerTRPCContext {
   auth: SignedInAuthObject | SignedOutAuthObject;
@@ -41,7 +45,7 @@ interface InnerTRPCContext {
 const createInnerTRPCContext = ({ auth, req }: InnerTRPCContext) => {
   return {
     auth,
-    prisma,
+    db,
     req,
   };
 };
@@ -63,10 +67,6 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-import { TRPCError, initTRPC } from "@trpc/server";
-import superjson from "superjson";
-import { ZodError } from "zod";
-
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
@@ -75,7 +75,9 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       data: {
         ...shape.data,
         zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+          error.code === "BAD_REQUEST" && error.cause instanceof ZodError
+            ? error.cause.flatten()
+            : null,
       },
     };
   },

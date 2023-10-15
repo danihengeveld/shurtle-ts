@@ -12,7 +12,7 @@ import { api } from "~/utils/api";
 const DashboardPage: NextPage = () => {
   const { toast } = useToast();
 
-  const shurtles = api.shurtle.getAllForUser.useQuery(
+  const shurtles = api.shurtle.get.allForUser.useQuery(
     {
       orderBy: {
         createdAt: "desc",

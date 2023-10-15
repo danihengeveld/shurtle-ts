@@ -1,11 +1,10 @@
+import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { Kysely } from "kysely";
-import { PlanetScaleDialect } from "kysely-planetscale";
+import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { env } from "./env.mjs";
-import { type ShurtleDatabase } from "./lib/shurtle-kysely-types.js";
-import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
+import { db } from "./db";
+import { shurtles } from "./db/schema";
 
 // Set the paths that do not result to redirection
 const reservedPaths = ["/", "/dashboard", "/create"];
@@ -22,16 +21,13 @@ const isApi = (path: string) => {
 
 export default authMiddleware({
   async afterAuth(auth, req, evt) {
-    if (
-      !isReserved(req.nextUrl.pathname) &&
-      !isApi(req.nextUrl.pathname)
-    ) {
+    if (!isReserved(req.nextUrl.pathname) && !isApi(req.nextUrl.pathname)) {
       const ip = req.ip ?? "127.0.0.1";
 
       const { success, pending, limit, reset, remaining } =
         await ratelimit.limit(ip);
 
-        evt.waitUntil(pending);
+      evt.waitUntil(pending);
 
       if (!success) {
         return addRatelimitHeaders(
@@ -45,23 +41,13 @@ export default authMiddleware({
         );
       }
 
-      const db = new Kysely<ShurtleDatabase>({
-        dialect: new PlanetScaleDialect({
-          url: env.DATABASE_URL,
-        }),
+      const shurtle = await preparedGetShurtle.execute({
+        slug: req.nextUrl.pathname.replace("/", ""),
       });
-
-      const shurtle = await db
-        .selectFrom("Shurtle")
-        .select(["slug", "url"])
-        .where("slug", "=", req.nextUrl.pathname.replace("/", ""))
-        .executeTakeFirst();
 
       if (!shurtle) {
         return addRatelimitHeaders(
-          NextResponse.redirect(
-            req.nextUrl.href.replace(req.nextUrl.pathname, "/")
-          ),
+          NextResponse.redirect("/"),
           limit,
           reset,
           remaining
@@ -69,12 +55,12 @@ export default authMiddleware({
       }
 
       await db
-        .updateTable("Shurtle")
-        .set(({ bxp }) => ({
-          hits: bxp("hits", "+", 1),
-        }))
-        .where("slug", "=", shurtle.slug)
-        .executeTakeFirst();
+        .update(shurtles)
+        .set({
+          hits: sql`${shurtles.hits} + 1`,
+          lastHitAt: sql`current_timestamp(3)`,
+        })
+        .where(eq(shurtles.slug, shurtle.slug));
 
       return addRatelimitHeaders(
         NextResponse.redirect(shurtle.url),
@@ -83,17 +69,18 @@ export default authMiddleware({
         remaining
       );
     } else if (
-        !isApi(req.nextUrl.pathname) && 
-        isReserved(req.nextUrl.pathname) && 
-        req.nextUrl.pathname !== "/" && !auth.userId
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return redirectToSignIn({returnBackUrl: req.url})
+      !isApi(req.nextUrl.pathname) &&
+      isReserved(req.nextUrl.pathname) &&
+      req.nextUrl.pathname !== "/" &&
+      !auth.userId
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return redirectToSignIn({ returnBackUrl: req.url });
     }
 
     return NextResponse.next();
   },
-  publicRoutes: ["/"]
+  publicRoutes: ["/"],
 });
 
 const ratelimit = new Ratelimit({
@@ -116,6 +103,16 @@ const addRatelimitHeaders = (
   return res;
 };
 
+const preparedGetShurtle = db.query.shurtles
+  .findFirst({
+    columns: {
+      slug: true,
+      url: true,
+    },
+    where: (shurtles, { eq }) => eq(shurtles.slug, sql.placeholder("slug")),
+  })
+  .prepare();
+
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };
