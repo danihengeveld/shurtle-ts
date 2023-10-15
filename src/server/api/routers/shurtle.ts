@@ -9,8 +9,7 @@ const sortOrder = z.enum(["asc", "desc"]).optional();
 export const shurtleRouter = createTRPCRouter({
   getAllForUser: protectedProcedure
     .input(
-      z
-        .object({
+      z.object({
           orderBy: z
             .object({
               hits: sortOrder,
