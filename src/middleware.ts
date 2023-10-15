@@ -1,9 +1,9 @@
+import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { NextResponse } from "next/server";
-import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
-import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db } from "./db";
 import { shurtles } from "./db/schema";
 
 // Set the paths that do not result to redirection
@@ -56,7 +56,10 @@ export default authMiddleware({
 
       await db
         .update(shurtles)
-        .set({ hits: sql`${shurtles.hits} + 1` })
+        .set({
+          hits: sql`${shurtles.hits} + 1`,
+          lastHitAt: sql`current_timestamp(3)`,
+        })
         .where(eq(shurtles.slug, shurtle.slug));
 
       return addRatelimitHeaders(

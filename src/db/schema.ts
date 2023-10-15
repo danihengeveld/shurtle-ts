@@ -16,8 +16,10 @@ export const shurtles = mysqlTable(
 
     creatorId: varchar("creatorId", { length: 255 }).notNull(),
 
-    createdAt: datetime("createdAt", { mode: 'string', fsp: 3 }).default(sql`CURRENT_TIMESTAMP(3)`).notNull(),
-	lastHitAt: datetime("lastHitAt", { mode: 'string', fsp: 3 }),
+    createdAt: datetime("createdAt", { mode: "date", fsp: 3 })
+      .default(sql`CURRENT_TIMESTAMP(3)`)
+      .notNull(),
+    lastHitAt: datetime("lastHitAt", { mode: "date", fsp: 3 }),
   },
   (table) => {
     return {
