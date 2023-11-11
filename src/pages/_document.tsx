@@ -20,10 +20,17 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content="Create a Shurtle" />
           <meta
-            name="description"
-            content="Shurtle. The open source, blazingly fast URL shortener."
+            property="og:description"
+            content="Create new, blazingly fast short URL's."
           />
+          <meta
+            property="og:image"
+            content="https://www.shurtle.app/assets/img/turtle-white.svg"
+          />
+          <meta property="og:url" content="https://www.shurtle.app/" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
         <body>
