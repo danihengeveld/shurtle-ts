@@ -13,6 +13,11 @@ const Home: NextPage = () => {
     <>
       <Head>
         <title>Shurtle</title>
+        <meta
+          name="description"
+          content="The open source, blazingly fast URL shortener."
+          key="desc"
+        />
       </Head>
       <main className="grid h-screen place-items-center text-center">
         <div className="flex flex-col items-center">
@@ -50,8 +55,7 @@ const Home: NextPage = () => {
               </div>
               <Link href="/create">
                 <Button size="lg" className="text-md mt-6 w-fit font-semibold">
-                  Try it out! {" "}
-                  <ArrowRight className="ml-2 h-4 w-4"></ArrowRight>
+                  Try it out! <ArrowRight className="ml-2 h-4 w-4"></ArrowRight>
                 </Button>
               </Link>
               <SignOutButton>

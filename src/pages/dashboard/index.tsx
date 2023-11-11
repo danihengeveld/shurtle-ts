@@ -38,7 +38,13 @@ const DashboardPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Shurtle Dashboard</title>
+        <title>Dashboard | Shurtle</title>
+        <meta
+          name="description"
+          content="See and manage all your created Shurtles."
+          key="desc"
+        />
+        <meta property="og:url" content="https://www.shurtle.app/dashboard" />
       </Head>
 
       <main className="container mx-auto flex h-screen flex-col pt-6">

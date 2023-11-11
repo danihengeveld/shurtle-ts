@@ -2,7 +2,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import { type AppType } from "next/app";
 import { Inter } from "next/font/google";
-export { reportWebVitals } from "next-axiom";
 
 import { api } from "~/utils/api";
 
