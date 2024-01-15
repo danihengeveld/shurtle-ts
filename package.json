@@ -12,7 +12,7 @@
   "dependencies": {
     "@clerk/nextjs": "^4.29.3",
     "@planetscale/database": "^1.7.0",
-    "@radix-ui/react-avatar": "^1.0.2",
+    "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-navigation-menu": "^1.1.2",
