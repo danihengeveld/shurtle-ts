@@ -9,6 +9,6 @@ export default {
   schema: "./src/db/schema.ts",
   driver: "mysql2",
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL as string,
+    uri: process.env.DATABASE_URL as string,
   },
 } satisfies Config;
