@@ -47,7 +47,7 @@ export default authMiddleware({
 
       if (!shurtle) {
         return addRatelimitHeaders(
-          NextResponse.redirect("/"),
+          NextResponse.redirect(req.nextUrl.origin),
           limit,
           reset,
           remaining
