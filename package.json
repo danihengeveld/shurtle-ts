@@ -47,7 +47,7 @@
     "zod-formik-adapter": "^1.2.0"
   },
   "devDependencies": {
-    "@types/eslint": "^8.56.2",
+    "@types/eslint": "^8.56.5",
     "@types/node": "^20.11.10",
     "@types/prettier": "^3.0.0",
     "@types/react": "^18.2.58",
@@ -57,7 +57,7 @@
     "autoprefixer": "^10.4.17",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.20.13",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-config-next": "^14.1.0",
     "postcss": "^8.4.33",
     "prettier": "^3.2.5",
