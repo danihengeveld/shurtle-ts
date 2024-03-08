@@ -60,8 +60,8 @@ dependencies:
     specifier: ^1.0.1
     version: 1.0.1
   '@upstash/redis':
-    specifier: ^1.28.2
-    version: 1.28.2
+    specifier: ^1.28.4
+    version: 1.28.4
   '@vercel/analytics':
     specifier: ^1.1.2
     version: 1.1.2
@@ -2089,12 +2089,6 @@ packages:
     resolution: {integrity: sha512-G9LZ7idhlkuYknbUngCB3qzd7QnkK1xDkFG5jRtEJZuOUS5UKJ0UTKbhalCtp39eX2wu2Ubv8W7HCeaJQOWM0A==}
     dependencies:
       '@upstash/core-analytics': 0.0.7
-    dev: false
-
-  /@upstash/redis@1.28.2:
-    resolution: {integrity: sha512-e4HmmCji6kE6UnriU92sAVGLQcRYAB4fXSPXls08cjW7zdE/wFaDfhAGi1/T4/wUN50bAy/lpHwW4bMkI2EAcw==}
-    dependencies:
-      crypto-js: 4.2.0
     dev: false
 
   /@upstash/redis@1.28.4:

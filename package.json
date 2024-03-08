@@ -28,7 +28,7 @@
     "@trpc/react-query": "^10.45.0",
     "@trpc/server": "^10.45.0",
     "@upstash/ratelimit": "^1.0.1",
-    "@upstash/redis": "^1.28.2",
+    "@upstash/redis": "^1.28.4",
     "@vercel/analytics": "^1.1.2",
     "class-variance-authority": "^0.6.1",
     "clsx": "^2.1.0",
