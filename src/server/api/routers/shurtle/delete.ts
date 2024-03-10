@@ -21,13 +21,17 @@ export const deleteShurtleRouter = createTRPCRouter({
 
       await limitOrThrow(rateLimits.private, userId);
 
-      const result = await ctx.db
+      const deletedShurtles = await ctx.db
         .delete(shurtles)
         .where(
-          and(eq(shurtles.slug, input.slug), eq(shurtles.creatorId, userId))
-        );
+          and(
+            eq(shurtles.slug, input.slug), 
+            eq(shurtles.creatorId, userId)
+            )
+        )
+        .returning({ deletedId: shurtles.slug});
 
-      if (result.rowsAffected < 1) {
+      if (deletedShurtles.length < 1) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: `Shurtle for slug ${input.slug} and creator id ${userId} does not exist.`,

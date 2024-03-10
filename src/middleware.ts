@@ -58,7 +58,7 @@ export default authMiddleware({
         .update(shurtles)
         .set({
           hits: sql`${shurtles.hits} + 1`,
-          lastHitAt: sql`current_timestamp(3)`,
+          lastHitAt: sql`now()`,
         })
         .where(eq(shurtles.slug, shurtle.slug));
 
@@ -111,7 +111,7 @@ const preparedGetShurtle = db.query.shurtles
     },
     where: (shurtles, { eq }) => eq(shurtles.slug, sql.placeholder("slug")),
   })
-  .prepare();
+  .prepare("get_shurtle");
 
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],

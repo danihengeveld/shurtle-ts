@@ -1,9 +1,5 @@
-import { drizzle } from "drizzle-orm/planetscale-serverless";
-import { connect } from "@planetscale/database";
+import { drizzle } from "drizzle-orm/vercel-postgres";
+import { sql } from '@vercel/postgres';
 import * as schema from "./schema";
 
-const connection = connect({
-  url: process.env.DATABASE_URL,
-});
-
-export const db = drizzle(connection, { schema, logger: true });
+export const db = drizzle(sql, { schema, logger: true });
