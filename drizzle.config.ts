@@ -7,8 +7,9 @@ dotenv.config({path: ".env.development.local"})
 
 export default {
   schema: "./src/db/schema.ts",
-  driver: "mysql2",
+  driver: "pg",
   dbCredentials: {
-    uri: process.env.DATABASE_URL as string,
+    connectionString: process.env.POSTGRES_URL_NON_POOLING as string
   },
+  tablesFilter: ["shurtle_*"]
 } satisfies Config;
