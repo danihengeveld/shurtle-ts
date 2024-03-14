@@ -11,16 +11,16 @@ export const shurtles = pgTable(
     url: varchar("url", { length: 255 }).notNull(),
     hits: integer("hits").default(0).notNull(),
 
-    creatorId: varchar("creatorId", { length: 255 }).notNull(),
+    creatorId: varchar("creator_id", { length: 255 }).notNull(),
 
-    createdAt: timestamp("createdAt", { mode: "date", precision: 0, withTimezone: true })
+    createdAt: timestamp("created_at", { mode: "date", precision: 0, withTimezone: true })
       .default(sql`now()`)
       .notNull(),
-    lastHitAt: timestamp("lastHitAt", { mode: "date", precision: 0, withTimezone: true }),
+    lastHitAt: timestamp("last_hit_at", { mode: "date", precision: 0, withTimezone: true }),
   },
   (table) => {
     return {
-      creatorIdIdx: index("creatorId_idx").on(table.creatorId),
+      creatorIdIdx: index("creator_id_idx").on(table.creatorId),
     };
   }
 );
