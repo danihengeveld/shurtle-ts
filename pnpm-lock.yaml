@@ -57,8 +57,8 @@ importers:
         specifier: ^10.45.1
         version: 10.45.1
       '@upstash/ratelimit':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^2.0.4
+        version: 2.0.4
       '@upstash/redis':
         specifier: ^1.28.4
         version: 1.28.4
@@ -1254,12 +1254,12 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@upstash/core-analytics@0.0.7':
-    resolution: {integrity: sha512-lC2j5efqb1haX/fpTGaPUx1rue1WUkOZBVHDzCB7eMIVsRdFFp4xiHtyH/G9omiR1zj39fU5SCTWFiKJH3KOpw==}
+  '@upstash/core-analytics@0.0.10':
+    resolution: {integrity: sha512-7qJHGxpQgQr9/vmeS1PktEwvNAF7TI4iJDi8Pu2CFZ9YUGHZH4fOP5TfYlZ4aVxfopnELiE4BS4FBjyK7V1/xQ==}
     engines: {node: '>=16.0.0'}
 
-  '@upstash/ratelimit@1.0.1':
-    resolution: {integrity: sha512-G9LZ7idhlkuYknbUngCB3qzd7QnkK1xDkFG5jRtEJZuOUS5UKJ0UTKbhalCtp39eX2wu2Ubv8W7HCeaJQOWM0A==}
+  '@upstash/ratelimit@2.0.4':
+    resolution: {integrity: sha512-rKZWlZXXK93Xv1cz5/eCbGN4ZbvN3dWbjT2V6Of/3vqQGzd3TnD/xS3Okxp8EoG7L4MeLpy6UsRuMKGnuDZFAQ==}
 
   '@upstash/redis@1.28.4':
     resolution: {integrity: sha512-UalkSAny/dz1m8giEhD3Y5ru1o+CPHI32wFyS3MyzDzj2TRvEN+lTw+mPwi20ojk0H2gs8TBW3qsrvwuLLy+pA==}
@@ -4234,13 +4234,13 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@upstash/core-analytics@0.0.7':
+  '@upstash/core-analytics@0.0.10':
     dependencies:
       '@upstash/redis': 1.28.4
 
-  '@upstash/ratelimit@1.0.1':
+  '@upstash/ratelimit@2.0.4':
     dependencies:
-      '@upstash/core-analytics': 0.0.7
+      '@upstash/core-analytics': 0.0.10
 
   '@upstash/redis@1.28.4':
     dependencies:
