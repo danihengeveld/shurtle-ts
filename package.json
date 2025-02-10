@@ -34,7 +34,7 @@
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
     "drizzle-orm": "^0.29.5",
-    "formik": "^2.4.5",
+    "formik": "^2.4.6",
     "lucide-react": "^0.334.0",
     "next": "^14.2.15",
     "next-themes": "^0.4.4",
