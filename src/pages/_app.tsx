@@ -6,7 +6,7 @@ import { Inter } from "next/font/google";
 import { api } from "~/utils/api";
 
 import { ThemeProvider } from "next-themes";
-import { Toaster } from "~/components/ui/toaster";
+import { Toaster } from "~/components/ui/sonner";
 import "~/styles/globals.css";
 
 const inter = Inter({
@@ -26,7 +26,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <ThemeProvider attribute="class">
         <ClerkProvider {...pageProps}>
           <Component {...pageProps} />
-          <Toaster />
+          <Toaster richColors />
           <Analytics />
         </ClerkProvider>
       </ThemeProvider>

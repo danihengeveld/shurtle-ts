@@ -7,13 +7,12 @@ import Image, { type StaticImageData } from "next/image";
 import { useRef, type FC } from "react";
 import { z } from "zod";
 import { toFormikValidationSchema } from "zod-formik-adapter";
-import { useToast } from "~/hooks/ui/use-toast";
+import { toast } from "sonner";
 import { api, type RouterInputs } from "~/utils/api";
 import shurtlePicDark from "../../public/assets/img/turtle-black.svg";
 import shurtlePicWhite from "../../public/assets/img/turtle-white.svg";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { ToastAction } from "./ui/toast";
 
 const shurtleFormSchema = z.object({
   url: z.string().url({ message: "Must be a valid URL!" }),
@@ -28,48 +27,48 @@ type ShurtleFormInputs = RouterInputs["shurtle"]["create"];
 
 const ShurtleForm: FC = () => {
   const formikRef = useRef<FormikProps<ShurtleFormInputs>>(null);
-  const { toast } = useToast();
 
   const shurtleMutation = api.shurtle.create.useMutation({
     onSettled: (data, error) => {
       console.log(error?.message)
       if (error) {
         if (error.data?.code === "CONFLICT") {
-          toast({
-            variant: "destructive",
-            title: "Uh oh! I'm afraid this one is already taken.",
+          toast.info("Uh oh! I'm afraid this one is already taken.", {
             description: error.message,
-            action: (
-              <ToastAction altText="Try another!">Try another!</ToastAction>
-            ),
+            action: {
+              label: "Try another!",
+              onClick: () => {
+                formikRef.current?.resetForm();
+              },
+            }
           });
-        } else if (error.data?.code === "TOO_MANY_REQUESTS"){
-          toast({
-            variant: "destructive",
-            title: "Uh oh! I'm afraid you are hitting the rate limiters.",
+        } else if (error.data?.code === "TOO_MANY_REQUESTS") {
+          toast.warning("Uh oh! I'm afraid you are hitting the rate limiters.", {,
             description: error.message,
-            action: (
-              <ToastAction altText="I'll wait!">Try another!</ToastAction>
-            ),
+            action: {
+              label: "I'll wait!",
+              onClick: () => { },
+            }
           });
         } else {
-          toast({
-            variant: "destructive",
-            title: "Uh oh! Something went wrong.",
+          toast.error("Uh oh! Something went wrong.", {
             description: "Something went wrong on our side. Please have another go at it!",
-            action: (
-              <ToastAction altText="Try it again!">Try again!</ToastAction>
-            )
+            action: {
+              label: "Try it again!",
+              onClick: () => { },
+            }
           });
         }
       } else if (data) {
         formikRef.current?.resetForm();
-        toast({
-          title: "You shurtled it!",
+        toast.success("You shurtled it!", {
           description: `The shurtle: ${data.slug}, is live now!`,
-          action: <ToastAction altText="Yes" onClick={() => {
-            void navigator.clipboard.writeText(`https://shurtle.app/${data.slug}`);
-          }}>Copy</ToastAction>,
+          action: {
+            label: "Copy",
+            onClick: () => {
+              void navigator.clipboard.writeText(`https://shurtle.app/${data.slug}`);
+            }
+          },
           duration: 3000
         });
       }
