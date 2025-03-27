@@ -1,17 +1,14 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import { toast } from "sonner";
 import { shurtlesTableColumns } from "~/components/dashboard/shurtles-table/columns";
 import { DataTable } from "~/components/dashboard/shurtles-table/data-table";
 import StatCard from "~/components/dashboard/stat-card";
 import NavMenu from "~/components/nav-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { ToastAction } from "~/components/ui/toast";
-import { useToast } from "~/hooks/ui/use-toast";
 import { api } from "~/utils/api";
 
 const DashboardPage: NextPage = () => {
-  const { toast } = useToast();
-
   const shurtles = api.shurtle.get.allForUser.useQuery(
     {
       orderBy: {
@@ -21,13 +18,12 @@ const DashboardPage: NextPage = () => {
     {
       onError(error) {
         if (error.data?.code === "TOO_MANY_REQUESTS") {
-          toast({
-            variant: "destructive",
-            title: "Uh oh! I'm afraid you are hitting the rate limiters.",
+          toast.warning("Uh oh! I'm afraid you are hitting the rate limiters.", {
             description: error.message,
-            action: (
-              <ToastAction altText="I'll wait!">I&apos;ll wait!</ToastAction>
-            ),
+            cancel: {
+              label: "I'll wait!",
+              onClick: () => void (0),
+            }
           });
         }
       },
@@ -76,9 +72,9 @@ const DashboardPage: NextPage = () => {
                 value={
                   shurtles.data && shurtles.data.length > 0
                     ? shurtles.data
-                        ?.map((i) => i.hits)
-                        .reduce((a, b) => a + b)
-                        .toString() ?? "0"
+                      ?.map((i) => i.hits)
+                      .reduce((a, b) => a + b)
+                      .toString() ?? "0"
                     : "-"
                 }
                 description="Spread the word!"
