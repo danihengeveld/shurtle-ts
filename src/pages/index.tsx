@@ -32,7 +32,6 @@ const Home: NextPage = () => {
                 <Button
                   variant="default"
                   size="lg"
-                  className="text-md font-semibold"
                 >
                   Sign in
                 </Button>
@@ -46,7 +45,7 @@ const Home: NextPage = () => {
                   Hi {user.user.fullName}!
                 </h3>
                 <Avatar className="ml-3">
-                  <AvatarImage src={user.user.profileImageUrl} />
+                  <AvatarImage src={user.user.imageUrl} />
                   <AvatarFallback>
                     {user.user.firstName?.[0]}
                     {user.user.lastName?.[0]}
@@ -54,15 +53,15 @@ const Home: NextPage = () => {
                 </Avatar>
               </div>
               <Link href="/create">
-                <Button size="lg" className="text-md mt-6 w-fit font-semibold">
+                <Button size="lg" className="mt-6 w-fit">
                   Try it out! <ArrowRight className="ml-2 h-4 w-4"></ArrowRight>
                 </Button>
               </Link>
               <SignOutButton>
                 <Button
-                  variant="subtle"
+                  variant="secondary"
                   size="lg"
-                  className="text-md mt-6 w-fit font-semibold"
+                  className="mt-6 w-fit"
                 >
                   Sign out
                 </Button>
