@@ -140,7 +140,7 @@ const ShurtleForm: FC = () => {
             <Button
               disabled={shurtleMutation.isLoading}
               type="submit"
-              className="text-md w-fit justify-self-end font-semibold"
+              className="w-fit justify-self-end"
             >
               {shurtleMutation.isLoading && (
                 <>
