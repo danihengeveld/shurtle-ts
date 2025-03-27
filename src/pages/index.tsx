@@ -60,7 +60,7 @@ const Home: NextPage = () => {
               </Link>
               <SignOutButton>
                 <Button
-                  variant="subtle"
+                  variant="secondary"
                   size="lg"
                   className="text-md mt-6 w-fit font-semibold"
                 >
