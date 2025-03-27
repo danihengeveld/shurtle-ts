@@ -33,30 +33,20 @@ const ShurtleForm: FC = () => {
       console.log(error?.message)
       if (error) {
         if (error.data?.code === "CONFLICT") {
-          toast.info("Uh oh! I'm afraid this one is already taken.", {
-            description: error.message,
-            action: {
-              label: "Try another!",
-              onClick: () => {
-                formikRef.current?.resetForm();
-              },
-            }
+          toast.info("Uh oh! I'm afraid this one is already taken. Try another!", {
+            description: error.message
           });
         } else if (error.data?.code === "TOO_MANY_REQUESTS") {
-          toast.warning("Uh oh! I'm afraid you are hitting the rate limiters.", {,
+          toast.warning("Uh oh! I'm afraid you are hitting the rate limiters.", {
             description: error.message,
-            action: {
+            cancel: {
               label: "I'll wait!",
-              onClick: () => { },
+              onClick: () => void (0),
             }
           });
         } else {
           toast.error("Uh oh! Something went wrong.", {
-            description: "Something went wrong on our side. Please have another go at it!",
-            action: {
-              label: "Try it again!",
-              onClick: () => { },
-            }
+            description: "Something went wrong on our side. Please have another go at it!"
           });
         }
       } else if (data) {
