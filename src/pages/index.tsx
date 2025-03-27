@@ -45,7 +45,7 @@ const Home: NextPage = () => {
                   Hi {user.user.fullName}!
                 </h3>
                 <Avatar className="ml-3">
-                  <AvatarImage src={user.user.profileImageUrl} />
+                  <AvatarImage src={user.user.imageUrl} />
                   <AvatarFallback>
                     {user.user.firstName?.[0]}
                     {user.user.lastName?.[0]}
