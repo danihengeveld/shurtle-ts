@@ -29,7 +29,7 @@
     "@trpc/server": "^10.45.1",
     "@upstash/ratelimit": "^2.0.4",
     "@upstash/redis": "^1.28.4",
-    "@vercel/analytics": "^1.2.2",
+    "@vercel/analytics": "^1.5.0",
     "@vercel/postgres": "^0.10.0",
     "class-variance-authority": "^0.6.1",
     "clsx": "^2.1.1",
