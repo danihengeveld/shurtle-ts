@@ -22,11 +22,11 @@ export const rateLimits = {
     limiter: new Ratelimit({
       redis: Redis.fromEnv(),
       prefix: "create",
-      limiter: Ratelimit.slidingWindow(1, "2 m"),
+      limiter: Ratelimit.slidingWindow(3, "5 m"),
       analytics: true,
     }),
     message:
-      "A maximum of 1 requests per 2 minutes is allowed for creating Shurtles.",
+      "A maximum of 3 requests per 5 minutes is allowed for creating Shurtles.",
   },
 };
 
