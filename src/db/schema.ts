@@ -1,4 +1,4 @@
-import { index, varchar, integer, timestamp, pgEnum, pgTableCreator } from "drizzle-orm/pg-core"
+import { index, varchar, integer, timestamp, pgTableCreator } from "drizzle-orm/pg-core"
 
 const pgTable = pgTableCreator((name) => `shurtle_${name}`)
 
