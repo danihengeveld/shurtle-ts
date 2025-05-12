@@ -2,7 +2,7 @@ import { index, varchar, integer, timestamp, pgTableCreator } from "drizzle-orm/
 
 const pgTable = pgTableCreator((name) => `shurtle_${name}`)
 
-export const shurtleShurtles = pgTable("shurtles", {
+export const shurtles = pgTable("shurtles", {
 	slug: varchar("slug", { length: 255 }).primaryKey(),
 	url: varchar("url", { length: 255 }).notNull(),
 	hits: integer("hits").default(0).notNull(),
@@ -12,3 +12,6 @@ export const shurtleShurtles = pgTable("shurtles", {
 }, (table) => [
 	index("creator_id_idx").on(table.creatorId)
 ]);
+
+export const ShurtleSelect = shurtles.$inferSelect;
+export const ShurtleInsert = shurtles.$inferInsert;

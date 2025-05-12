@@ -3,8 +3,12 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Globe, Lock, Zap } from "lucide-react"
 import Link from "next/link"
+import getConfig from 'next/config';
 
 export default function LandingPage() {
+  const { publicRuntimeConfig } = getConfig();
+  const { version } = publicRuntimeConfig;
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -91,7 +95,7 @@ export default function LandingPage() {
                 Become part of the Shurtle community and start shortening your links with ease.
               </p>
               <div className="mx-auto w-full max-w-sm pt-6">
-                <Link href="/login">
+                <Link href="/create">
                   <Button className="w-full">
                     Create Your Account
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -108,6 +112,9 @@ export default function LandingPage() {
             &copy; {new Date().getFullYear()} Dani Hengeveld. All rights reserved.
           </p>
           <div className="flex gap-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Version: {version}
+            </p>
             {/* <Link href="/terms" className="text-sm text-gray-500 hover:underline dark:text-gray-400">
               Terms
             </Link>

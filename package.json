@@ -1,10 +1,17 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "shurtle-ts",
-  "version": "0.1.0",
+  "version": "2.0.0-alpha01",
+  "homepage": "https://shurtle.app",
+  "author": {
+    "name": "Dani Hengeveld",
+    "url": "https://dani.hengeveld.dev"
+  },
   "private": true,
   "packageManager": "pnpm@10.10.0",
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:no-turbo": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
