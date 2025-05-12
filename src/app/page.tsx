@@ -1,8 +1,8 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Zap, Lock, Globe } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { Button } from "@/components/ui/button"
+import { ArrowRight, Globe, Lock, Zap } from "lucide-react"
+import Link from "next/link"
 
 export default function LandingPage() {
   return (
