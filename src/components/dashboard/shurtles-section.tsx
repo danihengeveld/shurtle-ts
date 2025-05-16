@@ -1,7 +1,7 @@
-import { Suspense } from "react"
-import { getPaginatedShurtles } from "@/lib/shurtles"
-import { ShurtlesTable } from "./shurtles-table"
-import { ShurtlesTableSkeleton } from "./shurtles-table-sekelton"
+import { getPaginatedShurtles } from "@/lib/shurtles";
+import { Suspense } from "react";
+import { ShurtlesTable } from "./shurtles-table";
+import { ShurtlesTableSkeleton } from "./shurtles-table-sekelton";
 
 interface ShurtlesSectionProps {
   userId: string

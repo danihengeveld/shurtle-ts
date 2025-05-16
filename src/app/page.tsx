@@ -1,14 +1,9 @@
 import { Logo } from "@/components/logo"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Globe, Lock, Zap } from "lucide-react"
 import Link from "next/link"
-import getConfig from 'next/config';
 
 export default function LandingPage() {
-  const { publicRuntimeConfig } = getConfig();
-  const { version } = publicRuntimeConfig;
-
   return (
     <>
       <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">

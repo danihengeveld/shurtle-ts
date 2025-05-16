@@ -1,14 +1,13 @@
-import { auth } from "@clerk/nextjs/server"
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { ShurtlesSection } from "@/components/dashboard/shurtles-section"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { ShurtlesSection } from "@/components/dashboard/shurtles-section";
 import { StatsSection } from "@/components/dashboard/stats-section";
+import { auth } from "@clerk/nextjs/server";
 
-export default async function DashboardPage(
-  props: {
-    searchParams: Promise<{ page?: string; perPage?: string }>
-  }
-) {
-  const searchParams = await props.searchParams;
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; perPage?: string }>
+}) {
   const { userId } = await auth()
 
   if (!userId) {
@@ -21,7 +20,7 @@ export default async function DashboardPage(
       {/* Stats section - fetches its own data */}
       <StatsSection userId={userId} />
       {/* Shurtles table section - fetches its own data with pagination */}
-      <ShurtlesSection userId={userId} searchParams={searchParams} />
+      <ShurtlesSection userId={userId} searchParams={await searchParams} />
     </div>
   )
 }

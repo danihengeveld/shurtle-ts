@@ -8,7 +8,7 @@ interface DashboardStatsProps {
   }
 }
 
-export function DashboardStats({ stats }: DashboardStatsProps) {
+export function Stats({ stats }: DashboardStatsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
@@ -18,7 +18,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalShurtles}</div>
-          <p className="text-xs text-muted-foreground">URLs you've shortened</p>
+          <p className="text-xs text-muted-foreground">URLs you&apos;ve shortened</p>
         </CardContent>
       </Card>
       <Card>

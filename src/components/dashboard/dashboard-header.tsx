@@ -12,8 +12,8 @@ export function DashboardHeader() {
       <div>
         <Button asChild>
           <Link href="/create">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Shurtle
+            <Plus className="h-4 w-4" />
+            Create
           </Link>
         </Button>
       </div>

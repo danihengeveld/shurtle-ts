@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,13 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Copy, ExternalLink, MoreHorizontal, Search, Trash2 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { formatDistanceToNow } from "date-fns"
-import { Shurtle } from "@/db/schema"
-import { deleteShurtle } from "@/lib/actions"
 import {
   Pagination,
   PaginationContent,
@@ -28,6 +21,13 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Shurtle } from "@/db/schema"
+import { deleteShurtle } from "@/lib/actions"
+import { formatDistanceToNow } from "date-fns"
+import { Copy, ExternalLink, MoreHorizontal, Search, Trash2 } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { useState, useTransition } from "react"
 
 interface ShurtlesTableProps {
   shurtles: Shurtle[]
@@ -41,6 +41,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
   const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
   const pathname = usePathname()
+  const [isPending, startTransition] = useTransition()
 
   const filteredShurtles = shurtles.filter(
     (shurtle) => shurtle.slug.includes(searchQuery) || shurtle.url.includes(searchQuery),
@@ -52,8 +53,12 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
 
   const handleDelete = async (slug: string) => {
     if (confirm("Are you sure you want to delete this shurtle?")) {
-      await deleteShurtle(slug)
-      setShurtles(shurtles.filter((s) => s.slug !== slug))
+      startTransition(async () => {
+        await deleteShurtle(slug)
+
+        // Optimistically update the UI
+        setShurtles(shurtles.filter((s) => s.slug !== slug))
+      })
     }
   }
 
@@ -132,7 +137,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Rows per page:</span>
-          <Select value={perPage.toString()} onValueChange={handlePerPageChange}>
+          <Select value={perPage.toString()} onValueChange={handlePerPageChange} disabled={isPending}>
             <SelectTrigger className="w-[70px]">
               <SelectValue placeholder={perPage.toString()} />
             </SelectTrigger>
@@ -167,7 +172,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
               </TableRow>
             ) : (
               filteredShurtles.map((shurtle) => (
-                <TableRow key={shurtle.slug}>
+                <TableRow key={shurtle.slug} className={isPending ? "opacity-50" : ""}>
                   <TableCell>
                     <div className="font-medium">{shurtle.slug}</div>
                   </TableCell>
@@ -182,7 +187,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" disabled={isPending}>
                           <MoreHorizontal className="h-4 w-4" />
                           <span className="sr-only">Open menu</span>
                         </Button>
@@ -203,6 +208,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
                           onClick={() => handleDelete(shurtle.slug)}
+                          disabled={isPending}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
@@ -225,9 +231,9 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                 href="#"
                 onClick={(e) => {
                   e.preventDefault()
-                  if (currentPage > 1) handlePageChange(currentPage - 1)
+                  if (currentPage > 1 && !isPending) handlePageChange(currentPage - 1)
                 }}
-                className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                className={currentPage <= 1 || isPending ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
 
@@ -242,9 +248,10 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                     href="#"
                     onClick={(e) => {
                       e.preventDefault()
-                      handlePageChange(pageNum)
+                      if (!isPending) handlePageChange(pageNum)
                     }}
                     isActive={pageNum === currentPage}
+                    className={isPending ? "pointer-events-none" : ""}
                   >
                     {pageNum}
                   </PaginationLink>
@@ -257,9 +264,9 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                 href="#"
                 onClick={(e) => {
                   e.preventDefault()
-                  if (currentPage < totalPages) handlePageChange(currentPage + 1)
+                  if (currentPage < totalPages && !isPending) handlePageChange(currentPage + 1)
                 }}
-                className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                className={currentPage >= totalPages || isPending ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
           </PaginationContent>

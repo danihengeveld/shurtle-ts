@@ -1,4 +1,3 @@
-
 import { db } from "@/db"
 import { shurtles } from "@/db/schema"
 import { eq, sql, sum, count } from "drizzle-orm"
