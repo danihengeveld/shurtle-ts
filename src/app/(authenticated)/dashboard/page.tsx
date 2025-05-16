@@ -3,11 +3,12 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { ShurtlesSection } from "@/components/dashboard/shurtles-section"
 import { StatsSection } from "@/components/dashboard/stats-section";
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: { page?: string; perPage?: string }
-}) {
+export default async function DashboardPage(
+  props: {
+    searchParams: Promise<{ page?: string; perPage?: string }>
+  }
+) {
+  const searchParams = await props.searchParams;
   const { userId } = await auth()
 
   if (!userId) {
