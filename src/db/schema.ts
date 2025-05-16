@@ -1,3 +1,4 @@
+import { type InferSelectModel, type InferInsertModel } from "drizzle-orm"
 import { index, varchar, integer, timestamp, pgTableCreator } from "drizzle-orm/pg-core"
 
 const pgTable = pgTableCreator((name) => `shurtle_${name}`)
@@ -13,5 +14,5 @@ export const shurtles = pgTable("shurtles", {
 	index("creator_id_idx").on(table.creatorId)
 ]);
 
-export const ShurtleSelect = shurtles.$inferSelect;
-export const ShurtleInsert = shurtles.$inferInsert;
+export type Shurtle = InferSelectModel<typeof shurtles>
+export type ShurtleInsert = InferInsertModel<typeof shurtles>

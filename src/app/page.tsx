@@ -10,120 +10,87 @@ export default function LandingPage() {
   const { version } = publicRuntimeConfig;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="border-b">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Logo />
-          </Link>
-          <nav className="flex items-center gap-4">
-            <ThemeToggle />
-            <Link href="/create">
-              <Button>Login</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
-      <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col items-center space-y-6 text-center">
-              <div className="flex justify-center mb-4">
-                <Logo size={80} showText={false} />
-              </div>
-              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">Shurtle</h1>
-              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                The open source, blazingly fast URL shortener.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 mt-6">
-                <Link href="/create">
-                  <Button className="px-8">Get Started</Button>
-                </Link>
-                <Link href="https://github.com/danihengeveld/shurtle-ts" target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" className="px-8">
-                    View on GitHub
-                  </Button>
-                </Link>
-              </div>
+    <>
+      <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center space-y-6 text-center">
+            <div className="flex justify-center mb-4">
+              <Logo size={80} showText={false} />
             </div>
-          </div>
-        </section>
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col items-center justify-center space-y-6 text-center">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Features</h2>
-              <p className="mx-auto max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                Shurtle provides everything you need in a modern URL shortener
-              </p>
-              <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8 pt-8 md:grid-cols-2 lg:grid-cols-3">
-                <div className="flex flex-col items-center text-center space-y-4 p-6 rounded-lg border bg-card text-card-foreground shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
-                    <Zap className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold">Blazingly Fast</h3>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Built on Next.js middleware for instant redirects with minimal latency.
-                  </p>
-                </div>
-                <div className="flex flex-col items-center text-center space-y-4 p-6 rounded-lg border bg-card text-card-foreground shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
-                    <Lock className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold">Secure</h3>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Modern authentication and security practices to keep your links safe.
-                  </p>
-                </div>
-                <div className="flex flex-col items-center text-center space-y-4 p-6 rounded-lg border bg-card text-card-foreground shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
-                    <Globe className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold">Open Source</h3>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Fully open source and self-hostable. Contribute to the project on GitHub.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col items-center justify-center space-y-6 text-center">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Get Started Today</h2>
-              <p className="mx-auto max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                Become part of the Shurtle community and start shortening your links with ease.
-              </p>
-              <div className="mx-auto w-full max-w-sm pt-6">
-                <Link href="/create">
-                  <Button className="w-full">
-                    Create Your Account
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-      <footer className="w-full border-t py-6">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center gap-4 md:flex-row md:justify-between">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} Dani Hengeveld. All rights reserved.
-          </p>
-          <div className="flex gap-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Version: {version}
+            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">Shurtle</h1>
+            <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
+              The open source, blazingly fast URL shortener.
             </p>
-            {/* <Link href="/terms" className="text-sm text-gray-500 hover:underline dark:text-gray-400">
-              Terms
-            </Link>
-            <Link href="/privacy" className="text-sm text-gray-500 hover:underline dark:text-gray-400">
-              Privacy
-            </Link> */}
+            <div className="flex flex-wrap justify-center gap-4 mt-6">
+              <Link href="/create">
+                <Button className="px-8">Get Started</Button>
+              </Link>
+              <Link href="https://github.com/danihengeveld/shurtle-ts" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="px-8">
+                  View on GitHub
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </section>
+      <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-center space-y-6 text-center">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Features</h2>
+            <p className="mx-auto max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+              Shurtle provides everything you need in a modern URL shortener
+            </p>
+            <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8 pt-8 md:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col items-center text-center space-y-4 p-6 rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Blazingly Fast</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Built on Next.js middleware for instant redirects with minimal latency.
+                </p>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-4 p-6 rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                  <Lock className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Secure</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Modern authentication and security practices to keep your links safe.
+                </p>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-4 p-6 rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+                  <Globe className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Open Source</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Fully open source and self-hostable. Contribute to the project on GitHub.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="w-full py-12 md:py-24 lg:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-center space-y-6 text-center">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Get Started Today</h2>
+            <p className="mx-auto max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+              Become part of the Shurtle community and start shortening your links with ease.
+            </p>
+            <div className="mx-auto w-full max-w-sm pt-6">
+              <Link href="/create">
+                <Button className="w-full">
+                  Create Your Account
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   )
 }
