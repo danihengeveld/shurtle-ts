@@ -1,14 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getUserStats } from "@/lib/shurtles"
+import { auth } from "@clerk/nextjs/server"
 import { Link, LinkIcon } from "lucide-react"
 
-interface DashboardStatsProps {
-  stats: {
-    totalShurtles: number
-    totalHits: number
-  }
-}
+export async function Stats() {
+  const { userId } = await auth()
 
-export function Stats({ stats }: DashboardStatsProps) {
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
+  const stats = await getUserStats(userId)
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card>

@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   publicRuntimeConfig: {
     version: packageJson.version,
+  },
+  experimental: {
+    ppr: "incremental"
   }
 };
 

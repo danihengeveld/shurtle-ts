@@ -1,24 +1,24 @@
 import { getPaginatedShurtles } from "@/lib/shurtles";
-import { Suspense } from "react";
+import { auth } from "@clerk/nextjs/server";
 import { ShurtlesTable } from "./shurtles-table";
-import { ShurtlesTableSkeleton } from "./shurtles-table-sekelton";
 
 interface ShurtlesSectionProps {
-  userId: string
-  searchParams?: { page?: string; perPage?: string }
+  searchParams?: Promise<{ page?: string; perPage?: string }>
 }
 
-export async function ShurtlesSection({ userId, searchParams = { page: "1", perPage: "10" } }: ShurtlesSectionProps) {
+export async function ShurtlesSection({ searchParams }: ShurtlesSectionProps) {
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error("Unauthorized")
+  }
+
   // Get the pagination parameters from the URL or use defaults
-  const page = Number(searchParams.page) || 1
-  const perPage = Number(searchParams.perPage) || 10
+  const page = Number((await searchParams)?.page) || 1
+  const perPage = Number((await searchParams)?.perPage) || 10
 
   // Fetch the paginated shurtles
   const { shurtles, totalPages } = await getPaginatedShurtles(userId, page, perPage)
 
-  return (
-    <Suspense fallback={<ShurtlesTableSkeleton />}>
-      <ShurtlesTable shurtles={shurtles} currentPage={page} totalPages={totalPages} perPage={perPage} />
-    </Suspense>
-  )
+  return <ShurtlesTable shurtles={shurtles} currentPage={page} totalPages={totalPages} perPage={perPage} />
 }

@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-export function ShurtlesTableSkeleton() {
+export function ShurtlesSectionSkeleton() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

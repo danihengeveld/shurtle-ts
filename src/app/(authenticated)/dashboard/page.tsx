@@ -1,26 +1,26 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { ShurtlesSection } from "@/components/dashboard/shurtles-section";
-import { StatsSection } from "@/components/dashboard/stats-section";
-import { auth } from "@clerk/nextjs/server";
+import { ShurtlesSectionSkeleton } from "@/components/dashboard/shurtles-section-skeleton";
+import { Stats } from "@/components/dashboard/stats";
+import { StatsSkeleton } from "@/components/dashboard/stats-skeleton";
+import { Suspense } from "react";
 
-export default async function DashboardPage({
+export const experimental_ppr = true
+
+export default function DashboardPage({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string; perPage?: string }>
 }) {
-  const { userId } = await auth()
-
-  if (!userId) {
-    throw new Error("Unauthorized")
-  }
-
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <DashboardHeader />
-      {/* Stats section - fetches its own data */}
-      <StatsSection userId={userId} />
-      {/* Shurtles table section - fetches its own data with pagination */}
-      <ShurtlesSection userId={userId} searchParams={await searchParams} />
+      <Suspense fallback={<StatsSkeleton />}>
+        <Stats />
+      </Suspense>
+      <Suspense fallback={<ShurtlesSectionSkeleton />}>
+        <ShurtlesSection searchParams={searchParams} />
+      </Suspense>
     </div>
   )
 }
