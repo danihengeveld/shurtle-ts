@@ -3,7 +3,7 @@ import { shurtles } from "@/db/schema"
 import { eq, sql, sum, count } from "drizzle-orm"
 
 // Separate function to get user stats (won't be refetched during pagination)
-export async function getUserStats(userId: string) {
+export async function getStats(userId: string) {
   const statsResult = await db
     .select({
       totalHits: sum(shurtles.hits),
@@ -24,7 +24,7 @@ export async function getUserStats(userId: string) {
 }
 
 // Function to get paginated shurtles
-export async function getPaginatedShurtles(userId: string, page = 1, perPage = 10) {
+export async function getShurtlesPaginated(userId: string, page = 1, perPage = 10) {
   // Calculate offset
   const offset = (page - 1) * perPage
 

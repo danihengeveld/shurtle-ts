@@ -1,6 +1,4 @@
-import { Plus } from "lucide-react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { CreateShurtleDialog } from "../create/create-shurtle-dialog"
 
 export function DashboardHeader() {
   return (
@@ -10,12 +8,7 @@ export function DashboardHeader() {
         <p className="text-muted-foreground mt-1">Manage and track your shortened URLs</p>
       </div>
       <div>
-        <Button asChild>
-          <Link href="/create">
-            <Plus className="h-4 w-4" />
-            Create
-          </Link>
-        </Button>
+        <CreateShurtleDialog />
       </div>
     </div>
   )

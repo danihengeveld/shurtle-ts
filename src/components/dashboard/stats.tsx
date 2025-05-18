@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getUserStats } from "@/lib/shurtles"
-import { auth } from "@clerk/nextjs/server"
-import { Link, LinkIcon } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getStats } from "@/lib/shurtles";
+import { auth } from "@clerk/nextjs/server";
+import { Link, LinkIcon } from "lucide-react";
+import { unstable_cache as cache } from "next/cache";
 
 export async function Stats() {
   const { userId } = await auth()
@@ -10,7 +11,17 @@ export async function Stats() {
     throw new Error("Unauthorized")
   }
 
-  const stats = await getUserStats(userId)
+  const getStatsCached = cache(
+    async () => {
+      return await getStats(userId)
+    },
+    [userId],
+    {
+      tags: [`user:${userId}`, `stats:${userId}`],
+    }
+  );
+
+  const stats = await getStatsCached()
 
   return (
     <div className="grid gap-4 md:grid-cols-2">

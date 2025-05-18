@@ -1,5 +1,6 @@
-import { getPaginatedShurtles } from "@/lib/shurtles";
+import { getShurtlesPaginated } from "@/lib/shurtles";
 import { auth } from "@clerk/nextjs/server";
+import { unstable_cache as cache } from "next/cache";
 import { ShurtlesTable } from "./shurtles-table";
 
 interface ShurtlesSectionProps {
@@ -18,7 +19,17 @@ export async function ShurtlesSection({ searchParams }: ShurtlesSectionProps) {
   const perPage = Number((await searchParams)?.perPage) || 10
 
   // Fetch the paginated shurtles
-  const { shurtles, totalPages } = await getPaginatedShurtles(userId, page, perPage)
+  const getShurtlesPaginatedCached = cache(
+    async () => {
+      return await getShurtlesPaginated(userId, page, perPage)
+    },
+    [userId, page.toString(), perPage.toString()],
+    {
+      tags: [`user:${userId}`, `shurtles:${userId}`],
+    }
+  );
+
+  const { shurtles, totalPages } = await getShurtlesPaginatedCached()
 
   return <ShurtlesTable shurtles={shurtles} currentPage={page} totalPages={totalPages} perPage={perPage} />
 }
