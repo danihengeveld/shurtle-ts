@@ -11,7 +11,7 @@ export function Navbar() {
           <Link href="/" className="flex items-center">
             <Logo />
           </Link>
-          <nav className="hidden md:flex gap-6">
+          <nav>
             <Link href="/dashboard" className="text-sm font-medium transition-colors hover:text-primary">
               Dashboard
             </Link>
