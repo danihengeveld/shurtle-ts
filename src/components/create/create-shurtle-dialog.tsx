@@ -32,8 +32,8 @@ export function CreateShurtleDialog() {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Shurtle
+          <Plus className="mr-1 h-4 w-4" />
+          Create
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

@@ -1,7 +1,8 @@
-import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { NavbarAuth } from "./navbar-auth"
+import Link from "next/link"
 import { Logo } from "../logo"
+import { Button } from "../ui/button"
+import { NavbarAuth } from "./navbar-auth"
 
 export function Navbar() {
   return (
@@ -12,9 +13,11 @@ export function Navbar() {
             <Logo />
           </Link>
           <nav>
-            <Link href="/dashboard" className="text-sm font-medium transition-colors hover:text-primary">
-              Dashboard
-            </Link>
+            <Button asChild variant="ghost">
+              <Link href="/dashboard">
+                Dashboard
+              </Link>
+            </Button>
           </nav>
         </div>
         <div className="flex items-center gap-4">

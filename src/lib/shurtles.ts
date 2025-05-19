@@ -1,6 +1,6 @@
 import { db } from "@/db"
 import { shurtles } from "@/db/schema"
-import { eq, sql, sum, count } from "drizzle-orm"
+import { count, eq, sql, sum } from "drizzle-orm"
 
 // Separate function to get user stats (won't be refetched during pagination)
 export async function getStats(userId: string) {
@@ -48,4 +48,22 @@ export async function getShurtlesPaginated(userId: string, page = 1, perPage = 1
     totalPages,
     currentPage: page,
   }
+}
+
+// Increment the hit count and return the URL
+const getUrlBySlugPrepared = db
+  .update(shurtles)
+  .set({ hits: sql`${shurtles.hits} + 1` })
+  .where(eq(shurtles.slug, sql.placeholder('slug')))
+  .returning({url: shurtles.url})
+  .prepare('getUrlBySlug')
+
+export async function getUrlBySlug(slug: string) {
+  const shurtle = await getUrlBySlugPrepared.execute({ slug: slug })
+
+  if (shurtle.length === 0) {
+    return null
+  }
+
+  return shurtle[0].url
 }
