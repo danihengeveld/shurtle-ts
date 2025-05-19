@@ -15,14 +15,14 @@ export default function ShurtleNotFound() {
         <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">Shurtle Not Found</h1>
 
         <p className="text-muted-foreground">
-          The shortened URL you're looking for doesn't exist. It might have been removed, expired, or never existed in
+          The shortened URL you&apos;re looking for doesn&apos;t exist. It might have been removed, expired, or never existed in
           the first place.
         </p>
 
         <div className="space-y-2">
           <p className="font-medium">Would you like to claim this short URL?</p>
           <p className="text-sm text-muted-foreground">
-            You can create your own custom short URLs with Shurtle. It's quick, easy, and free to get started.
+            You can create your own custom short URLs with Shurtle. It&apos;s quick, easy, and free to get started.
           </p>
         </div>
 

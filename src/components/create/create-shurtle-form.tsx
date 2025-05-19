@@ -8,7 +8,6 @@ import { createShurtle, type CreateShurtleFormState } from "@/lib/actions"
 import { AlertCircle, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
 import { useActionState, useState } from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
-import { DialogClose } from "../ui/dialog"
 import { SuccessCard } from "./success-card"
 
 const initialState: CreateShurtleFormState = {}
