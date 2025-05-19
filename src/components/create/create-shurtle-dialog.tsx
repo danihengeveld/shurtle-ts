@@ -14,7 +14,7 @@ import { useState } from "react"
 import { CreateShurtleForm } from "./create-shurtle-form"
 
 export function CreateShurtleDialog() {
-  const [open, setOpen] = useState(false)
+  const [open] = useState(false)
 
   // Handle successful shurtle creation
   const handleSuccess = () => { }
@@ -33,7 +33,7 @@ export function CreateShurtleDialog() {
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Shurtle</DialogTitle>
-          <DialogDescription>Paste your long URL below and we'll create a short link for you.</DialogDescription>
+          <DialogDescription>Paste your long URL below and we&apos;ll create a short link for you.</DialogDescription>
         </DialogHeader>
         {/* Use key to force re-render the form when dialog reopens */}
         <CreateShurtleForm onSuccess={handleSuccess} />

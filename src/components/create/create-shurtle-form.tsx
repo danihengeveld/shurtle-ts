@@ -18,7 +18,7 @@ interface CreateShurtleFormProps {
   onCancel?: () => void
 }
 
-export function CreateShurtleForm({ onSuccess, onCancel }: CreateShurtleFormProps) {
+export function CreateShurtleForm({ onCancel }: CreateShurtleFormProps) {
   const [showCustomSlug, setShowCustomSlug] = useState(false)
   const [state, formAction, isPending] = useActionState(createShurtle, initialState)
 
