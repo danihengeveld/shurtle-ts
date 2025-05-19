@@ -10,17 +10,26 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { CreateShurtleForm } from "./create-shurtle-form"
 
 export function CreateShurtleDialog() {
-  const [open] = useState(false)
+  const [open, setOpen] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   // Handle successful shurtle creation
   const handleSuccess = () => { }
 
   // Handle dialog open/close
-  const handleOpenChange = () => { }
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open)
+    if (!open) {
+      // Close the dialog
+      setOpen(false)
+      // Reset the form state when the dialog is closed
+      formRef.current?.reset()
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -36,7 +45,7 @@ export function CreateShurtleDialog() {
           <DialogDescription>Paste your long URL below and we&apos;ll create a short link for you.</DialogDescription>
         </DialogHeader>
         {/* Use key to force re-render the form when dialog reopens */}
-        <CreateShurtleForm onSuccess={handleSuccess} />
+        <CreateShurtleForm ref={formRef} onSuccess={handleSuccess} />
       </DialogContent>
     </Dialog>
   )
