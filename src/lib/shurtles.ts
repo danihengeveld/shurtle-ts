@@ -55,7 +55,7 @@ const getUrlBySlugPrepared = db
   .update(shurtles)
   .set({ hits: sql`${shurtles.hits} + 1` })
   .where(eq(shurtles.slug, sql.placeholder('slug')))
-  .returning({url: shurtles.url})
+  .returning({ url: shurtles.url })
   .prepare('getUrlBySlug')
 
 export async function getUrlBySlug(slug: string) {

@@ -17,7 +17,8 @@ export async function Stats() {
     },
     [userId],
     {
-      tags: [`user:${userId}`, `stats:${userId}`],
+      revalidate: 60,
+      tags: [`user:${userId}`, `stats:${userId}`]
     }
   );
 

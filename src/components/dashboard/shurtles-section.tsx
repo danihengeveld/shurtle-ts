@@ -25,7 +25,8 @@ export async function ShurtlesSection({ searchParams }: ShurtlesSectionProps) {
     },
     [userId, page.toString(), perPage.toString()],
     {
-      tags: [`user:${userId}`, `shurtles:${userId}`],
+      revalidate: 60,
+      tags: [`user:${userId}`, `shurtles:${userId}`]
     }
   );
 
