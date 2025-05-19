@@ -14,12 +14,12 @@ import { SuccessCard } from "./success-card"
 const initialState: CreateShurtleFormState = {}
 
 interface CreateShurtleFormProps {
-  ref?: React.Ref<HTMLFormElement>
   onSuccess?: () => void
   onCancel?: () => void
+  ref?: React.Ref<HTMLFormElement>
 }
 
-export function CreateShurtleForm({ onCancel, ref }: CreateShurtleFormProps) {
+export function CreateShurtleForm({ onCancel, onSuccess, ref }: CreateShurtleFormProps) {
   const [showCustomSlug, setShowCustomSlug] = useState(false)
   const [state, formAction, isPending] = useActionState(createShurtle, initialState)
 

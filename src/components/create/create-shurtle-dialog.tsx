@@ -17,9 +17,6 @@ export function CreateShurtleDialog() {
   const [open, setOpen] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
-  // Handle successful shurtle creation
-  const handleSuccess = () => { }
-
   // Handle dialog open/close
   const handleOpenChange = (open: boolean) => {
     setOpen(open)
@@ -44,8 +41,7 @@ export function CreateShurtleDialog() {
           <DialogTitle>Create New Shurtle</DialogTitle>
           <DialogDescription>Paste your long URL below and we&apos;ll create a short link for you.</DialogDescription>
         </DialogHeader>
-        {/* Use key to force re-render the form when dialog reopens */}
-        <CreateShurtleForm ref={formRef} onSuccess={handleSuccess} />
+        <CreateShurtleForm ref={formRef} />
       </DialogContent>
     </Dialog>
   )
