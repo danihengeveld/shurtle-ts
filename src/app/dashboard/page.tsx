@@ -3,9 +3,15 @@ import { ShurtlesSection } from "@/components/dashboard/shurtles-section";
 import { ShurtlesSectionSkeleton } from "@/components/dashboard/shurtles-section-skeleton";
 import { Stats } from "@/components/dashboard/stats";
 import { StatsSkeleton } from "@/components/dashboard/stats-skeleton";
+import { Metadata } from "next";
 import { Suspense } from "react";
 
 export const experimental_ppr = true
+
+export const metadata: Metadata = {
+  title: "Dashboard | Shurtle",
+  description: "Manage your shurtles.",
+}
 
 export default function DashboardPage({
   searchParams,

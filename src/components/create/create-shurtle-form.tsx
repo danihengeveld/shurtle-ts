@@ -6,26 +6,30 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createShurtle, type CreateShurtleFormState } from "@/lib/actions"
 import { AlertCircle, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
-import { useActionState, useState } from "react"
+import { startTransition, useActionState, useRef, useState } from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
 import { SuccessCard } from "./success-card"
 
 const initialState: CreateShurtleFormState = {}
 
-interface CreateShurtleFormProps {
-  ref?: React.Ref<HTMLFormElement>
-}
-
-export function CreateShurtleForm({ ref }: CreateShurtleFormProps) {
+export function CreateShurtleForm() {
+  const formRef = useRef<HTMLFormElement>(null)
   const [showCustomSlug, setShowCustomSlug] = useState(false)
   const [state, formAction, isPending] = useActionState(createShurtle, initialState)
+
+  function handleSubmit(formData: FormData){
+    formRef.current?.reset()
+    setShowCustomSlug(false)
+
+    startTransition(() => formAction(formData))
+  }
 
   return (
     <div className="max-h-[80vh] overflow-y-auto">
       {state.success ? (
         <SuccessCard data={state.data!} />
       ) : (
-        <form ref={ref} action={formAction} className="space-y-4">
+        <form ref={formRef} action={handleSubmit} className="space-y-4">
           {state.errors?._form && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />

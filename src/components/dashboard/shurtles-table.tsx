@@ -1,5 +1,6 @@
 "use client"
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,6 +27,7 @@ import { Shurtle } from "@/db/schema"
 import { deleteShurtle } from "@/lib/actions"
 import { formatDistanceToNow } from "date-fns"
 import { Copy, ExternalLink, MoreHorizontal, Search, Trash2 } from "lucide-react"
+import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
@@ -37,11 +39,14 @@ interface ShurtlesTableProps {
 }
 
 export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPages, perPage }: ShurtlesTableProps) {
-  const [shurtles, setShurtles] = useState(initialShurtles)
-  const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
   const pathname = usePathname()
+
+  const [shurtles, setShurtles] = useState(initialShurtles)
+  const [searchQuery, setSearchQuery] = useState("")
   const [isPending, startTransition] = useTransition()
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [shurtleSlugToDelete, setShurtleSlugToDelete] = useState<string | null>(null)
 
   const filteredShurtles = shurtles.filter(
     (shurtle) => shurtle.slug.includes(searchQuery) || shurtle.url.includes(searchQuery),
@@ -51,15 +56,17 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
     navigator.clipboard.writeText(`${window.location.origin}/${text}`)
   }
 
-  const handleDelete = async (slug: string) => {
-    if (confirm("Are you sure you want to delete this shurtle?")) {
-      startTransition(async () => {
-        await deleteShurtle(slug)
+  function handleDelete() {
+    if (!shurtleSlugToDelete) return
 
-        // Optimistically update the UI
-        setShurtles(shurtles.filter((s) => s.slug !== slug))
-      })
-    }
+    // Optimistically update the UI
+    setShurtles(shurtles.filter((s) => s.slug !== shurtleSlugToDelete))
+
+    startTransition(async () => {
+      await deleteShurtle(shurtleSlugToDelete)
+    })
+
+    setShurtleSlugToDelete(null)
   }
 
   const handlePageChange = (page: number) => {
@@ -199,16 +206,19 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                           Copy URL
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <a href={`/${shurtle.slug}`} target="_blank" rel="noopener noreferrer">
+                          <Link href={`/${shurtle.slug}`} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="mr-2 h-4 w-4" />
                             Open
-                          </a>
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
-                          onClick={() => handleDelete(shurtle.slug)}
                           disabled={isPending}
+                          onClick={() => {
+                            setConfirmDialogOpen(true)
+                            setShurtleSlugToDelete(shurtle.slug)
+                          }}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
@@ -221,6 +231,21 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
             )}
           </TableBody>
         </Table>
+        <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure you want to delete this shurtle?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. There is no guarantee that the slug will be available again
+                after deletion.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleDelete()}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {totalPages > 1 && (

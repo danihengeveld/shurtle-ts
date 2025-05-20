@@ -53,7 +53,7 @@ export async function getShurtlesPaginated(userId: string, page = 1, perPage = 1
 // Increment the hit count and return the URL
 const getUrlBySlugPrepared = db
   .update(shurtles)
-  .set({ hits: sql`${shurtles.hits} + 1` })
+  .set({ hits: sql`${shurtles.hits} + 1`, lastHitAt: new Date() })
   .where(eq(shurtles.slug, sql.placeholder('slug')))
   .returning({ url: shurtles.url })
   .prepare('getUrlBySlug')
