@@ -132,7 +132,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
@@ -140,10 +140,11 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            disabled={isPending}
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page:</span>
+          <span className="text-sm text-muted-foreground">Rows:</span>
           <Select value={perPage.toString()} onValueChange={handlePerPageChange} disabled={isPending}>
             <SelectTrigger className="w-[70px]">
               <SelectValue placeholder={perPage.toString()} />
@@ -216,8 +217,8 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                           className="text-destructive focus:text-destructive"
                           disabled={isPending}
                           onClick={() => {
-                            setConfirmDialogOpen(true)
                             setShurtleSlugToDelete(shurtle.slug)
+                            setConfirmDialogOpen(true)
                           }}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />

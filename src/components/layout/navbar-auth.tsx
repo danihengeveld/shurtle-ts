@@ -14,7 +14,7 @@ export function NavbarAuth() {
 
   return (
     <Button variant="outline" size="sm" asChild className="hidden md:flex">
-      <Link href="/sign-in">
+      <Link href="/dashboard">
         <LogIn className="mr-2 h-4 w-4" />
         Sign In
       </Link>

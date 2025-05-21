@@ -18,9 +18,6 @@ export function CreateShurtleForm() {
   const [state, formAction, isPending] = useActionState(createShurtle, initialState)
 
   function handleSubmit(formData: FormData){
-    formRef.current?.reset()
-    setShowCustomSlug(false)
-
     startTransition(() => formAction(formData))
   }
 

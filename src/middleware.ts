@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 import { NextResponse } from 'next/server'
 import { getUrlBySlug } from './lib/shurtles'
 
+const isReservedRoute = createRouteMatcher(['/', '/dashboard(.*)', '/shurtle(.*)'])
 const isPublicRoute = createRouteMatcher(['/'])
-const isReservedRoute = createRouteMatcher(['/', '/dashboard'])
 
 export default clerkMiddleware(async (auth, req) => {
   if (isReservedRoute(req)) {

@@ -8,6 +8,10 @@ import { nanoid } from "nanoid"
 import { revalidatePath, revalidateTag } from "next/cache"
 import { z } from "zod"
 
+// Reserved slugs that should not be used
+// These paths are reserved for internal use and should not be used as slugs by users
+const reservedSlugs = ['dashboard', 'shurtle', 'api', '_next', 'sign-in', 'sign-up']
+
 // Schema for create shurtle validation
 const createShurtleSchema = z.object({
   slug: z
@@ -18,6 +22,10 @@ const createShurtleSchema = z.object({
     .refine(
       (val) => val === null || /^[a-zA-Z0-9_-]+$/.test(val),
       "Slug can only contain letters, numbers, underscores, and hyphens",
+    )
+    .refine(
+      (val) => val === null || !reservedSlugs.includes(val),
+      "Slug is reserved for internal use",
     )
     .optional(),
   url: z
