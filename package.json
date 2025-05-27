@@ -1,14 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "shurtle-ts",
-  "version": "1.0.0-alpha02",
+  "version": "1.0.0-alpha03",
   "homepage": "https://shurtle.app",
   "author": {
     "name": "Dani Hengeveld",
     "url": "https://dani.hengeveld.dev"
   },
   "private": true,
-  "packageManager": "pnpm@10.10.0",
+  "packageManager": "pnpm@10.11.0",
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:no-turbo": "next dev",
@@ -26,7 +26,10 @@
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.34.9",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/functions": "^2.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
