@@ -17,7 +17,7 @@ export default function LandingPage() {
               The open source, blazingly fast URL shortener.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-6">
-              <Link href="/dashboard">
+              <Link href="/dashboard" prefetch={false}>
                 <Button className="px-8">Get Started</Button>
               </Link>
               <Link href="https://github.com/danihengeveld/shurtle-ts" target="_blank" rel="noopener noreferrer">
@@ -76,7 +76,7 @@ export default function LandingPage() {
               Become part of the Shurtle community and start shortening your links with ease.
             </p>
             <div className="mx-auto w-full max-w-sm pt-6">
-              <Link href="/dashboard">
+              <Link href="/dashboard" prefetch={false}>
                 <Button className="w-full">
                   Create Your Account
                   <ArrowRight className="ml-2 h-4 w-4" />

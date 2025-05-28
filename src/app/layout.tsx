@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -20,7 +21,25 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Shurtle - Blazingly Fast URL Shortener",
-  description: "The open source, blazingly fast URL shortener.",
+  description: "An open source and blazingly fast URL shortener.",
+  icons: {
+    icon: [
+      {
+        url: "/favicon-96x96.png",
+        sizes: "96x96",
+        type: "image/png"
+      },
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml"
+      }
+    ],
+    apple: {
+      url: "/apple-touch-icon.png",
+      sizes: "180x180",
+    },
+    shortcut: "/favicon.ico",
+  }
 }
 
 export default function RootLayout({
@@ -44,8 +63,9 @@ export default function RootLayout({
             <Footer />
             <Toaster />
           </ThemeProvider>
+          <SpeedInsights />
+          <Analytics />
         </body>
-        <Analytics />
       </html>
     </ClerkProvider >
   );

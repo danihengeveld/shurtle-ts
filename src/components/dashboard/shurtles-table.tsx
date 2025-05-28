@@ -135,6 +135,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
+            id="search-shurtles"
             type="search"
             placeholder="Search"
             className="pl-8"
