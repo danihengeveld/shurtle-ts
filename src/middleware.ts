@@ -31,7 +31,7 @@ export default clerkMiddleware(async (auth, req, ctx) => {
     if (!success) {
       // If the rate limit is exceeded, we should return a 429 response with the appropriate headers.
       return NextResponse.json({
-        error: rateLimits.openShurtle.message,
+        message: rateLimits.openShurtle.limitMessage,
       }, {
         status: 429,
         headers: headers,
@@ -40,6 +40,7 @@ export default clerkMiddleware(async (auth, req, ctx) => {
   }
 
   const slug = req.nextUrl.pathname.split('/').pop()
+
   if (slug && slug.length > 0) {
     const url = await getUrlBySlug(slug)
 
@@ -54,11 +55,12 @@ export default clerkMiddleware(async (auth, req, ctx) => {
 
 function createRateLimitHeaders(req: NextRequest, limit: number, remaining: number, resetUnixTimestampMs: number) {
   const headers = new Headers(req.headers)
+  headers.set('Retry-After', new Date(resetUnixTimestampMs).toUTCString())
   headers.set('RateLimit-Limit', limit.toString())
   headers.set('RateLimit-Remaining', remaining.toString())
 
-  const resetDelta = Math.floor((resetUnixTimestampMs - Date.now()) / 1000)
-  headers.set('RateLimit-Reset', resetDelta.toString())
+  const resetDeltaSeconds = Math.floor((resetUnixTimestampMs - Date.now()) / 1000)
+  headers.set('RateLimit-Reset', resetDeltaSeconds.toString())
 
   return headers;
 }

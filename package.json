@@ -7,6 +7,17 @@
     "name": "Dani Hengeveld",
     "url": "https://dani.hengeveld.dev"
   },
+  "maintainers": [
+    {
+      "name": "danihengeveld",
+      "url": "https://github.com/danihengeveld"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danihengeveld/shurtle-ts"
+  },
+  "license": "MIT",
   "private": true,
   "packageManager": "pnpm@10.11.0",
   "scripts": {
@@ -17,7 +28,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.19.5",
+    "@clerk/nextjs": "^6.20.1",
     "@neondatabase/serverless": "^1.0.0",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-collapsible": "^1.1.11",
@@ -37,19 +48,19 @@
     "drizzle-orm": "^0.43.1",
     "lucide-react": "^0.509.0",
     "nanoid": "^5.1.5",
-    "next": "15.4.0-canary.42",
+    "next": "15.4.0-canary.55",
     "next-themes": "^0.4.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.3.0",
-    "zod": "^3.25.7"
+    "zod": "^3.25.32"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.1.7",
-    "@types/node": "^22.15.20",
-    "@types/react": "^19.1.4",
+    "@types/node": "^22.15.23",
+    "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.27.0",

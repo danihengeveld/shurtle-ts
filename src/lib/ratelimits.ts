@@ -15,7 +15,7 @@ export const rateLimits = {
       enableProtection: true,
       analytics: true
     }),
-    message: "You are opening too many Shurtles. Please wait a minute before trying again."
+    limitMessage: "You are opening too many Shurtles. Please wait a minute before trying again."
   },
   createShurtle: {
     limiter: new Ratelimit({
@@ -25,6 +25,6 @@ export const rateLimits = {
       enableProtection: true,
       analytics: true
     }),
-    message: "You are creating too many Shurtles. Please wait 5 minutes before trying again."
+    limitMessage: "You are creating too many Shurtles. Please wait 5 minutes before trying again."
   }
 }

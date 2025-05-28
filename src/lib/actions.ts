@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { revalidatePath, revalidateTag } from "next/cache"
 import { z } from "zod"
+import { rateLimits } from "./ratelimits"
 
 // Reserved slugs that should not be used
 // These paths are reserved for internal use and should not be used as slugs by users
@@ -61,6 +62,17 @@ export async function createShurtle(
     return {
       errors: {
         _form: ["You must be signed in to create a shurtle"],
+      },
+    }
+  }
+
+  // Check for rate limits
+  const { success } = await rateLimits.createShurtle.limiter.limit(userId)
+
+  if (!success) {
+    return {
+      errors: {
+        _form: [rateLimits.createShurtle.limitMessage],
       },
     }
   }
