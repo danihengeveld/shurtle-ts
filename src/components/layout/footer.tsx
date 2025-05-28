@@ -2,8 +2,8 @@ import getConfig from "next/config";
 import Link from "next/link";
 
 export function Footer() {
-  const { publicRuntimeConfig } = getConfig();
-  const { version } = publicRuntimeConfig;
+  const { publicRuntimeConfig } = getConfig()
+  const { version } = publicRuntimeConfig
 
   return (
     <footer className="w-full border-t py-6">

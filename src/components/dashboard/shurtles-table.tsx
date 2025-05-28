@@ -49,7 +49,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
   const [shurtleSlugToDelete, setShurtleSlugToDelete] = useState<string | null>(null)
 
   const filteredShurtles = shurtles.filter(
-    (shurtle) => shurtle.slug.includes(searchQuery) || shurtle.url.includes(searchQuery),
+    (shurtle) => shurtle.slug.includes(searchQuery) || shurtle.url.includes(searchQuery)
   )
 
   const copyToClipboard = (text: string) => {

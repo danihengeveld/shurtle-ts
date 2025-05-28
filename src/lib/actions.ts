@@ -22,11 +22,11 @@ const createShurtleSchema = z.object({
     .transform((val) => (val === "" ? null : val)) // Transform empty string to null
     .refine(
       (val) => val === null || /^[a-zA-Z0-9_-]+$/.test(val),
-      "Slug can only contain letters, numbers, underscores, and hyphens",
+      "Slug can only contain letters, numbers, underscores, and hyphens"
     )
     .refine(
       (val) => val === null || !reservedSlugs.includes(val),
-      "Slug is reserved for internal use",
+      "Slug is reserved for internal use"
     )
     .optional(),
   url: z
@@ -35,7 +35,7 @@ const createShurtleSchema = z.object({
     .url("Please enter a valid URL")
     .refine(
       (val) => val.startsWith("http://") || val.startsWith("https://"),
-      "URL must start with http:// or https://",
+      "URL must start with http:// or https://"
     ),
 })
 
@@ -61,8 +61,8 @@ export async function createShurtle(
   if (!userId) {
     return {
       errors: {
-        _form: ["You must be signed in to create a shurtle"],
-      },
+        _form: ["You must be signed in to create a shurtle"]
+      }
     }
   }
 
@@ -72,8 +72,8 @@ export async function createShurtle(
   if (!success) {
     return {
       errors: {
-        _form: [rateLimits.createShurtle.limitMessage],
-      },
+        _form: [rateLimits.createShurtle.limitMessage]
+      }
     }
   }
 
@@ -89,7 +89,7 @@ export async function createShurtle(
 
   if (!validationResult.success) {
     return {
-      errors: validationResult.error.flatten().fieldErrors,
+      errors: validationResult.error.flatten().fieldErrors
     }
   }
 
@@ -107,8 +107,8 @@ export async function createShurtle(
     if (existingShurtle.length > 0) {
       return {
         errors: {
-          slug: ["This slug is already taken. Please choose another one."],
-        },
+          slug: ["This slug is already taken. Please choose another one."]
+        }
       }
     }
 
@@ -122,8 +122,8 @@ export async function createShurtle(
     if (existingUrlShurtle.length > 0) {
       return {
         errors: {
-          url: ["You already have a shurtle with this URL."],
-        },
+          url: ["You already have a shurtle with this URL."]
+        }
       }
     }
 
@@ -142,15 +142,15 @@ export async function createShurtle(
       success: true,
       data: {
         slug: finalSlug,
-        url,
-      },
+        url
+      }
     }
   } catch (error) {
     console.error("Error creating shurtle:", error)
     return {
       errors: {
-        _form: ["An error occurred while creating the shurtle. Please try again."],
-      },
+        _form: ["An error occurred while creating the shurtle. Please try again."]
+      }
     }
   }
 }

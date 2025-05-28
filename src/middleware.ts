@@ -1,8 +1,8 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { ipAddress } from '@vercel/functions';
-import { NextRequest, NextResponse } from 'next/server';
-import { rateLimits } from './lib/ratelimits';
-import { getUrlBySlug } from './lib/shurtles';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { ipAddress } from '@vercel/functions'
+import { NextRequest, NextResponse } from 'next/server'
+import { rateLimits } from './lib/ratelimits'
+import { getUrlBySlug } from './lib/shurtles'
 
 const isReservedRoute = createRouteMatcher(['/', '/dashboard(.*)', '/shurtle(.*)', '/not-found', '/api/(.*)'])
 const isPublicRoute = createRouteMatcher(['/', '/not-found', '/api/(.*)'])
@@ -12,15 +12,15 @@ export default clerkMiddleware(async (auth, req, ctx) => {
     if (!isPublicRoute(req)) {
       await auth.protect()
     }
-    return;
+    return
   }
 
   //If not a reserved route, we should try to match the slug and redirect.
 
   // Check for rate limits first
-  const ip = ipAddress(req) || '127.0.0.1'; // Fallback to localhost if IP is not available
+  const ip = ipAddress(req) || '127.0.0.1' // Fallback to localhost if IP is not available
 
-  let headers: Headers | undefined = undefined;
+  let headers: Headers | undefined = undefined
 
   if (ip) {
     const { success, limit, remaining, reset, pending } = await rateLimits.openShurtle.limiter.limit(ip)
@@ -31,11 +31,11 @@ export default clerkMiddleware(async (auth, req, ctx) => {
     if (!success) {
       // If the rate limit is exceeded, we should return a 429 response with the appropriate headers.
       return NextResponse.json({
-        message: rateLimits.openShurtle.limitMessage,
+        message: rateLimits.openShurtle.limitMessage
       }, {
         status: 429,
-        headers: headers,
-      });
+        headers: headers
+      })
     }
   }
 
@@ -62,7 +62,7 @@ function createRateLimitHeaders(req: NextRequest, limit: number, remaining: numb
   const resetDeltaSeconds = Math.floor((resetUnixTimestampMs - Date.now()) / 1000)
   headers.set('RateLimit-Reset', resetDeltaSeconds.toString())
 
-  return headers;
+  return headers
 }
 
 export const config = {
@@ -70,6 +70,6 @@ export const config = {
     // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for API routes
-    '/(api|trpc)(.*)',
-  ],
+    '/(api|trpc)(.*)'
+  ]
 }
