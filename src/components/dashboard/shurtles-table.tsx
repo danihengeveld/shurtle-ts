@@ -70,11 +70,11 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
   }
 
   const handlePageChange = (page: number) => {
-    router.push(`${pathname}?page=${page}&perPage=${perPage}`)
+    router.replace(`${pathname}?page=${page}&perPage=${perPage}`)
   }
 
   const handlePerPageChange = (value: string) => {
-    router.push(`${pathname}?page=1&perPage=${value}`)
+    router.replace(`${pathname}?page=1&perPage=${value}`)
   }
 
   // Generate page numbers to display

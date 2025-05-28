@@ -17,7 +17,7 @@ export function CreateShurtleForm() {
   const [showCustomSlug, setShowCustomSlug] = useState(false)
   const [state, formAction, isPending] = useActionState(createShurtle, initialState)
 
-  function handleSubmit(formData: FormData){
+  function handleSubmit(formData: FormData) {
     startTransition(() => formAction(formData))
   }
 
@@ -36,12 +36,11 @@ export function CreateShurtleForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="url">
+            <Label htmlFor="url-input">
               URL to shorten <span className="text-destructive">*</span>
             </Label>
             <Input
-              id="url"
-              name="url"
+              id="url-input"
               type="url"
               placeholder="https://example.com/very/long/url/that/needs/shortening"
               required
@@ -58,6 +57,7 @@ export function CreateShurtleForm() {
           <Collapsible open={showCustomSlug} onOpenChange={setShowCustomSlug}>
             <CollapsibleTrigger asChild>
               <Button
+                id="toggle-custom-slug"
                 type="button"
                 variant="outline"
                 size="sm"
@@ -77,10 +77,9 @@ export function CreateShurtleForm() {
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-4">
               <div className="space-y-2">
-                <Label htmlFor="slug">Custom slug</Label>
+                <Label htmlFor="custom-slug-input">Custom slug</Label>
                 <Input
-                  id="slug"
-                  name="slug"
+                  id="custom-slug-input"
                   placeholder="my-custom-slug"
                   aria-invalid={!!state.errors?.slug}
                   aria-describedby={state.errors?.slug ? "slug-error" : undefined}
@@ -99,7 +98,7 @@ export function CreateShurtleForm() {
           </Collapsible>
 
           <div className="flex justify-end pt-4">
-            <Button type="submit" disabled={isPending}>
+            <Button id="create-shurtle-btn" type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Shurtle
             </Button>

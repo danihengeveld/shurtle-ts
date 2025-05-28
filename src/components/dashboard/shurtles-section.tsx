@@ -32,5 +32,10 @@ export async function ShurtlesSection({ searchParams }: ShurtlesSectionProps) {
 
   const { shurtles, totalPages } = await getShurtlesPaginatedCached()
 
-  return <ShurtlesTable shurtles={shurtles} currentPage={page} totalPages={totalPages} perPage={perPage} />
+  return <ShurtlesTable
+    key={`shurtles-table-${page}-${perPage}`}
+    shurtles={shurtles}
+    currentPage={page}
+    totalPages={totalPages}
+    perPage={perPage} />
 }
