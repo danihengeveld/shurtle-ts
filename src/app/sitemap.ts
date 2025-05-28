@@ -13,6 +13,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
+    },
+    {
+      url: 'https://shurtle.app/not-found',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0,
     }
   ]
 }
