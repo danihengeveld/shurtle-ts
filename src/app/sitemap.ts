@@ -12,13 +12,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: 'https://shurtle.app/dashboard',
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.8,
+      priority: 0,
     },
     {
       url: 'https://shurtle.app/not-found',
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0,
+      priority: 0.1,
     }
   ]
 }
