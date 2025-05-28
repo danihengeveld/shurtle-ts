@@ -12,7 +12,7 @@ export function Logo({ className, size = 40, showText = true }: LogoProps) {
     <div className={cn("flex items-center gap-2", className)}>
       <div className="relative" style={{ width: size, height: size }}>
         <Image
-          src={"/images/turtle-white.svg"}
+          src={"/images/shurtle-logo-light.png"}
           alt="Shurtle Logo"
           width={size}
           height={size}
@@ -21,7 +21,7 @@ export function Logo({ className, size = 40, showText = true }: LogoProps) {
 
         />
         <Image
-          src={"/images/turtle-black.svg"}
+          src={"/images/shurtle-logo-dark.png"}
           alt="Shurtle Logo"
           width={size}
           height={size}

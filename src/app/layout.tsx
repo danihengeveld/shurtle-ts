@@ -20,7 +20,25 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Shurtle - Blazingly Fast URL Shortener",
-  description: "The open source, blazingly fast URL shortener.",
+  description: "An open source and blazingly fast URL shortener.",
+  icons: {
+    icon: [
+      {
+        url: "/favicon-96x96.png",
+        sizes: "96x96",
+        type: "image/png"
+      },
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml"
+      }
+    ],
+    apple: {
+      url: "/apple-touch-icon.png",
+      sizes: "180x180",
+    },
+    shortcut: "/favicon.ico",
+  }
 }
 
 export default function RootLayout({
