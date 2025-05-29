@@ -73,7 +73,7 @@ This project is currently deployed using free tiers of various services:
 - **Upstash Redis** - Free Redis tier (limited storage and requests)
 - **Clerk** - Free authentication tier (limited monthly active users)
 
-This means the live demo may have usage limitations or occasional downtime. For production use, consider upgrading to paid tiers for better performance and reliability.
+This means the live demo may have usage limitations or occasional downtime.
 
 ## 🏃‍♂️ Running Locally
 
