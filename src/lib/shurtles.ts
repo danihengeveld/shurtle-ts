@@ -6,7 +6,7 @@ import { count, eq, sql, sum } from "drizzle-orm"
 const userStatsPrepared = db.select({
   totalHits: sum(shurtles.hits),
   totalShurtles: count(),
-}).from(shurtles).where(eq(shurtles.creatorId, sql.placeholder('userId'))).prepare('userStats')
+}).from(shurtles).where(eq(shurtles.userId, sql.placeholder('userId'))).prepare('userStats')
 
 
 export async function getStats(userId: string) {
@@ -26,7 +26,7 @@ export async function getStats(userId: string) {
 }
 
 const paginatedUserShurtlesPrepared = db.query.shurtles.findMany({
-  where: (shurtles, { eq }) => eq(shurtles.creatorId, sql.placeholder('userId')),
+  where: (shurtles, { eq }) => eq(shurtles.userId, sql.placeholder('userId')),
   orderBy: (shurtles, { desc }) => desc(shurtles.createdAt),
   limit: sql.placeholder('perPage'),
   offset: sql.placeholder('offset'),
@@ -42,7 +42,7 @@ export async function getShurtlesPaginated(userId: string, page = 1, perPage = 1
     offset: offset,
   });
 
-  const totalUserShurtles = await db.$count(shurtles, eq(shurtles.creatorId, userId));
+  const totalUserShurtles = await db.$count(shurtles, eq(shurtles.userId, userId));
   const totalPages = Math.ceil(totalUserShurtles / perPage)
 
   return {
@@ -75,6 +75,7 @@ export async function recordHit(slug: string, requestGeo: Geo) {
     await tx.insert(shurtleHits).values({
       slug: slug,
       country: requestGeo.country,
+      region: requestGeo.region,
       city: requestGeo.city,
       coordinates: coordinates
     })

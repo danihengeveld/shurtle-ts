@@ -7,11 +7,11 @@ export const shurtles = schema.table("shurtles", {
 	slug: varchar("slug", { length: 255 }).primaryKey(),
 	url: varchar("url", { length: 255 }).notNull(),
 	hits: integer("hits").default(0).notNull(),
-	creatorId: varchar("creator_id", { length: 255 }).notNull(),
+	userId: varchar("user_id", { length: 255 }).notNull(),
 	lastHitAt: timestamp("last_hit_at", { withTimezone: true, mode: 'date', precision: 0 }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date', precision: 0 }).defaultNow().notNull()
 }, (table) => [
-	index("creator_id_idx").on(table.creatorId)
+	index("user_id_idx").on(table.userId)
 ])
 
 export const shurtlesRelations = relations(shurtles, ({ many }) => ({
@@ -23,6 +23,7 @@ export const shurtleHits = schema.table("hits", {
 	slug: varchar("slug", { length: 255 }).notNull().references(() => shurtles.slug, { onDelete: 'cascade' }),
 	at: timestamp("at", { withTimezone: true, mode: 'date', precision: 0 }).defaultNow().notNull(),
 	country: varchar("country", { length: 255 }),
+	region: varchar("region", { length: 255 }),
 	city: varchar("city", { length: 255 }),
 	coordinates: point("coordinates", { mode: 'xy' })
 }, (table) => [

@@ -53,12 +53,12 @@ export type CreateShurtleFormState = {
 }
 
 const existingShurtlePrepared = db.query.shurtles.findFirst({
-  where: (shurtles, { eq, and }) => and(eq(shurtles.slug, sql.placeholder('slug')), eq(shurtles.creatorId, sql.placeholder('userId'))),
+  where: (shurtles, { eq, and }) => and(eq(shurtles.slug, sql.placeholder('slug')), eq(shurtles.userId, sql.placeholder('userId'))),
   columns: { slug: true }
 }).prepare('existingShurtle')
 
 const existingUrlShurtlePrepared = db.query.shurtles.findFirst({
-  where: (shurtles, { eq, and }) => and(eq(shurtles.url, sql.placeholder('url')), eq(shurtles.creatorId, sql.placeholder('userId'))),
+  where: (shurtles, { eq, and }) => and(eq(shurtles.url, sql.placeholder('url')), eq(shurtles.userId, sql.placeholder('userId'))),
   columns: { slug: true }
 }).prepare('existingUrlShurtle')
 
@@ -136,8 +136,8 @@ export async function createShurtle(
     // Create the shurtle
     await db.insert(shurtles).values({
       slug: finalSlug,
-      url,
-      creatorId: userId
+      url: url,
+      userId: userId
     })
 
     // Revalidate cache
@@ -168,7 +168,7 @@ export async function deleteShurtle(slug: string) {
     throw new Error("Unauthorized")
   }
 
-  await db.delete(shurtles).where(and(eq(shurtles.slug, slug), eq(shurtles.creatorId, userId)))
+  await db.delete(shurtles).where(and(eq(shurtles.slug, slug), eq(shurtles.userId, userId)))
 
   revalidateTag(`user:${userId}`)
   revalidatePath('/dashboard')
