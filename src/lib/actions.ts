@@ -6,12 +6,15 @@ import { auth } from "@clerk/nextjs/server"
 import { and, eq, sql } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { revalidatePath, revalidateTag } from "next/cache"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { rateLimits } from "./ratelimits"
 
 // Reserved slugs that should not be used
 // These paths are reserved for internal use and should not be used as slugs by users
 const reservedSlugs = ['dashboard', 'shurtle', 'api', '_next', 'sign-in', 'sign-up']
+
+// Reserved URLs that should not be used
+const reservedUrls = ['localhost', 'shurtle.app', 'www.shurtle.app']
 
 // Schema for create shurtle validation
 const createShurtleSchema = z.object({
@@ -30,12 +33,14 @@ const createShurtleSchema = z.object({
     )
     .optional(),
   url: z
-    .string()
-    .trim()
-    .url("Please enter a valid URL")
+    .url({
+      protocol: /^https?$/,
+      hostname: z.regexes.domain,
+      error: "Invalid URL format. Must be a valid HTTP or HTTPS URL like https://example.com"
+    })
     .refine(
-      (val) => val.startsWith("http://") || val.startsWith("https://"),
-      "URL must start with http:// or https://"
+      (val) => reservedUrls.includes(val.split('://')[1]),
+      "URL cannot point to Shurtle's own domain or localhost"
     ),
 })
 
