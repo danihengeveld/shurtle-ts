@@ -30,6 +30,7 @@ import { Copy, ExternalLink, MoreHorizontal, Search, Trash2 } from "lucide-react
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
+import { toast } from "sonner"
 
 interface ShurtlesTableProps {
   shurtles: Shurtle[]
@@ -52,8 +53,11 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
     (shurtle) => shurtle.slug.includes(searchQuery) || shurtle.url.includes(searchQuery)
   )
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/${text}`)
+  const copyToClipboard = (slug: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/${slug}`)
+    toast.success("Copied to clipboard", {
+      description: "The shortened URL has been copied to your clipboard.",
+    })
   }
 
   function handleDelete() {
@@ -67,6 +71,11 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
     })
 
     setShurtleSlugToDelete(null)
+    setConfirmDialogOpen(false)
+
+    toast.info("Shurtle deleted successfully", {
+      description: "The shurtle has been deleted and will no longer be accessible."
+    })
   }
 
   const handlePageChange = (page: number) => {

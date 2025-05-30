@@ -20,7 +20,7 @@ export function SuccessCard({ data, onCreateAnother }: SuccessCardProps) {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shortUrl)
-    toast.message("Copied to clipboard", {
+    toast.success("Copied to clipboard", {
       description: "The shortened URL has been copied to your clipboard.",
     })
   }

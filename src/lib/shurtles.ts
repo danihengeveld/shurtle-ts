@@ -53,7 +53,13 @@ export async function getShurtlesPaginated(userId: string, page = 1, perPage = 1
 }
 
 const getUrlBySlugPrepared = db.query.shurtles.findFirst({
-  where: (shurtles, { eq }) => eq(shurtles.slug, sql.placeholder('slug')),
+  where: (shurtles, { eq, and, gt, or, isNull }) => and(
+    eq(shurtles.slug, sql.placeholder('slug')),
+    or(
+      isNull(shurtles.expiresAt),
+      gt(shurtles.expiresAt, sql`NOW()`)
+    )
+  ),
   columns: {
     url: true
   }
