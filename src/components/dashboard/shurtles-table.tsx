@@ -132,7 +132,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative flex-1 max-w-3xs">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             id="search-shurtles"

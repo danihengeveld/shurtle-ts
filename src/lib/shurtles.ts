@@ -27,20 +27,15 @@ export async function getShurtlesPaginated(userId: string, page = 1, perPage = 1
   // Calculate offset
   const offset = (page - 1) * perPage
 
-  const [paginatedUserShurtles, totalUserShurtles] = await db.batch([
-    db.select()
-      .from(shurtles)
-      .where(eq(shurtles.creatorId, userId))
-      .orderBy(sql`${shurtles.createdAt} DESC`)
-      .limit(perPage)
-      .offset(offset),
-    db.select({ count: count() })
-      .from(shurtles)
-      .where(eq(shurtles.creatorId, userId))
-  ]);
+  const paginatedUserShurtles = await db.select()
+    .from(shurtles)
+    .where(eq(shurtles.creatorId, userId))
+    .orderBy(sql`${shurtles.createdAt} DESC`)
+    .limit(perPage)
+    .offset(offset);
 
-  const total = totalUserShurtles[0].count
-  const totalPages = Math.ceil(total / perPage)
+  const totalUserShurtles = await db.$count(shurtles, eq(shurtles.creatorId, userId));
+  const totalPages = Math.ceil(totalUserShurtles / perPage)
 
   return {
     shurtles: paginatedUserShurtles,
@@ -56,8 +51,6 @@ const getUrlBySlugPrepared = db.query.shurtles.findFirst({
   },
 }).prepare('getUrlBySlug')
 
-db.transaction(async (tx) => { })
-
 export async function getUrlBySlug(slug: string, requestGeo: Geo) {
   const shurtle = await getUrlBySlugPrepared.execute({ slug: slug })
 
@@ -65,12 +58,12 @@ export async function getUrlBySlug(slug: string, requestGeo: Geo) {
     return null
   }
 
-  const coordinates = requestGeo.latitude && requestGeo.longitude
+  // We use waitUntil to ensure the hit is recorded even if the response is sent immediately
+  waitUntil(db.transaction(async (tx) => {
+    const coordinates = requestGeo.latitude && requestGeo.longitude
     ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
     : null
 
-  // We use waitUntil to ensure the hit is recorded even if the response is sent immediately
-  waitUntil(db.transaction(async (tx) => {
     // Insert the hit record
     await tx.insert(shurtleHits).values({
       slug: slug,
@@ -78,6 +71,7 @@ export async function getUrlBySlug(slug: string, requestGeo: Geo) {
       city: requestGeo.city,
       coordinates: coordinates
     })
+
     // Update the shurtle's hits and lastHitAt
     await tx.update(shurtles)
       .set({
