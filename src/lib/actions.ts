@@ -146,7 +146,7 @@ export async function createShurtle(
       }
     }
   } catch (error) {
-    console.error("Error creating shurtle:", error)
+    console.error("Error creating Shurtle:", error)
     return {
       errors: {
         _form: ["An error occurred while creating the shurtle. Please try again."]

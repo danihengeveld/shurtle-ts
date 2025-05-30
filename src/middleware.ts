@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { ipAddress } from '@vercel/functions'
+import { geolocation, ipAddress } from '@vercel/functions'
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimits } from './lib/ratelimits'
 import { getUrlBySlug } from './lib/shurtles'
@@ -42,7 +42,8 @@ export default clerkMiddleware(async (auth, req, ctx) => {
   const slug = req.nextUrl.pathname.split('/').pop()
 
   if (slug && slug.length > 0) {
-    const url = await getUrlBySlug(slug)
+    const requestGeo = geolocation(req)
+    const url = await getUrlBySlug(slug, requestGeo)
 
     if (url) {
       return NextResponse.redirect(url, { headers: headers })

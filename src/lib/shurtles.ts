@@ -1,8 +1,8 @@
 import { db } from "@/db"
-import { shurtles } from "@/db/schema"
+import { shurtleHits, shurtles } from "@/db/schema"
+import { Geo, waitUntil } from "@vercel/functions"
 import { count, eq, sql, sum } from "drizzle-orm"
 
-// Separate function to get user stats (won't be refetched during pagination)
 export async function getStats(userId: string) {
   const statsResult = await db
     .select({
@@ -23,47 +23,71 @@ export async function getStats(userId: string) {
   return stats
 }
 
-// Function to get paginated shurtles
 export async function getShurtlesPaginated(userId: string, page = 1, perPage = 10) {
   // Calculate offset
   const offset = (page - 1) * perPage
 
-  // Get paginated shurtles
-  const userShurtles = await db
-    .select()
-    .from(shurtles)
-    .where(eq(shurtles.creatorId, userId))
-    .orderBy(sql`${shurtles.createdAt} DESC`)
-    .limit(perPage)
-    .offset(offset)
+  const [paginatedUserShurtles, totalUserShurtles] = await db.batch([
+    db.select()
+      .from(shurtles)
+      .where(eq(shurtles.creatorId, userId))
+      .orderBy(sql`${shurtles.createdAt} DESC`)
+      .limit(perPage)
+      .offset(offset),
+    db.select({ count: count() })
+      .from(shurtles)
+      .where(eq(shurtles.creatorId, userId))
+  ]);
 
-  // Get total count for pagination
-  const countResult = await db.select({ count: count() }).from(shurtles).where(eq(shurtles.creatorId, userId))
-
-  const total = countResult[0]?.count || 0
+  const total = totalUserShurtles[0].count
   const totalPages = Math.ceil(total / perPage)
 
   return {
-    shurtles: userShurtles,
+    shurtles: paginatedUserShurtles,
     totalPages,
     currentPage: page,
   }
 }
 
-// Increment the hit count and return the URL
-const getUrlBySlugPrepared = db
-  .update(shurtles)
-  .set({ hits: sql`${shurtles.hits} + 1`, lastHitAt: new Date() })
-  .where(eq(shurtles.slug, sql.placeholder('slug')))
-  .returning({ url: shurtles.url })
-  .prepare('getUrlBySlug')
+const getUrlBySlugPrepared = db.query.shurtles.findFirst({
+  where: (shurtles, { eq }) => eq(shurtles.slug, sql.placeholder('slug')),
+  columns: {
+    url: true
+  },
+}).prepare('getUrlBySlug')
 
-export async function getUrlBySlug(slug: string) {
+db.transaction(async (tx) => { })
+
+export async function getUrlBySlug(slug: string, requestGeo: Geo) {
   const shurtle = await getUrlBySlugPrepared.execute({ slug: slug })
 
-  if (shurtle.length === 0) {
+  if (!shurtle) {
     return null
   }
 
-  return shurtle[0].url
+  const coordinates = requestGeo.latitude && requestGeo.longitude
+    ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
+    : null
+
+  // We use waitUntil to ensure the hit is recorded even if the response is sent immediately
+  waitUntil(db.transaction(async (tx) => {
+    // Insert the hit record
+    await tx.insert(shurtleHits).values({
+      slug: slug,
+      country: requestGeo.country,
+      city: requestGeo.city,
+      coordinates: coordinates
+    })
+    // Update the shurtle's hits and lastHitAt
+    await tx.update(shurtles)
+      .set({
+        hits: sql`${shurtles.hits} + 1`,
+        lastHitAt: sql`NOW()`
+      })
+      .where(eq(shurtles.slug, slug))
+  }))
+
+  return shurtle.url
 }
+
+
