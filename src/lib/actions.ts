@@ -3,7 +3,7 @@
 import { db } from "@/db"
 import { shurtles } from "@/db/schema"
 import { auth } from "@clerk/nextjs/server"
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { revalidatePath, revalidateTag } from "next/cache"
 import { z } from "zod"
@@ -22,11 +22,11 @@ const createShurtleSchema = z.object({
     .transform((val) => (val === "" ? null : val)) // Transform empty string to null
     .refine(
       (val) => val === null || /^[a-zA-Z0-9_-]+$/.test(val),
-      "Slug can only contain letters, numbers, underscores, and hyphens",
+      "Slug can only contain letters, numbers, underscores, and hyphens"
     )
     .refine(
       (val) => val === null || !reservedSlugs.includes(val),
-      "Slug is reserved for internal use",
+      "Slug is reserved for internal use"
     )
     .optional(),
   url: z
@@ -35,7 +35,7 @@ const createShurtleSchema = z.object({
     .url("Please enter a valid URL")
     .refine(
       (val) => val.startsWith("http://") || val.startsWith("https://"),
-      "URL must start with http:// or https://",
+      "URL must start with http:// or https://"
     ),
 })
 
@@ -52,6 +52,16 @@ export type CreateShurtleFormState = {
   }
 }
 
+const existingShurtlePrepared = db.query.shurtles.findFirst({
+  where: (shurtles, { eq, and }) => and(eq(shurtles.slug, sql.placeholder('slug')), eq(shurtles.userId, sql.placeholder('userId'))),
+  columns: { slug: true }
+}).prepare('existingShurtle')
+
+const existingUrlShurtlePrepared = db.query.shurtles.findFirst({
+  where: (shurtles, { eq, and }) => and(eq(shurtles.url, sql.placeholder('url')), eq(shurtles.userId, sql.placeholder('userId'))),
+  columns: { slug: true }
+}).prepare('existingUrlShurtle')
+
 export async function createShurtle(
   prevState: CreateShurtleFormState,
   formData: FormData,
@@ -61,8 +71,8 @@ export async function createShurtle(
   if (!userId) {
     return {
       errors: {
-        _form: ["You must be signed in to create a shurtle"],
-      },
+        _form: ["You must be signed in to create a shurtle"]
+      }
     }
   }
 
@@ -72,8 +82,8 @@ export async function createShurtle(
   if (!success) {
     return {
       errors: {
-        _form: [rateLimits.createShurtle.limitMessage],
-      },
+        _form: [rateLimits.createShurtle.limitMessage]
+      }
     }
   }
 
@@ -89,7 +99,7 @@ export async function createShurtle(
 
   if (!validationResult.success) {
     return {
-      errors: validationResult.error.flatten().fieldErrors,
+      errors: validationResult.error.flatten().fieldErrors
     }
   }
 
@@ -97,41 +107,37 @@ export async function createShurtle(
     // Generate a slug if not provided
     const finalSlug = slug || nanoid(6)
 
-    // Check if slug already exists
-    const existingShurtle = await db
-      .select({ slug: shurtles.slug })
-      .from(shurtles)
-      .where(eq(shurtles.slug, finalSlug))
-      .limit(1)
+    const existingShurtle = await existingShurtlePrepared.execute({
+      slug: finalSlug,
+      userId: userId
+    })
 
-    if (existingShurtle.length > 0) {
+    if (existingShurtle) {
       return {
         errors: {
-          slug: ["This slug is already taken. Please choose another one."],
-        },
+          slug: ["This slug is already taken. Please choose another one."]
+        }
       }
     }
 
-    // Check if user has already created a shurtle with the same URL
-    const existingUrlShurtle = await db
-      .select({ slug: shurtles.slug })
-      .from(shurtles)
-      .where(and(eq(shurtles.url, url), eq(shurtles.creatorId, userId)))
-      .limit(1)
+    const existingUrlShurtle = await existingUrlShurtlePrepared.execute({
+      url: url,
+      userId: userId
+    })
 
-    if (existingUrlShurtle.length > 0) {
+    if (existingUrlShurtle) {
       return {
         errors: {
-          url: ["You already have a shurtle with this URL."],
-        },
+          url: ["You already have a shurtle with this URL."]
+        }
       }
     }
 
     // Create the shurtle
     await db.insert(shurtles).values({
       slug: finalSlug,
-      url,
-      creatorId: userId
+      url: url,
+      userId: userId
     })
 
     // Revalidate cache
@@ -142,15 +148,15 @@ export async function createShurtle(
       success: true,
       data: {
         slug: finalSlug,
-        url,
-      },
+        url
+      }
     }
   } catch (error) {
-    console.error("Error creating shurtle:", error)
+    console.error("Error creating Shurtle:", error)
     return {
       errors: {
-        _form: ["An error occurred while creating the shurtle. Please try again."],
-      },
+        _form: ["An error occurred while creating the shurtle. Please try again."]
+      }
     }
   }
 }
@@ -162,7 +168,7 @@ export async function deleteShurtle(slug: string) {
     throw new Error("Unauthorized")
   }
 
-  await db.delete(shurtles).where(and(eq(shurtles.slug, slug), eq(shurtles.creatorId, userId)))
+  await db.delete(shurtles).where(and(eq(shurtles.slug, slug), eq(shurtles.userId, userId)))
 
   revalidateTag(`user:${userId}`)
   revalidatePath('/dashboard')

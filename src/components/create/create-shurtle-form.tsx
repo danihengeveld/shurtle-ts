@@ -41,9 +41,11 @@ export function CreateShurtleForm() {
             </Label>
             <Input
               id="url-input"
+              name="url"
               type="url"
               placeholder="https://example.com/very/long/url/that/needs/shortening"
               required
+              autoFocus
               aria-invalid={!!state.errors?.url}
               aria-describedby={state.errors?.url ? "url-error" : undefined}
             />
@@ -80,6 +82,7 @@ export function CreateShurtleForm() {
                 <Label htmlFor="custom-slug-input">Custom slug</Label>
                 <Input
                   id="custom-slug-input"
+                  name="slug"
                   placeholder="my-custom-slug"
                   aria-invalid={!!state.errors?.slug}
                   aria-describedby={state.errors?.slug ? "slug-error" : undefined}

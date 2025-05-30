@@ -11,5 +11,5 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.POSTGRES_URL!,
   },
-  tablesFilter: ["shurtle_*"]
+  schemaFilter: ["shurtle"]
 });

@@ -1,20 +1,22 @@
 import { db } from "@/db"
-import { shurtles } from "@/db/schema"
+import { shurtleHits, shurtles } from "@/db/schema"
+import { Geo } from "@vercel/functions"
 import { count, eq, sql, sum } from "drizzle-orm"
 
-// Separate function to get user stats (won't be refetched during pagination)
+const userStatsPrepared = db.select({
+  totalHits: sum(shurtles.hits),
+  totalShurtles: count(),
+}).from(shurtles).where(eq(shurtles.userId, sql.placeholder('userId'))).prepare('userStats')
+
+
 export async function getStats(userId: string) {
-  const statsResult = await db
-    .select({
-      totalHits: sum(shurtles.hits),
-      totalShurtles: count(),
-    })
-    .from(shurtles)
-    .where(eq(shurtles.creatorId, userId))
+  const userStats = await userStatsPrepared.execute({
+    userId: userId
+  });
 
   const stats = {
-    totalHits: statsResult[0]?.totalHits ? parseInt(statsResult[0].totalHits) : 0,
-    totalShurtles: statsResult[0]?.totalShurtles || 0,
+    totalHits: userStats[0]?.totalHits ? parseInt(userStats[0].totalHits) : 0,
+    totalShurtles: userStats[0]?.totalShurtles || 0,
   }
 
   // Ensure totalHits is not null
@@ -23,47 +25,69 @@ export async function getStats(userId: string) {
   return stats
 }
 
-// Function to get paginated shurtles
+const paginatedUserShurtlesPrepared = db.query.shurtles.findMany({
+  where: (shurtles, { eq }) => eq(shurtles.userId, sql.placeholder('userId')),
+  orderBy: (shurtles, { desc }) => desc(shurtles.createdAt),
+  limit: sql.placeholder('perPage'),
+  offset: sql.placeholder('offset'),
+}).prepare('paginatedUserShurtles')
+
 export async function getShurtlesPaginated(userId: string, page = 1, perPage = 10) {
   // Calculate offset
   const offset = (page - 1) * perPage
 
-  // Get paginated shurtles
-  const userShurtles = await db
-    .select()
-    .from(shurtles)
-    .where(eq(shurtles.creatorId, userId))
-    .orderBy(sql`${shurtles.createdAt} DESC`)
-    .limit(perPage)
-    .offset(offset)
+  const paginatedUserShurtles = await paginatedUserShurtlesPrepared.execute({
+    userId: userId,
+    perPage: perPage,
+    offset: offset,
+  });
 
-  // Get total count for pagination
-  const countResult = await db.select({ count: count() }).from(shurtles).where(eq(shurtles.creatorId, userId))
-
-  const total = countResult[0]?.count || 0
-  const totalPages = Math.ceil(total / perPage)
+  const totalUserShurtles = await db.$count(shurtles, eq(shurtles.userId, userId));
+  const totalPages = Math.ceil(totalUserShurtles / perPage)
 
   return {
-    shurtles: userShurtles,
+    shurtles: paginatedUserShurtles,
     totalPages,
     currentPage: page,
   }
 }
 
-// Increment the hit count and return the URL
-const getUrlBySlugPrepared = db
-  .update(shurtles)
-  .set({ hits: sql`${shurtles.hits} + 1`, lastHitAt: new Date() })
-  .where(eq(shurtles.slug, sql.placeholder('slug')))
-  .returning({ url: shurtles.url })
-  .prepare('getUrlBySlug')
+const getUrlBySlugPrepared = db.query.shurtles.findFirst({
+  where: (shurtles, { eq }) => eq(shurtles.slug, sql.placeholder('slug')),
+  columns: {
+    url: true
+  }
+}).prepare('getUrlBySlug')
 
 export async function getUrlBySlug(slug: string) {
   const shurtle = await getUrlBySlugPrepared.execute({ slug: slug })
 
-  if (shurtle.length === 0) {
-    return null
-  }
-
-  return shurtle[0].url
+  return shurtle?.url
 }
+
+export async function recordHit(slug: string, requestGeo: Geo) {
+  const coordinates = requestGeo.latitude && requestGeo.longitude
+    ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
+    : null
+
+  db.transaction(async (tx) => {
+    // Insert the hit record
+    await tx.insert(shurtleHits).values({
+      slug: slug,
+      country: requestGeo.country,
+      region: requestGeo.countryRegion,
+      city: requestGeo.city,
+      coordinates: coordinates
+    })
+
+    // Update the shurtle's hits and lastHitAt
+    await tx.update(shurtles)
+      .set({
+        hits: sql`${shurtles.hits} + 1`,
+        lastHitAt: sql`NOW()`
+      })
+      .where(eq(shurtles.slug, slug))
+  })
+}
+
+
