@@ -1,6 +1,6 @@
 import { db } from "@/db"
 import { shurtleHits, shurtles } from "@/db/schema"
-import { Geo, waitUntil } from "@vercel/functions"
+import { Geo } from "@vercel/functions"
 import { count, eq, sql, sum } from "drizzle-orm"
 
 const userStatsPrepared = db.select({
@@ -59,19 +59,18 @@ const getUrlBySlugPrepared = db.query.shurtles.findFirst({
   }
 }).prepare('getUrlBySlug')
 
-export async function getUrlBySlug(slug: string, requestGeo: Geo) {
+export async function getUrlBySlug(slug: string) {
   const shurtle = await getUrlBySlugPrepared.execute({ slug: slug })
 
-  if (!shurtle) {
-    return null
-  }
+  return shurtle?.url
+}
 
-  // We use waitUntil to ensure the hit is recorded even if the response is sent immediately
-  waitUntil(db.transaction(async (tx) => {
-    const coordinates = requestGeo.latitude && requestGeo.longitude
-      ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
-      : null
+export async function recordHit(slug: string, requestGeo: Geo) {
+  const coordinates = requestGeo.latitude && requestGeo.longitude
+    ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
+    : null
 
+  db.transaction(async (tx) => {
     // Insert the hit record
     await tx.insert(shurtleHits).values({
       slug: slug,
@@ -87,9 +86,7 @@ export async function getUrlBySlug(slug: string, requestGeo: Geo) {
         lastHitAt: sql`NOW()`
       })
       .where(eq(shurtles.slug, slug))
-  }))
-
-  return shurtle.url
+  })
 }
 
 

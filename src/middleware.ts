@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { geolocation, ipAddress } from '@vercel/functions'
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimits } from './lib/ratelimits'
-import { getUrlBySlug } from './lib/shurtles'
+import { getUrlBySlug, recordHit } from './lib/shurtles'
 
 const isReservedRoute = createRouteMatcher(['/', '/dashboard(.*)', '/shurtle(.*)', '/not-found', '/api/(.*)'])
 const isPublicRoute = createRouteMatcher(['/', '/not-found', '/api/(.*)'])
@@ -42,10 +42,11 @@ export default clerkMiddleware(async (auth, req, ctx) => {
   const slug = req.nextUrl.pathname.split('/').pop()
 
   if (slug && slug.length > 0) {
-    const requestGeo = geolocation(req)
-    const url = await getUrlBySlug(slug, requestGeo)
+    const url = await getUrlBySlug(slug)
 
     if (url) {
+      const requestGeo = geolocation(req)
+      ctx.waitUntil(recordHit(slug, requestGeo)) // Record the hit on a background process
       return NextResponse.redirect(url, { headers: headers })
     } else {
       // If the slug is not found, we should return the not found page.
