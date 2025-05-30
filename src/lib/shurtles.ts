@@ -75,7 +75,7 @@ export async function recordHit(slug: string, requestGeo: Geo) {
     await tx.insert(shurtleHits).values({
       slug: slug,
       country: requestGeo.country,
-      region: requestGeo.region,
+      region: requestGeo.countryRegion,
       city: requestGeo.city,
       coordinates: coordinates
     })
