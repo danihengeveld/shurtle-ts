@@ -3,18 +3,20 @@ import { shurtleHits, shurtles } from "@/db/schema"
 import { Geo, waitUntil } from "@vercel/functions"
 import { count, eq, sql, sum } from "drizzle-orm"
 
+const userStatsPrepared = db.select({
+  totalHits: sum(shurtles.hits),
+  totalShurtles: count(),
+}).from(shurtles).where(eq(shurtles.creatorId, sql.placeholder('userId'))).prepare('userStats')
+
+
 export async function getStats(userId: string) {
-  const statsResult = await db
-    .select({
-      totalHits: sum(shurtles.hits),
-      totalShurtles: count(),
-    })
-    .from(shurtles)
-    .where(eq(shurtles.creatorId, userId))
+  const userStats = await userStatsPrepared.execute({
+    userId: userId
+  });
 
   const stats = {
-    totalHits: statsResult[0]?.totalHits ? parseInt(statsResult[0].totalHits) : 0,
-    totalShurtles: statsResult[0]?.totalShurtles || 0,
+    totalHits: userStats[0]?.totalHits ? parseInt(userStats[0].totalHits) : 0,
+    totalShurtles: userStats[0]?.totalShurtles || 0,
   }
 
   // Ensure totalHits is not null
@@ -23,16 +25,22 @@ export async function getStats(userId: string) {
   return stats
 }
 
+const paginatedUserShurtlesPrepared = db.query.shurtles.findMany({
+  where: (shurtles, { eq }) => eq(shurtles.creatorId, sql.placeholder('userId')),
+  orderBy: (shurtles, { desc }) => desc(shurtles.createdAt),
+  limit: sql.placeholder('perPage'),
+  offset: sql.placeholder('offset'),
+}).prepare('paginatedUserShurtles')
+
 export async function getShurtlesPaginated(userId: string, page = 1, perPage = 10) {
   // Calculate offset
   const offset = (page - 1) * perPage
 
-  const paginatedUserShurtles = await db.select()
-    .from(shurtles)
-    .where(eq(shurtles.creatorId, userId))
-    .orderBy(sql`${shurtles.createdAt} DESC`)
-    .limit(perPage)
-    .offset(offset);
+  const paginatedUserShurtles = await paginatedUserShurtlesPrepared.execute({
+    userId: userId,
+    perPage: perPage,
+    offset: offset,
+  });
 
   const totalUserShurtles = await db.$count(shurtles, eq(shurtles.creatorId, userId));
   const totalPages = Math.ceil(totalUserShurtles / perPage)
@@ -48,7 +56,7 @@ const getUrlBySlugPrepared = db.query.shurtles.findFirst({
   where: (shurtles, { eq }) => eq(shurtles.slug, sql.placeholder('slug')),
   columns: {
     url: true
-  },
+  }
 }).prepare('getUrlBySlug')
 
 export async function getUrlBySlug(slug: string, requestGeo: Geo) {
@@ -61,8 +69,8 @@ export async function getUrlBySlug(slug: string, requestGeo: Geo) {
   // We use waitUntil to ensure the hit is recorded even if the response is sent immediately
   waitUntil(db.transaction(async (tx) => {
     const coordinates = requestGeo.latitude && requestGeo.longitude
-    ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
-    : null
+      ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
+      : null
 
     // Insert the hit record
     await tx.insert(shurtleHits).values({

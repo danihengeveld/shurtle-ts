@@ -3,7 +3,7 @@
 import { db } from "@/db"
 import { shurtles } from "@/db/schema"
 import { auth } from "@clerk/nextjs/server"
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { revalidatePath, revalidateTag } from "next/cache"
 import { z } from "zod"
@@ -52,6 +52,16 @@ export type CreateShurtleFormState = {
   }
 }
 
+const existingShurtlePrepared = db.query.shurtles.findFirst({
+  where: (shurtles, { eq, and }) => and(eq(shurtles.slug, sql.placeholder('slug')), eq(shurtles.creatorId, sql.placeholder('userId'))),
+  columns: { slug: true }
+}).prepare('existingShurtle')
+
+const existingUrlShurtlePrepared = db.query.shurtles.findFirst({
+  where: (shurtles, { eq, and }) => and(eq(shurtles.url, sql.placeholder('url')), eq(shurtles.creatorId, sql.placeholder('userId'))),
+  columns: { slug: true }
+}).prepare('existingUrlShurtle')
+
 export async function createShurtle(
   prevState: CreateShurtleFormState,
   formData: FormData,
@@ -97,14 +107,12 @@ export async function createShurtle(
     // Generate a slug if not provided
     const finalSlug = slug || nanoid(6)
 
-    // Check if slug already exists
-    const existingShurtle = await db
-      .select({ slug: shurtles.slug })
-      .from(shurtles)
-      .where(eq(shurtles.slug, finalSlug))
-      .limit(1)
+    const existingShurtle = await existingShurtlePrepared.execute({
+      slug: finalSlug,
+      userId: userId
+    })
 
-    if (existingShurtle.length > 0) {
+    if (existingShurtle) {
       return {
         errors: {
           slug: ["This slug is already taken. Please choose another one."]
@@ -112,14 +120,12 @@ export async function createShurtle(
       }
     }
 
-    // Check if user has already created a shurtle with the same URL
-    const existingUrlShurtle = await db
-      .select({ slug: shurtles.slug })
-      .from(shurtles)
-      .where(and(eq(shurtles.url, url), eq(shurtles.creatorId, userId)))
-      .limit(1)
+    const existingUrlShurtle = await existingUrlShurtlePrepared.execute({
+      url: url,
+      userId: userId
+    })
 
-    if (existingUrlShurtle.length > 0) {
+    if (existingUrlShurtle) {
       return {
         errors: {
           url: ["You already have a shurtle with this URL."]
