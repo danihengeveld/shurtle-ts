@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "shurtle-ts",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "homepage": "https://shurtle.app",
   "author": {
     "name": "Dani Hengeveld",
@@ -42,6 +42,7 @@
     "@vercel/analytics": "^1.5.0",
     "@vercel/functions": "^2.1.0",
     "@vercel/speed-insights": "^1.2.0",
+    "@vercel/toolbar": "^0.1.37",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

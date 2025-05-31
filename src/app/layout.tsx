@@ -5,9 +5,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import type { Metadata } from "next";
+import { VercelToolbar } from '@vercel/toolbar/next';
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { siteInfo } from "./site-info";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,9 +21,33 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#020618" },
+  ]
+}
+
 export const metadata: Metadata = {
-  title: "Shurtle - Blazingly Fast URL Shortener",
-  description: "An open source and blazingly fast URL shortener.",
+  title: {
+    template: `%s | ${siteInfo.name}`,
+    default: siteInfo.name,
+  },
+  metadataBase: siteInfo.baseUrl,
+  description: siteInfo.description,
+  creator: "Dani Hengeveld",
+  authors: [
+    {
+      name: "Dani Hengeveld",
+      url: "https://dani.hengeveld.dev"
+    }
+  ],
+  keywords: [
+    "shurtle",
+    "url shortener",
+    "open source"
+  ],
+  category: "tools",
   icons: {
     icon: [
       {
@@ -36,9 +62,39 @@ export const metadata: Metadata = {
     ],
     apple: {
       url: "/apple-touch-icon.png",
-      sizes: "180x180",
+      sizes: "180x180"
     },
     shortcut: "/favicon.ico",
+  },
+  openGraph: {
+    title: siteInfo.name,
+    siteName: siteInfo.name,
+    description: siteInfo.description,
+    url: siteInfo.baseUrl,
+    type: "website",
+    images: [
+      {
+        url: "/images/shurtle-logo-light-bg.png",
+        width: 1024,
+        height: 1024,
+        alt: "Shurtle logo on light background"
+      }
+    ],
+    locale: "en_US"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteInfo.name,
+    description: siteInfo.description,
+    images: [
+      {
+        url: "/images/shurtle-logo-light-bg.png",
+        width: 1024,
+        height: 1024,
+        alt: "Shurtle logo on light background"
+      },
+    ],
+    creator: "@Dani_Hengeveld"
   }
 }
 
@@ -47,6 +103,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const shouldInjectToolbar = process.env.NODE_ENV === 'development';
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
@@ -59,10 +116,11 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Navbar />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1" role="main">{children}</main>
             <Footer />
             <Toaster />
           </ThemeProvider>
+          {shouldInjectToolbar && <VercelToolbar />}
           <SpeedInsights />
           <Analytics />
         </body>

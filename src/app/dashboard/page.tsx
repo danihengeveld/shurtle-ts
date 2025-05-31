@@ -9,7 +9,7 @@ import { Suspense } from "react";
 export const experimental_ppr = true
 
 export const metadata: Metadata = {
-  title: "Dashboard | Shurtle",
+  title: "Dashboard",
   description: "Manage your shurtles.",
 }
 

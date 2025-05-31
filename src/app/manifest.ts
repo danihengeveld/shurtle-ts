@@ -1,10 +1,12 @@
 import type { MetadataRoute } from 'next'
+import { siteInfo } from './site-info'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Shurtle',
-    short_name: 'Shurtle',
-    description: 'An open source and blazingly fast URL shortener.',
+    name: siteInfo.name,
+    short_name: siteInfo.name,
+    description: siteInfo.description,
+    lang: "en-US",
     start_url: '/dashboard',
     icons: [
       {
