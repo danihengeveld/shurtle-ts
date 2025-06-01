@@ -94,7 +94,7 @@ export const metadata: Metadata = {
         alt: "Shurtle logo on light background"
       },
     ],
-    creator: "@Dani_Hengeveld"
+    creator: "@DHengeveld"
   }
 }
 
