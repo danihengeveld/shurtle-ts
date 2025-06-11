@@ -95,5 +95,3 @@ export async function recordHit(slug: string, requestGeo: Geo) {
       .where(eq(shurtles.slug, slug))
   })
 }
-
-
