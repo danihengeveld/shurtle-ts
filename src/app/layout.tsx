@@ -103,7 +103,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const shouldInjectToolbar = process.env.NODE_ENV === 'development';
+  const isDev = process.env.NODE_ENV === 'development'
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
@@ -120,11 +120,11 @@ export default function RootLayout({
             <Footer />
             <Toaster />
           </ThemeProvider>
-          {shouldInjectToolbar && <VercelToolbar />}
+          {isDev && <VercelToolbar />}
           <SpeedInsights />
           <Analytics />
         </body>
       </html>
     </ClerkProvider >
-  );
+  )
 }
