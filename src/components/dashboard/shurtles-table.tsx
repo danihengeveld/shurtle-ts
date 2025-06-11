@@ -147,6 +147,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
             id="search-shurtles"
             type="search"
             placeholder="Search"
+            aria-label="Search shurtles"
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,7 +157,7 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Rows:</span>
           <Select value={perPage.toString()} onValueChange={handlePerPageChange} disabled={isPending}>
-            <SelectTrigger className="w-[70px]">
+            <SelectTrigger className="w-[70px]" aria-label="Select number of rows per page">
               <SelectValue placeholder={perPage.toString()} />
             </SelectTrigger>
             <SelectContent>
