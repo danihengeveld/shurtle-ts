@@ -6,54 +6,21 @@ import { auth } from "@clerk/nextjs/server"
 import { and, eq, sql } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { revalidatePath, revalidateTag } from "next/cache"
-import { z } from "zod/v4"
 import { rateLimits } from "./ratelimits"
-
-// Reserved slugs that should not be used
-// These paths are reserved for internal use and should not be used as slugs by users
-const reservedSlugs = ['dashboard', 'shurtle', 'api', '_next', 'sign-in', 'sign-up']
-
-// Reserved URLs that should not be used
-const reservedUrls = ['localhost', 'shurtle.app', 'www.shurtle.app']
-
-// Schema for create shurtle validation
-const createShurtleSchema = z.object({
-  slug: z
-    .string()
-    .trim()
-    .nullable()
-    .transform((val) => (val === "" ? null : val)) // Transform empty string to null
-    .refine(
-      (val) => val === null || /^[a-zA-Z0-9_-]+$/.test(val),
-      "Slug can only contain letters, numbers, underscores, and hyphens"
-    )
-    .refine(
-      (val) => val === null || !reservedSlugs.includes(val),
-      "Slug is reserved for internal use"
-    )
-    .optional(),
-  url: z
-    .url({
-      protocol: /^https?$/,
-      hostname: z.regexes.domain,
-      error: "Invalid URL format. Must be a valid HTTP or HTTPS URL like https://example.com"
-    })
-    .refine(
-      (val) => reservedUrls.includes(val.split('://')[1]),
-      "URL cannot point to Shurtle's own domain or localhost"
-    ),
-})
+import { createShurtleSchema } from "./schemas"
 
 export type CreateShurtleFormState = {
   errors?: {
     slug?: string[]
     url?: string[]
+    expiresAt?: string[]
     _form?: string[]
   }
   success?: boolean
   data?: {
     slug: string
-    url: string
+    url: string,
+    expiresAt?: string
   }
 }
 
@@ -93,15 +60,12 @@ export async function createShurtle(
   }
 
   // Get form data
-  const slugValue = formData.get("slug")
+  const slug = formData.get("slug") as string | null | undefined
   const url = formData.get("url") as string
-
-  // Handle empty slug properly
-  const slug = slugValue && String(slugValue).trim() !== "" ? String(slugValue) : null
+  const expiresAt = formData.get("expiresAt") as string | null | undefined
 
   // Validate form data
-  const validationResult = createShurtleSchema.safeParse({ slug, url })
-
+  const validationResult = createShurtleSchema.safeParse({ slug, url, expiresAt })
   if (!validationResult.success) {
     return {
       errors: validationResult.error.flatten().fieldErrors
@@ -110,7 +74,7 @@ export async function createShurtle(
 
   try {
     // Generate a slug if not provided
-    const finalSlug = slug || nanoid(6)
+    const finalSlug = validationResult.data.slug || nanoid(6)
 
     const existingShurtle = await existingShurtlePrepared.execute({
       slug: finalSlug,
@@ -126,7 +90,7 @@ export async function createShurtle(
     }
 
     const existingUrlShurtle = await existingUrlShurtlePrepared.execute({
-      url: url,
+      url: validationResult.data.url,
       userId: userId
     })
 
@@ -141,7 +105,8 @@ export async function createShurtle(
     // Create the shurtle
     await db.insert(shurtles).values({
       slug: finalSlug,
-      url: url,
+      url: validationResult.data.url,
+      expiresAt: validationResult.data.expiresAt ? new Date(validationResult.data.expiresAt) : null,
       userId: userId
     })
 

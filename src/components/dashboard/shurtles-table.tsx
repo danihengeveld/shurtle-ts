@@ -25,12 +25,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Shurtle } from "@/db/schema"
 import { deleteShurtle } from "@/lib/actions"
-import { formatDistanceToNow } from "date-fns"
-import { Copy, ExternalLink, MoreHorizontal, Search, Trash2 } from "lucide-react"
+import { format, formatDistanceToNow } from "date-fns"
+import { Copy, MoreHorizontal, Search, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
 interface ShurtlesTableProps {
   shurtles: Shurtle[]
@@ -176,9 +177,10 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
             <TableRow>
               <TableHead>Slug</TableHead>
               <TableHead>Destination URL</TableHead>
-              <TableHead className="text-right">Hits</TableHead>
+              <TableHead>Hits</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead>Last Hit</TableHead>
+              <TableHead>Last hit</TableHead>
+              <TableHead>Expires</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -195,13 +197,53 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                   <TableCell>
                     <div className="font-medium">{shurtle.slug}</div>
                   </TableCell>
-                  <TableCell className="max-w-[200px] truncate">{shurtle.url}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="max-w-[200px] truncate">
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href={shurtle.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {shurtle.url}
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent>Open in new tab</TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell>
                     <Badge variant="secondary">{shurtle.hits}</Badge>
                   </TableCell>
-                  <TableCell>{formatDistanceToNow(shurtle.createdAt, { addSuffix: true })}</TableCell>
                   <TableCell>
-                    {shurtle.lastHitAt ? formatDistanceToNow(shurtle.lastHitAt, { addSuffix: true }) : "Never"}
+                    <Tooltip>
+                      <TooltipTrigger>
+                        {formatDistanceToNow(shurtle.createdAt, { addSuffix: true })}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {format(shurtle.createdAt, "PPpp")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        {shurtle.lastHitAt ? formatDistanceToNow(shurtle.lastHitAt, { addSuffix: true }) : "Never"}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {shurtle.lastHitAt ? format(shurtle.lastHitAt, "PPpp") : "No hits yet"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        {shurtle.expiresAt ? formatDistanceToNow(shurtle.expiresAt, { addSuffix: true }) : "Never"}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {shurtle.expiresAt ? format(shurtle.expiresAt, "PPpp") : "Will not expire"}
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -216,12 +258,6 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                         <DropdownMenuItem onClick={() => copyToClipboard(shurtle.slug)}>
                           <Copy className="mr-2 h-4 w-4" />
                           Copy URL
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/${shurtle.slug}`} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            Open
-                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

@@ -5,16 +5,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createShurtle, type CreateShurtleFormState } from "@/lib/actions"
-import { AlertCircle, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
+import { format } from "date-fns"
+import { AlertCircle, ChevronDown, ChevronDownIcon, ChevronUp, Loader2 } from "lucide-react"
 import { startTransition, useActionState, useRef, useState } from "react"
+import { Calendar } from "../ui/calendar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { SuccessCard } from "./success-card"
 
 const initialState: CreateShurtleFormState = {}
 
 export function CreateShurtleForm() {
   const formRef = useRef<HTMLFormElement>(null)
-  const [showCustomSlug, setShowCustomSlug] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [expirationDatePickerOpen, setExpirationDatePickerOpen] = useState(false)
+  const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined)
   const [state, formAction, isPending] = useActionState(createShurtle, initialState)
 
   function handleSubmit(formData: FormData) {
@@ -56,50 +61,99 @@ export function CreateShurtleForm() {
             )}
           </div>
 
-          <Collapsible open={showCustomSlug} onOpenChange={setShowCustomSlug}>
+          <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
             <CollapsibleTrigger asChild>
               <Button
-                id="toggle-custom-slug"
+                id="toggle-advanced-options-btn"
                 type="button"
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-1 text-muted-foreground"
               >
-                {showCustomSlug ? (
+                {showAdvanced ? (
                   <>
                     <ChevronUp className="h-4 w-4" />
-                    Hide custom slug options
+                    Hide advanced options
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="h-4 w-4" />I want to customize my slug (optional)
+                    <ChevronDown className="h-4 w-4" />I want to customize my Shurtle (optional)
                   </>
                 )}
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="custom-slug-input">Custom slug</Label>
-                <Input
-                  id="custom-slug-input"
-                  name="slug"
-                  placeholder="my-custom-slug"
-                  aria-invalid={!!state.errors?.slug}
-                  aria-describedby={state.errors?.slug ? "slug-error" : undefined}
-                />
-                {state.errors?.slug ? (
-                  <p id="slug-error" className="text-sm text-destructive">
-                    {state.errors.slug[0]}
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Only letters, numbers, underscores, and hyphens are allowed.
-                  </p>
-                )}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="custom-slug-input">Custom slug</Label>
+                  <Input
+                    id="custom-slug-input"
+                    name="slug"
+                    placeholder="my-custom-slug"
+                    aria-invalid={!!state.errors?.slug}
+                    aria-describedby={state.errors?.slug ? "slug-error" : undefined}
+                  />
+                  {state.errors?.slug ? (
+                    <p id="slug-error" className="text-sm text-destructive">
+                      {state.errors.slug[0]}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Only letters, numbers, underscores, and hyphens are allowed.
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="open-expiration-date-picker-btn">
+                    Expiration date
+                  </Label>
+                  <Popover open={expirationDatePickerOpen} onOpenChange={setExpirationDatePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        id="open-expiration-date-picker-btn"
+                        className="w-48 justify-between font-normal"
+                        aria-invalid={!!state.errors?.expiresAt}
+                        aria-describedby={state.errors?.expiresAt ? "expiresAt-error" : undefined}
+                      >
+                        {expirationDate ? format(expirationDate, "PP") : "Select date"}
+                        <ChevronDownIcon />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={expirationDate}
+                        captionLayout="dropdown"
+                        onSelect={(date) => {
+                          date?.setHours(23, 59, 59, 999) // Set to end of day
+                          setExpirationDate(date)
+                          setExpirationDatePickerOpen(false)
+                        }}
+                        disabled={(date) => date < new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {state.errors?.expiresAt ? (
+                    <p id="expiresAt-error" className="text-sm text-destructive">
+                      {state.errors.expiresAt[0]}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      When selected, the Shurtle will expire at the end of the day (in your timezone).
+                    </p>
+                  )}
+                </div>
               </div>
             </CollapsibleContent>
           </Collapsible>
-
+          {expirationDate && (
+            <input
+              type="hidden"
+              name="expiresAt"
+              value={expirationDate.toISOString()}
+            />
+          )}
           <div className="flex justify-end pt-4">
             <Button id="create-shurtle-btn" type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

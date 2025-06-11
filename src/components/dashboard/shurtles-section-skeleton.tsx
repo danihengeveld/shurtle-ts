@@ -15,9 +15,10 @@ export function ShurtlesSectionSkeleton() {
             <TableRow>
               <TableHead>Slug</TableHead>
               <TableHead>Destination URL</TableHead>
-              <TableHead className="text-right">Hits</TableHead>
+              <TableHead>Hits</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead>Last Hit</TableHead>
+              <TableHead>Last hit</TableHead>
+              <TableHead>Expires</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -30,8 +31,11 @@ export function ShurtlesSectionSkeleton() {
                 <TableCell>
                   <Skeleton className="h-5 w-[200px]" />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell>
                   <Skeleton className="h-5 w-[40px] ml-auto" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-[120px]" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-5 w-[120px]" />
