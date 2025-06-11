@@ -6,6 +6,7 @@ export const schema = pgSchema("shurtle");
 export const shurtles = schema.table("shurtles", {
 	slug: varchar("slug", { length: 255 }).primaryKey(),
 	url: varchar("url", { length: 255 }).notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'date', precision: 0 }),
 	hits: integer("hits").default(0).notNull(),
 	userId: varchar("user_id", { length: 255 }).notNull(),
 	lastHitAt: timestamp("last_hit_at", { withTimezone: true, mode: 'date', precision: 0 }),
