@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
- 
+import { siteInfo } from './site-info'
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
@@ -7,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: ['/', '/not-found'],
       disallow: '/dashboard',
     },
-    sitemap: 'https://shurtle.app/sitemap.xml',
+    sitemap: siteInfo.baseUrl + 'sitemap.xml',
   }
 }
