@@ -32,12 +32,20 @@ const colors = {
   time: '\x1b[90m', // Gray
 };
 
+const isDev = process.env.NODE_ENV === 'development';
+
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 /**
- * Format a message with appropriate prefix and color
+ * Format a message with appropriate prefix and color based on log level if environment is development
  */
 const formatMessage = (level: LogLevel, ...args: any[]): string[] => {
+
+  if (!isDev){
+    const prefix = `[${new Date().toISOString()}] [${level.toUpperCase()}]`;
+    return [prefix, ...args];
+  }
+
   const timestamp = new Date().toISOString();
   const prefix = `${colors.time}[${timestamp}]${colors.reset} ${colors[level]}[${level.toUpperCase()}]${colors.reset}`;
   return [prefix, ...args];
