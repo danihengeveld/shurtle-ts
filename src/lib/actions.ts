@@ -6,6 +6,7 @@ import { auth } from "@clerk/nextjs/server"
 import { and, eq, sql } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { revalidatePath, revalidateTag } from "next/cache"
+import { logger } from "./logger"
 import { rateLimits } from "./ratelimits"
 import { createShurtleSchema } from "./schemas"
 
@@ -41,6 +42,7 @@ export async function createShurtle(
   const { userId } = await auth()
 
   if (!userId) {
+    logger.warn("Unauthenticated user attempted to create a shurtle")
     return {
       errors: {
         _form: ["You must be signed in to create a shurtle"]
@@ -48,10 +50,13 @@ export async function createShurtle(
     }
   }
 
+  logger.info(`User ${userId} attempting to create a new shurtle`)
+
   // Check for rate limits
   const { success } = await rateLimits.createShurtle.limiter.limit(userId)
 
   if (!success) {
+    logger.warn(`Rate limit exceeded for user ${userId} when creating a shurtle`)
     return {
       errors: {
         _form: [rateLimits.createShurtle.limitMessage]
@@ -63,6 +68,8 @@ export async function createShurtle(
   const slug = formData.get("slug") as string | null | undefined
   const url = formData.get("url") as string
   const expiresAt = formData.get("expiresAt") as string | null | undefined
+
+  logger.debug(`Create shurtle request: slug=${slug || 'auto-generated'}, url=${url}, expiresAt=${expiresAt || 'never'}`)
 
   // Validate form data
   const validationResult = createShurtleSchema.safeParse({ slug, url, expiresAt })
@@ -82,6 +89,7 @@ export async function createShurtle(
     })
 
     if (existingShurtle) {
+      logger.warn(`User ${userId} attempted to create a duplicate slug: ${finalSlug}`)
       return {
         errors: {
           slug: ["This slug is already taken. Please choose another one."]
@@ -110,6 +118,10 @@ export async function createShurtle(
       userId: userId
     })
 
+    logger.info(`Successfully created shurtle for user ${userId}: ${finalSlug} -> ${url}`, {
+      expiresAt: validationResult.data.expiresAt || 'never'
+    })
+
     // Revalidate cache
     revalidateTag(`user:${userId}`)
     revalidatePath("/dashboard")
@@ -122,7 +134,7 @@ export async function createShurtle(
       }
     }
   } catch (error) {
-    console.error("Error creating Shurtle:", error)
+    logger.error(`Error creating shurtle for user ${userId}:`, error)
     return {
       errors: {
         _form: ["An error occurred while creating the shurtle. Please try again."]
@@ -135,10 +147,21 @@ export async function deleteShurtle(slug: string) {
   const { userId } = await auth()
 
   if (!userId) {
+    logger.warn(`Unauthenticated user attempted to delete shurtle: ${slug}`)
     throw new Error("Unauthorized")
   }
 
-  await db.delete(shurtles).where(and(eq(shurtles.slug, slug), eq(shurtles.userId, userId)))
+  logger.info(`User ${userId} attempting to delete shurtle: ${slug}`)
+
+  const result = await db.delete(shurtles)
+    .where(and(eq(shurtles.slug, slug), eq(shurtles.userId, userId)))
+    .returning({ slug: shurtles.slug })
+
+  if (result.length === 0) {
+    logger.warn(`User ${userId} attempted to delete non-existent or unauthorized shurtle: ${slug}`)
+  } else {
+    logger.info(`User ${userId} successfully deleted shurtle: ${slug}`)
+  }
 
   revalidateTag(`user:${userId}`)
   revalidatePath('/dashboard')

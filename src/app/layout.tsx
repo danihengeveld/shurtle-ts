@@ -2,6 +2,7 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { logger } from "@/lib/logger";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -104,6 +105,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const isDev = process.env.NODE_ENV === 'development'
+  
+  // Log application startup on the server
+  if (typeof window === 'undefined') {
+    logger.info('Application rendering on server');
+  }
+  
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
