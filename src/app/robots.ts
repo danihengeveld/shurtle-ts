@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: ['/', '/not-found'],
       disallow: '/dashboard',
     },
-    sitemap: siteInfo + 'sitemap.xml',
+    sitemap: siteInfo.baseUrl + 'sitemap.xml',
   }
 }
