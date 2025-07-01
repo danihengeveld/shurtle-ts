@@ -5,8 +5,8 @@ import { rateLimits } from './lib/ratelimits'
 import { getUrlBySlug, recordHit } from './lib/shurtles'
 import { logger } from './lib/logger'
 
-const isReservedRoute = createRouteMatcher(['/', '/dashboard(.*)', '/shurtle(.*)', '/not-found', '/api/(.*)'])
-const isPublicRoute = createRouteMatcher(['/', '/not-found', '/api/(.*)'])
+const isReservedRoute = createRouteMatcher(['/', '/dashboard(.*)', '/shurtle(.*)', '/not-found', '/api/(.*)', '/sitemap.xml', '/robots.txt'])
+const isPublicRoute = createRouteMatcher(['/', '/not-found', '/api/(.*)', '/sitemap.xml', '/robots.txt'])
 
 export default clerkMiddleware(async (auth, req, ctx) => {
   const path = req.nextUrl.pathname;
