@@ -1,6 +1,5 @@
 /**
- * Simple logger utility for Shurtle application
- * - Only logs in development environment by default
+ * Simple logging utility
  * - Supports multiple log levels (info, warn, debug, error)
  * - Color coded console output
  * - Can be enabled/disabled globally or per level
@@ -36,7 +35,7 @@ const colors = {
 /**
  * Format a message with appropriate prefix and color
  */
-const formatMessage = (level: LogLevel, ...args: any[]): string[] => {
+const formatMessage = (level: LogLevel, ...args: string[]): string[] => {
   const timestamp = new Date().toISOString();
   const prefix = `${colors.time}[${timestamp}]${colors.reset} ${colors[level]}[${level.toUpperCase()}]${colors.reset}`;
   return [prefix, ...args];
@@ -49,7 +48,7 @@ export const logger = {
   /**
    * Log informational messages
    */
-  info: (...args: any[]): void => {
+  info: (...args: string[]): void => {
     if (config.enabled && config.levels.info) {
       console.info(...formatMessage('info', ...args));
     }
@@ -58,7 +57,7 @@ export const logger = {
   /**
    * Log warning messages
    */
-  warn: (...args: any[]): void => {
+  warn: (...args: string[]): void => {
     if (config.enabled && config.levels.warn) {
       console.warn(...formatMessage('warn', ...args));
     }
@@ -67,7 +66,7 @@ export const logger = {
   /**
    * Log debug messages
    */
-  debug: (...args: any[]): void => {
+  debug: (...args: string[]): void => {
     if (config.enabled && config.levels.debug) {
       console.debug(...formatMessage('debug', ...args));
     }
@@ -76,7 +75,7 @@ export const logger = {
   /**
    * Log error messages
    */
-  error: (...args: any[]): void => {
+  error: (...args: string[]): void => {
     if (config.enabled && config.levels.error) {
       console.error(...formatMessage('error', ...args));
     }
