@@ -12,12 +12,16 @@ interface LoggerConfig {
   levels: Record<LogLevel, boolean>;
 }
 
+const isDev = process.env.NODE_ENV === 'development';
+const enableFancyLogging = isDev || process.env.ENABLE_FANCY_LOGGING === 'true';
+const isDebug = isDev || process.env.DEBUG === 'true';
+
 const config: LoggerConfig = {
   enabled: true,
   levels: {
     info: true,
     warn: true,
-    debug: true,
+    debug: isDebug,
     error: true
   }
 };
@@ -32,8 +36,6 @@ const colors = {
   time: '\x1b[90m', // Gray
 };
 
-const isDev = process.env.NODE_ENV === 'development';
-
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 /**
@@ -41,7 +43,7 @@ const isDev = process.env.NODE_ENV === 'development';
  */
 const formatMessage = (level: LogLevel, ...args: any[]): string[] => {
 
-  if (!isDev){
+  if (!enableFancyLogging) {
     const prefix = `[${new Date().toISOString()}] [${level.toUpperCase()}]`;
     return [prefix, ...args];
   }
