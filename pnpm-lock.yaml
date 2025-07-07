@@ -51,8 +51,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(next@15.4.0-canary.103(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       '@vercel/functions':
-        specifier: ^2.2.2
-        version: 2.2.2
+        specifier: ^2.2.3
+        version: 2.2.3
       '@vercel/speed-insights':
         specifier: ^1.2.0
         version: 1.2.0(next@15.4.0-canary.103(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
@@ -1554,8 +1554,8 @@ packages:
       vue-router:
         optional: true
 
-  '@vercel/functions@2.2.2':
-    resolution: {integrity: sha512-wgtgFwhYAUzS7UOvw44q14FaoRPONEnyoM0JlrjcDkI+kzSu7M8J5Tk5T3Kvv52//8is+HGxVQtaBSiO3G0wbw==}
+  '@vercel/functions@2.2.3':
+    resolution: {integrity: sha512-Z6xwsxM/57/92PLW2HoLLmVw4+Nb5OZzMzDA4qfkksWgG1k5dGV7kvP1TDEOlW3WHjqWtfPJBcd61dE2p0mbxQ==}
     engines: {node: '>= 18'}
     peerDependencies:
       '@aws-sdk/credential-provider-web-identity': '*'
@@ -4592,7 +4592,7 @@ snapshots:
       next: 15.4.0-canary.103(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
 
-  '@vercel/functions@2.2.2': {}
+  '@vercel/functions@2.2.3': {}
 
   '@vercel/microfrontends@1.3.0(@vercel/analytics@1.5.0(next@15.4.0-canary.103(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(@vercel/speed-insights@1.2.0(next@15.4.0-canary.103(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(next@15.4.0-canary.103(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
