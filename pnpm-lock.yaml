@@ -69,8 +69,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       dotenv:
-        specifier: ^17.2.0
-        version: 17.2.0
+        specifier: ^17.2.1
+        version: 17.2.1
       drizzle-orm:
         specifier: ^0.44.4
         version: 0.44.4(@neondatabase/serverless@1.0.1)(@types/pg@8.15.4)(@upstash/redis@1.35.3)(@vercel/postgres@0.10.0)
@@ -1892,8 +1892,8 @@ packages:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
 
-  dotenv@17.2.0:
-    resolution: {integrity: sha512-Q4sgBT60gzd0BB0lSyYD3xM4YxrXA9y4uBDof1JNYGzOXrQdQ6yX+7XIAqoFOGQFOTK1D3Hts5OllpxMDZFONQ==}
+  dotenv@17.2.1:
+    resolution: {integrity: sha512-kQhDYKZecqnM0fCnzI5eIv5L4cAe/iRI+HqMbO/hbRdTAeXDG+M9FjipUxNfbARuEg4iHIbhnhs78BCHNbSxEQ==}
     engines: {node: '>=12'}
 
   drizzle-kit@0.31.4:
@@ -4916,7 +4916,7 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  dotenv@17.2.0: {}
+  dotenv@17.2.1: {}
 
   drizzle-kit@0.31.4:
     dependencies:
