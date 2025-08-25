@@ -42,7 +42,7 @@
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.35.3",
     "@vercel/analytics": "^1.5.0",
-    "@vercel/functions": "^2.2.3",
+    "@vercel/functions": "^2.2.12",
     "@vercel/speed-insights": "^1.2.0",
     "@vercel/toolbar": "^0.1.38",
     "class-variance-authority": "^0.7.1",
