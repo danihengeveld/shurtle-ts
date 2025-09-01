@@ -39,7 +39,7 @@
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.3",
     "@vercel/analytics": "^1.5.0",
     "@vercel/functions": "^2.2.12",
