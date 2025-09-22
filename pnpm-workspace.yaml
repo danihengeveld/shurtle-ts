@@ -1,8 +1,0 @@
-onlyBuiltDependencies:
-  - '@clerk/shared'
-  - '@tailwindcss/oxide'
-  - '@vercel/speed-insights'
-  - bufferutil
-  - esbuild
-  - sharp
-  - unrs-resolver
