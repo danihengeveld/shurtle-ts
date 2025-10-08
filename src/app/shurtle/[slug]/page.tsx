@@ -6,7 +6,6 @@ import { ShurtleHitsAnalyticsSkeleton } from "@/components/shurtle-detail/shurtl
 import { ShurtleGeoAnalytics } from "@/components/shurtle-detail/shurtle-geo-analytics";
 import { ShurtleGeoAnalyticsSkeleton } from "@/components/shurtle-detail/shurtle-geo-analytics-skeleton";
 import { ShurtleRecentHits } from "@/components/shurtle-detail/shurtle-recent-hits";
-import { ShurtleRecentHitsSkeleton } from "@/components/shurtle-detail/shurtle-recent-hits-skeleton";
 import { getShurtleDetails } from "@/lib/shurtles";
 import { auth } from "@clerk/nextjs/server";
 import { Metadata } from "next";
@@ -63,9 +62,7 @@ export default async function ShurtleDetailPage({ params }: ShurtleDetailPagePro
         </Suspense>
       </div>
       
-      <Suspense fallback={<ShurtleRecentHitsSkeleton />}>
-        <ShurtleRecentHits hits={shurtle.hits} />
-      </Suspense>
+      <ShurtleRecentHits hits={shurtle.hits} />
     </div>
   )
 }
