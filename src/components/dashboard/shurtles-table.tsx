@@ -26,7 +26,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Shurtle } from "@/db/schema"
 import { deleteShurtle } from "@/lib/actions"
 import { format, formatDistanceToNow } from "date-fns"
-import { Copy, MoreHorizontal, Search, Trash2 } from "lucide-react"
+import { BarChart3, Copy, MoreHorizontal, Search, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
@@ -258,6 +258,12 @@ export function ShurtlesTable({ shurtles: initialShurtles, currentPage, totalPag
                         <DropdownMenuItem onClick={() => copyToClipboard(shurtle.slug)}>
                           <Copy className="mr-2 h-4 w-4" />
                           Copy URL
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/shurtle/${shurtle.slug}`}>
+                            <BarChart3 className="mr-2 h-4 w-4" />
+                            View Details
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

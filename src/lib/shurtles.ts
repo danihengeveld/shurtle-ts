@@ -100,6 +100,88 @@ export async function getUrlBySlug(slug: string) {
   return shurtle?.url
 }
 
+// Get shurtle with owner validation
+const getShurtleWithOwnerPrepared = db.query.shurtles.findFirst({
+  where: (shurtles, { eq, and }) => and(
+    eq(shurtles.slug, sql.placeholder('slug')),
+    eq(shurtles.userId, sql.placeholder('userId'))
+  ),
+  with: {
+    hits: {
+      orderBy: (hits, { desc }) => desc(hits.at),
+      limit: 50 // Get recent hits for the table
+    }
+  }
+}).prepare('getShurtleWithOwner')
+
+export async function getShurtleDetails(slug: string, userId: string) {
+  logger.debug(`Fetching shurtle details for slug: ${slug}, user: ${userId}`)
+  
+  try {
+    const shurtle = await getShurtleWithOwnerPrepared.execute({ slug, userId })
+    
+    if (!shurtle) {
+      logger.debug(`Shurtle not found or user not authorized: ${slug}`)
+      return null
+    }
+    
+    logger.debug(`Found shurtle details for ${slug}: ${shurtle.hits.length} hits`)
+    return shurtle
+  } catch (error) {
+    logger.error(`Error fetching shurtle details for ${slug}:`, error)
+    throw error
+  }
+}
+
+// Get hit analytics over time for a shurtle
+const getShurtleHitsAnalyticsPrepared = db.select({
+  date: sql<string>`DATE(${shurtleHits.at})`,
+  hits: count(),
+}).from(shurtleHits)
+.where(eq(shurtleHits.slug, sql.placeholder('slug')))
+.groupBy(sql`DATE(${shurtleHits.at})`)
+.orderBy(sql`DATE(${shurtleHits.at})`)
+.prepare('getShurtleHitsAnalytics')
+
+export async function getShurtleAnalytics(slug: string) {
+  logger.debug(`Fetching analytics for slug: ${slug}`)
+  
+  try {
+    const analytics = await getShurtleHitsAnalyticsPrepared.execute({ slug })
+    logger.debug(`Found ${analytics.length} days of analytics for ${slug}`)
+    return analytics
+  } catch (error) {
+    logger.error(`Error fetching analytics for ${slug}:`, error)
+    return []
+  }
+}
+
+// Get geographic distribution of hits
+const getShurtleGeoAnalyticsPrepared = db.select({
+  country: shurtleHits.country,
+  region: shurtleHits.region,
+  city: shurtleHits.city,
+  hits: count(),
+}).from(shurtleHits)
+.where(eq(shurtleHits.slug, sql.placeholder('slug')))
+.groupBy(shurtleHits.country, shurtleHits.region, shurtleHits.city)
+.orderBy(sql`count(*) DESC`)
+.limit(20)
+.prepare('getShurtleGeoAnalytics')
+
+export async function getShurtleGeoAnalytics(slug: string) {
+  logger.debug(`Fetching geo analytics for slug: ${slug}`)
+  
+  try {
+    const geoAnalytics = await getShurtleGeoAnalyticsPrepared.execute({ slug })
+    logger.debug(`Found geo analytics for ${geoAnalytics.length} locations for ${slug}`)
+    return geoAnalytics
+  } catch (error) {
+    logger.error(`Error fetching geo analytics for ${slug}:`, error)
+    return []
+  }
+}
+
 export async function recordHit(slug: string, requestGeo: Geo) {
   const coordinates = requestGeo.latitude && requestGeo.longitude
     ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
