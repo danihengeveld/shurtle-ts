@@ -12,6 +12,17 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+// Serialized type for client components
+export type SerializedShurtle = {
+  slug: string
+  url: string
+  hits: number
+  userId: string
+  createdAt: string
+  lastHitAt: string | null
+  expiresAt: string | null
+}
+
 export const experimental_ppr = true
 
 interface ShurtleDetailPageProps {
@@ -44,9 +55,20 @@ export default async function ShurtleDetailPage({ params }: ShurtleDetailPagePro
     notFound()
   }
 
+  // Serialize the shurtle data for client components
+  const serializedShurtle: SerializedShurtle = {
+    slug: shurtle.slug,
+    url: shurtle.url,
+    hits: shurtle.hits,
+    userId: shurtle.userId,
+    createdAt: shurtle.createdAt.toISOString(),
+    lastHitAt: shurtle.lastHitAt?.toISOString() || null,
+    expiresAt: shurtle.expiresAt?.toISOString() || null,
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <ShurtleDetailHeader shurtle={shurtle} />
+      <ShurtleDetailHeader shurtle={serializedShurtle} />
       
       <Suspense fallback={<ShurtleDetailStatsSkeleton />}>
         <ShurtleDetailStats slug={slug} />

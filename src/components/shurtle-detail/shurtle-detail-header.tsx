@@ -4,7 +4,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shurtle } from "@/db/schema"
+import type { SerializedShurtle } from "@/app/shurtle/[slug]/page"
 import { deleteShurtle } from "@/lib/actions"
 import { format, formatDistanceToNow } from "date-fns"
 import { ArrowLeft, Copy, ExternalLink, Trash2 } from "lucide-react"
@@ -14,7 +14,7 @@ import { useState, useTransition } from "react"
 import { toast } from "sonner"
 
 interface ShurtleDetailHeaderProps {
-  shurtle: Shurtle
+  shurtle: SerializedShurtle
 }
 
 export function ShurtleDetailHeader({ shurtle }: ShurtleDetailHeaderProps) {
@@ -95,8 +95,8 @@ export function ShurtleDetailHeader({ shurtle }: ShurtleDetailHeaderProps) {
             
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Created</p>
-              <p className="text-sm" title={format(shurtle.createdAt, "PPpp")}>
-                {formatDistanceToNow(shurtle.createdAt, { addSuffix: true })}
+              <p className="text-sm" title={format(new Date(shurtle.createdAt), "PPpp")}>
+                {formatDistanceToNow(new Date(shurtle.createdAt), { addSuffix: true })}
               </p>
             </div>
             
@@ -106,7 +106,7 @@ export function ShurtleDetailHeader({ shurtle }: ShurtleDetailHeaderProps) {
               </p>
               <p className="text-sm">
                 {shurtle.expiresAt 
-                  ? formatDistanceToNow(shurtle.expiresAt, { addSuffix: true })
+                  ? formatDistanceToNow(new Date(shurtle.expiresAt), { addSuffix: true })
                   : "Never expires"
                 }
               </p>
@@ -116,7 +116,7 @@ export function ShurtleDetailHeader({ shurtle }: ShurtleDetailHeaderProps) {
           {shurtle.lastHitAt && (
             <div className="pt-2 border-t">
               <p className="text-sm text-muted-foreground">
-                Last hit: {formatDistanceToNow(shurtle.lastHitAt, { addSuffix: true })}
+                Last hit: {formatDistanceToNow(new Date(shurtle.lastHitAt), { addSuffix: true })}
               </p>
             </div>
           )}
