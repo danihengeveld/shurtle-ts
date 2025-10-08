@@ -31,7 +31,7 @@ export function ShurtleHitsChart({ data }: ShurtleHitsChartProps) {
           tickFormatter={(value) => `${value}`}
         />
         <Tooltip 
-          content={({ active, payload, label }) => {
+          content={({ active, payload }) => {
             if (active && payload && payload.length) {
               const data = payload[0].payload as ChartData
               return (
