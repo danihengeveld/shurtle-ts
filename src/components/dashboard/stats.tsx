@@ -11,18 +11,7 @@ export async function Stats() {
     throw new Error("Unauthorized")
   }
 
-  const getStatsCached = cache(
-    async () => {
-      return await getStats(userId)
-    },
-    [userId],
-    {
-      revalidate: 60,
-      tags: [`user:${userId}`, `stats:${userId}`]
-    }
-  );
-
-  const stats = await getStatsCached()
+  const stats = await getStats(userId)
 
   return (
     <div className="grid gap-4 md:grid-cols-2">

@@ -1,16 +1,10 @@
-import getConfig from "next/config";
 import Link from "next/link";
 
 export function Footer() {
-  const { publicRuntimeConfig } = getConfig()
-  const { version } = publicRuntimeConfig
-
   return (
     <footer className="w-full border-t py-6" role="contentinfo">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center gap-4 md:flex-row md:justify-between">
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-          &copy; {new Date().getFullYear()} Dani Hengeveld. All rights reserved.
-        </p>
+        <CopyrightNotice />
         <div className="flex gap-6">
           <div className="flex items-center gap-2">
             <Link
@@ -24,10 +18,19 @@ export function Footer() {
             </Link> */}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Version: {version}
+            Version: 1.4.0
           </p>
         </div>
       </div>
     </footer>
+  )
+}
+
+function CopyrightNotice() {
+  "use client";
+  return (
+    <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+      &copy; {new Date().getFullYear()} Dani Hengeveld. All rights reserved.
+    </p>
   )
 }

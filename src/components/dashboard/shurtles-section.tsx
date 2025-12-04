@@ -19,18 +19,7 @@ export async function ShurtlesSection({ searchParams }: ShurtlesSectionProps) {
   const perPage = Number((await searchParams)?.perPage) || 10
 
   // Fetch the paginated shurtles
-  const getShurtlesPaginatedCached = cache(
-    async () => {
-      return await getShurtlesPaginated(userId, page, perPage)
-    },
-    [userId, page.toString(), perPage.toString()],
-    {
-      revalidate: 60,
-      tags: [`user:${userId}`, `shurtles:${userId}`]
-    }
-  );
-
-  const { shurtles, totalPages } = await getShurtlesPaginatedCached()
+  const { shurtles, totalPages } = await getShurtlesPaginated(userId, page, perPage)
 
   return <ShurtlesTable
     key={`shurtles-table-${page}-${perPage}`}
