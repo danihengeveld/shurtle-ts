@@ -1,4 +1,3 @@
-import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 export function Footer() {

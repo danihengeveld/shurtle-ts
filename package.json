@@ -25,7 +25,7 @@
     "dev:no-turbo": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@clerk/nextjs": "6.36.0",
@@ -62,7 +62,6 @@
     "zod": "4.1.13"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "3.3.3",
     "@tailwindcss/postcss": "4.1.17",
     "@types/node": "24.10.1",
     "@types/react": "19.2.7",

@@ -2,7 +2,7 @@ import { db } from "@/db"
 import { shurtleHits, shurtles } from "@/db/schema"
 import { Geo } from "@vercel/functions"
 import { count, eq, sql, sum } from "drizzle-orm"
-import { cacheLife, cacheTag, revalidateTag } from "next/cache"
+import { cacheLife, cacheTag } from "next/cache"
 
 const userStatsPrepared = db.select({
   totalHits: sum(shurtles.hits),
