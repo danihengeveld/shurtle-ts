@@ -28,7 +28,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "6.35.6",
+    "@clerk/nextjs": "6.36.0",
     "@neondatabase/serverless": "1.0.2",
     "@radix-ui/react-alert-dialog": "1.1.15",
     "@radix-ui/react-collapsible": "1.1.12",
