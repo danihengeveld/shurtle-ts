@@ -6,8 +6,6 @@ import { StatsSkeleton } from "@/components/dashboard/stats-skeleton";
 import { Metadata } from "next";
 import { Suspense } from "react";
 
-export const experimental_ppr = true
-
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Manage your shurtles.",
