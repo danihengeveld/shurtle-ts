@@ -1,6 +1,5 @@
 import { getShurtlesPaginated } from "@/lib/shurtles"
 import { auth } from "@clerk/nextjs/server"
-import { unstable_cache as cache } from "next/cache"
 import { ShurtlesTable } from "./shurtles-table"
 
 interface ShurtlesSectionProps {

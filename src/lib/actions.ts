@@ -121,7 +121,7 @@ export async function createShurtle(
       expiresAt: validationResult.data.expiresAt || 'never'
     })
 
-    // Revalidate cache
+    // Read your writes
     updateTag(`user:${userId}/shurtles`)
     updateTag(`user:${userId}/stats`)
 
@@ -164,7 +164,6 @@ export async function deleteShurtle(slug: string) {
 
   updateTag(`user:${userId}/shurtles`)
   updateTag(`user:${userId}/stats`)
-  updateTag(`shurtle:${slug}`)
 
   return { success: true }
 }

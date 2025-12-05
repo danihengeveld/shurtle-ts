@@ -2,7 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getStats } from "@/lib/shurtles";
 import { auth } from "@clerk/nextjs/server";
 import { Link, LinkIcon } from "lucide-react";
-import { unstable_cache as cache } from "next/cache";
 
 export async function Stats() {
   const { userId } = await auth()
