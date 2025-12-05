@@ -123,6 +123,5 @@ export default function RootLayout({
         </ClerkProvider >
       </body>
     </html>
-
   )
 }
