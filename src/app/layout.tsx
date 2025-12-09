@@ -2,11 +2,9 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { logger } from "@/lib/logger";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { VercelToolbar } from '@vercel/toolbar/next';
 import type { Metadata, Viewport } from "next";
 // Temporarily disabled fonts due to network issues in sandbox
 // import { Geist, Geist_Mono } from "next/font/google";
@@ -105,17 +103,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isDev = process.env.NODE_ENV === 'development'
-  
-  // Log application startup on the server
-  if (typeof window === 'undefined') {
-    logger.info('Application rendering on server');
-  }
-  
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className="antialiased min-h-screen flex flex-col">
+    <html lang="en" suppressHydrationWarning>
+      <body className={`antialiased min-h-screen flex flex-col`}>
+        <ClerkProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -128,11 +119,10 @@ export default function RootLayout({
             <Footer />
             <Toaster />
           </ThemeProvider>
-          {isDev && <VercelToolbar />}
           <SpeedInsights />
           <Analytics />
-        </body>
-      </html>
-    </ClerkProvider >
+        </ClerkProvider >
+      </body>
+    </html>
   )
 }
