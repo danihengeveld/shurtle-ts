@@ -1,6 +1,6 @@
 # 🐢 Shurtle
 
-A modern, lightning-fast URL shortener built with Next.js 15 and the latest web technologies. Shurtle makes it easy to create, manage, and track your shortened URLs with a beautiful, responsive interface.
+A modern, lightning-fast URL shortener built with Next.js 16 and the latest web technologies. Shurtle makes it easy to create, manage, and track your shortened URLs with a beautiful, responsive interface.
 
 ## ✨ Features
 
@@ -159,4 +159,4 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-Built with ❤️ using Next.js 15, React 19, and modern web technologies.
+Built with ❤️ using Next.js 16, React 19.2, and modern web technologies.
