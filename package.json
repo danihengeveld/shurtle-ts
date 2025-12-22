@@ -58,7 +58,7 @@
     "react-dom": "19.2.3",
     "sonner": "2.0.7",
     "tailwind-merge": "3.4.0",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.17",
