@@ -67,7 +67,7 @@
     "@types/react-dom": "19.2.3",
     "babel-plugin-react-compiler": "1.0.0",
     "drizzle-kit": "0.31.8",
-    "eslint": "9.39.1",
+    "eslint": "9.39.2",
     "eslint-config-next": "16.1.0",
     "tailwindcss": "4.1.18",
     "tsx": "4.21.0",
