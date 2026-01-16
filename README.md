@@ -157,6 +157,12 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 This project is open source and available under the [MIT License](LICENSE).
 
+## 👤 Author
+
+**Dani Hengeveld**
+- Website: [dani.hengeveld.dev](https://dani.hengeveld.dev)
+- GitHub: [@danihengeveld](https://github.com/danihengeveld)
+
 ---
 
-Built with ❤️ using Next.js 16, React 19.2, and modern web technologies.
+Built with ❤️ using Next.js 16, React 19.2, Clerk and modern web technologies.
