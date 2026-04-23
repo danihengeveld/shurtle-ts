@@ -20,7 +20,7 @@ export function Footer() {
             </Link> */}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Version: 1.4.2
+            Version: 1.4.3
           </p>
         </div>
       </div>
