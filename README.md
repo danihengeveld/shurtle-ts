@@ -32,7 +32,7 @@ An open source, blazingly fast URL shortener built with Next.js 16, React 19 and
 | Rate limiting | [Upstash Redis](https://upstash.com/) + `@upstash/ratelimit` |
 | Auth | [Clerk](https://clerk.com/) |
 | Validation | [Zod 4](https://zod.dev/) |
-| Hosting | [Vercel](https://vercel.com/) (Cron for cleanup, Analytics, Speed Insights) |
+| Hosting | [Vercel](https://vercel.com/) (Cron for archiving expired links, Analytics, Speed Insights) |
 
 ### 💰 Free tier notice
 
@@ -77,7 +77,7 @@ The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it m
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
    CLERK_SECRET_KEY="sk_..."
 
-   # Protects the weekly cleanup cron endpoint (any long random string)
+   # Protects the daily archive-expired cron endpoint (any long random string)
    CRON_SECRET="..."
 
    # Optional: public origin used for short links and metadata.
@@ -119,7 +119,7 @@ The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it m
 
 ### Deploying
 
-Deploy to Vercel with the environment variables above. `vercel.json` schedules `/api/cron/cleanup` weekly to delete expired links; Vercel sends `CRON_SECRET` automatically as a bearer token.
+Deploy to Vercel with the environment variables above. `vercel.json` schedules `/api/cron/archive-expired` daily to archive expired links (they stop redirecting the moment they expire either way, and are never deleted automatically); Vercel sends `CRON_SECRET` automatically as a bearer token.
 
 ## 🤝 Contributing
 

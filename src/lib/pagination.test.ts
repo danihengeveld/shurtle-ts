@@ -3,7 +3,12 @@ import { DEFAULT_PER_PAGE, MAX_SEARCH_LENGTH, dashboardHref, parseDashboardQuery
 
 describe("parseDashboardQuery", () => {
   it("falls back to defaults", () => {
-    expect(parseDashboardQuery({})).toEqual({ page: 1, perPage: DEFAULT_PER_PAGE, query: "" })
+    expect(parseDashboardQuery({})).toEqual({ page: 1, perPage: DEFAULT_PER_PAGE, query: "", status: "active" })
+  })
+
+  it("only accepts known statuses", () => {
+    expect(parseDashboardQuery({ status: "expired" }).status).toBe("expired")
+    expect(parseDashboardQuery({ status: "archived" }).status).toBe("active")
   })
 
   it("clamps invalid page numbers", () => {
@@ -32,5 +37,6 @@ describe("dashboardHref", () => {
 
   it("encodes non-default params", () => {
     expect(dashboardHref({ page: 2, perPage: 50, query: "a&b" })).toBe("/dashboard?q=a%26b&page=2&perPage=50")
+    expect(dashboardHref({ status: "expired", page: 2 })).toBe("/dashboard?status=expired&page=2")
   })
 })

@@ -29,8 +29,9 @@ export function LinksPagination({
   totalPages,
   perPage,
   query,
+  status,
 }: DashboardQuery & { basePath: string; totalPages: number }) {
-  const href = (target: number) => linksHref(basePath, { page: target, perPage, query }, "links")
+  const href = (target: number) => linksHref(basePath, { page: target, perPage, query, status }, "links")
   const hasPrevious = page > 1
   const hasNext = page < totalPages
 

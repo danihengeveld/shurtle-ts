@@ -3,7 +3,7 @@ import { geolocation, ipAddress } from "@vercel/functions"
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server"
 import { logger } from "./lib/logger"
 import { rateLimits } from "./lib/ratelimits"
-import { getUrlBySlug, recordHit } from "./lib/shurtles"
+import { recordHit, resolveSlug } from "./lib/shurtles"
 import { isValidSlug } from "./lib/slugs"
 
 /**
@@ -60,9 +60,9 @@ async function resolveShortLink(request: NextRequest, event: NextFetchEvent, slu
     }
   }
 
-  let destination: string | undefined
+  let link: Awaited<ReturnType<typeof resolveSlug>>
   try {
-    destination = await getUrlBySlug(slug)
+    link = await resolveSlug(slug)
   } catch (error) {
     logger.error({ err: error, slug }, "failed to resolve short link")
     headers.set("Retry-After", "30")
@@ -72,10 +72,16 @@ async function resolveShortLink(request: NextRequest, event: NextFetchEvent, slu
     })
   }
 
-  if (!destination) {
+  if (!link) {
     logger.debug({ slug }, "short link not found")
     // Keep the URL in the address bar so the 404 page can offer to claim the slug.
     return NextResponse.rewrite(new URL("/not-found", request.url), { status: 404, headers })
+  }
+
+  if (link.expired) {
+    logger.debug({ slug }, "short link expired")
+    // 410 Gone: the link existed and won't come back (the slug stays taken). No hit is recorded.
+    return NextResponse.rewrite(new URL("/expired", request.url), { status: 410, headers })
   }
 
   // Debug only: every visit is already recorded in shurtle.hits, so production stays quiet.
@@ -83,7 +89,7 @@ async function resolveShortLink(request: NextRequest, event: NextFetchEvent, slu
   event.waitUntil(recordHit(slug, geolocation(request)))
 
   // 307 (not 301/308) so browsers don't cache the redirect: every visit is counted and edits apply.
-  return NextResponse.redirect(destination, { status: 307, headers })
+  return NextResponse.redirect(link.url, { status: 307, headers })
 }
 
 export const config = {

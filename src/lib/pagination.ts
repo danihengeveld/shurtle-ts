@@ -5,10 +5,14 @@ export type PerPage = (typeof PER_PAGE_OPTIONS)[number]
 export const DEFAULT_PER_PAGE: PerPage = 10
 export const MAX_SEARCH_LENGTH = 100
 
+/** Which links the list shows. Expired links are kept (archived), never deleted automatically. */
+export type LinkStatus = "active" | "expired"
+
 export type DashboardSearchParams = {
   page?: string | string[]
   perPage?: string | string[]
   q?: string | string[]
+  status?: string | string[]
   /** Slug to prefill in the create dialog (opens it), e.g. from the "claim this slug" CTA. */
   new?: string | string[]
 }
@@ -17,6 +21,7 @@ export type DashboardQuery = {
   page: number
   perPage: PerPage
   query: string
+  status: LinkStatus
 }
 
 function first(value: string | string[] | undefined) {
@@ -33,12 +38,19 @@ export function parseDashboardQuery(params: DashboardSearchParams): DashboardQue
     page: Number.isSafeInteger(page) && page > 0 ? page : 1,
     perPage: (PER_PAGE_OPTIONS as readonly number[]).includes(perPage) ? (perPage as PerPage) : DEFAULT_PER_PAGE,
     query,
+    status: first(params.status) === "expired" ? "expired" : "active",
   }
 }
 
 /** Build a dashboard href, omitting params that equal their defaults. */
-export function dashboardHref({ page = 1, perPage = DEFAULT_PER_PAGE, query = "" }: Partial<DashboardQuery>) {
+export function dashboardHref({
+  page = 1,
+  perPage = DEFAULT_PER_PAGE,
+  query = "",
+  status = "active",
+}: Partial<DashboardQuery>) {
   const params = new URLSearchParams()
+  if (status !== "active") params.set("status", status)
   if (query) params.set("q", query)
   if (page > 1) params.set("page", String(page))
   if (perPage !== DEFAULT_PER_PAGE) params.set("perPage", String(perPage))

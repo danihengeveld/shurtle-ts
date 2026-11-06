@@ -1,4 +1,4 @@
-import { relations, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
+import { relations, sql, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
 import { index, integer, pgSchema, point, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const schema = pgSchema("shurtle");
@@ -12,13 +12,18 @@ export const shurtles = schema.table("shurtles", {
 	hits: integer("hits").default(0).notNull(),
 	userId: varchar("user_id", { length: 255 }).notNull(),
 	lastHitAt: timestamp("last_hit_at", { withTimezone: true, mode: 'date', precision: 0 }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date', precision: 0 }).defaultNow().notNull()
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date', precision: 0 }).defaultNow().notNull(),
+	// Set when an expired shurtle is archived (by the daily cron, or when its URL is shortened again).
+	// A shurtle counts as expired once `expires_at` has passed, even before it is archived; see
+	// `isExpired` in src/lib/shurtles.ts. Expired shurtles are kept, never deleted automatically.
+	archivedAt: timestamp("archived_at", { withTimezone: true, mode: 'date', precision: 0 })
 }, (table) => [
 	// Serves the dashboard list (filter by user, newest first) and per-user stats.
 	index("user_id_created_at_idx").on(table.userId, table.createdAt.desc()),
-	// One shurtle per destination per user, enforced even for concurrent creates. URLs are capped at
-	// 2048 ASCII characters (normalized by URL parsing), well within the btree entry size limit.
-	uniqueIndex("user_id_url_idx").on(table.userId, table.url)
+	// One live shurtle per destination per user, enforced even for concurrent creates. Archived ones
+	// are excluded so a URL can be shortened again after its link expired. URLs are capped at 2048
+	// ASCII characters (normalized by URL parsing), well within the btree entry size limit.
+	uniqueIndex("user_id_url_idx").on(table.userId, table.url).where(sql`archived_at is null`)
 ])
 
 export const shurtlesRelations = relations(shurtles, ({ many }) => ({

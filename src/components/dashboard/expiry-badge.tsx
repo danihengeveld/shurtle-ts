@@ -8,7 +8,7 @@ const pill = "inline-flex items-center gap-1.5 rounded-full border text-xs font-
 /** Calm states are plain text that inherits the surrounding size; only states needing attention get a pill. */
 const quiet = "whitespace-nowrap text-muted-foreground tabular-nums"
 
-/** Expiry state: "Never", "Expires Dec 24", "Expires in 3 days" (warning) or "Expired". */
+/** Expiry state: "Never", "Expires Dec 24", "Expires in 3 days" (warning) or "Expired Nov 13". */
 export function ExpiryBadge({
   expiresAt,
   compact = false,
@@ -30,16 +30,16 @@ export function ExpiryBadge({
       return (
         <span className={cn(quiet, className)}>Never</span>
       )
-    case "expired":
+    case "expired": {
+      // Muted, not alarming: expiring is the intended end of a link's life. The date says when.
+      const withYear = new Date(now).getUTCFullYear() !== status.expiresAt.getUTCFullYear()
       return (
-        <span
-          title={title}
-          className={cn(base, "border-destructive/25 bg-destructive/8 text-[color-mix(in_oklab,var(--destructive)_85%,black)] dark:bg-destructive/12 dark:text-[color-mix(in_oklab,var(--destructive)_80%,white)]", className)}
-        >
-          <span aria-hidden className="size-1.5 rounded-full bg-destructive" />
-          Expired
+        <span title={title} className={cn(base, "border-border bg-muted text-muted-foreground", className)}>
+          <span aria-hidden className="size-1.5 rounded-full bg-muted-foreground/60" />
+          Expired {formatDate(status.expiresAt, { timeZone: hydrated ? undefined : "UTC", withYear })}
         </span>
       )
+    }
     case "soon":
       return (
         <span title={title} className={cn(base, "border-warning/40 bg-warning/12 text-foreground", className)}>

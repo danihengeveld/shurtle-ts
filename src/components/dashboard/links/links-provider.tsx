@@ -1,7 +1,7 @@
 "use client"
 
 import { deleteShurtle, type DeleteShurtleResult } from "@/lib/actions"
-import type { DashboardQuery } from "@/lib/pagination"
+import type { DashboardQuery, LinkStatus } from "@/lib/pagination"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { linksHref } from "./href"
@@ -12,7 +12,12 @@ type DeleteAction = (slug: string) => Promise<DeleteShurtleResult>
 type LinksContextValue = {
   /** Base path of the list (the real dashboard, or the preview harness). */
   basePath: string
-  /** Navigate to another page / search of the list, keeping the current UI until it is ready. */
+  /** Which links the list shows. */
+  status: LinkStatus
+  /**
+   * Navigate to another page / search of the list, keeping the current UI until it is ready. Stays
+   * on the current status unless `status` is given.
+   */
   navigate: (query: Partial<DashboardQuery>) => void
   isNavigating: boolean
   /** Slugs with a delete in flight (optimistic). */
@@ -34,10 +39,12 @@ const NO_SLUGS: ReadonlySet<string> = new Set()
 
 export function LinksProvider({
   basePath = "/dashboard",
+  status = "active",
   deleteAction = deleteShurtle,
   children,
 }: {
   basePath?: string
+  status?: LinkStatus
   deleteAction?: DeleteAction
   children: React.ReactNode
 }) {
@@ -47,12 +54,12 @@ export function LinksProvider({
 
   function navigate(query: Partial<DashboardQuery>) {
     startNavigation(() => {
-      router.replace(linksHref(basePath, query), { scroll: false })
+      router.replace(linksHref(basePath, { status, ...query }), { scroll: false })
     })
   }
 
   return (
-    <LinksContext value={{ basePath, navigate, isNavigating, deleting, markDeleting, deleteAction }}>
+    <LinksContext value={{ basePath, status, navigate, isNavigating, deleting, markDeleting, deleteAction }}>
       {children}
     </LinksContext>
   )

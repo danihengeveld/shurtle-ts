@@ -1,9 +1,10 @@
 import { CreateLinkButton } from "@/components/create/create-link-provider"
 import { Button } from "@/components/ui/button"
-import { DEFAULT_PER_PAGE, PER_PAGE_OPTIONS, type DashboardQuery } from "@/lib/pagination"
+import { TabsContent } from "@/components/ui/tabs"
+import { DEFAULT_PER_PAGE, PER_PAGE_OPTIONS, type DashboardQuery, type LinkStatus } from "@/lib/pagination"
 import { siteInfo } from "@/lib/site"
 import { cn } from "@/lib/utils"
-import { ArrowRightIcon, SearchXIcon } from "lucide-react"
+import { ArchiveIcon, ArrowRightIcon, LinkIcon, SearchXIcon } from "lucide-react"
 import Link from "next/link"
 import { formatCount } from "../format"
 import { ServerNowProvider } from "../time"
@@ -13,17 +14,20 @@ import { LinksList, LinksTable, type LinkRow } from "./link-rows"
 import { LinksPagination } from "./links-pagination"
 import { LinksBusyRegion, LinksProvider } from "./links-provider"
 import { PerPageSelect } from "./per-page-select"
+import { StatusTabs, StatusTabsList } from "./status-tabs"
 
 export type LinksPage = DashboardQuery & {
   shurtles: LinkRow[]
   totalCount: number
   totalPages: number
+  /** Unfiltered totals per status, for the tabs. */
+  counts: Record<LinkStatus, number>
 }
 
-export function LinksHeading({ count, children }: { count?: number; children?: React.ReactNode }) {
+export function LinksHeading({ tabs, children }: { tabs?: React.ReactNode; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <h2
           id="links-heading"
           tabIndex={-1}
@@ -31,13 +35,7 @@ export function LinksHeading({ count, children }: { count?: number; children?: R
         >
           Links
         </h2>
-        {count !== undefined && (
-          <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-muted px-2 text-xs font-medium text-muted-foreground tabular-nums">
-            <span className="sr-only">(</span>
-            {formatCount(count)}
-            <span className="sr-only"> total)</span>
-          </span>
-        )}
+        {tabs}
       </div>
       {children}
     </div>
@@ -60,67 +58,89 @@ export function LinksPanel({
   basePath?: string
   deleteAction?: React.ComponentProps<typeof LinksProvider>["deleteAction"]
 }) {
-  const { shurtles: links, totalCount, totalPages, page, perPage, query } = data
-  const isEmptyAccount = totalCount === 0 && !query
+  const { shurtles: links, totalCount, totalPages, page, perPage, query, status, counts } = data
+  const isEmptyAccount = counts.active + counts.expired === 0 && !query
+  const expired = status === "expired"
   const first = (page - 1) * perPage + 1
   const last = first + links.length - 1
-  const noun = query ? (totalCount === 1 ? "result" : "results") : totalCount === 1 ? "link" : "links"
+  const kind = expired ? "expired " : ""
+  const noun = query
+    ? totalCount === 1
+      ? "result"
+      : "results"
+    : `${kind}${totalCount === 1 ? "link" : "links"}`
+  const label = query ? `${expired ? "Expired links" : "Links"} matching “${query}”` : expired ? "Expired links" : "Active links"
+
+  const list = isEmptyAccount ? (
+    <EmptyAccount />
+  ) : totalCount === 0 && !query ? (
+    expired ? (
+      <NoExpiredLinks />
+    ) : (
+      <NoActiveLinks expiredHref={linksHref(basePath, { status: "expired", perPage })} expiredCount={counts.expired} />
+    )
+  ) : totalCount === 0 ? (
+    <NoResults query={query} expired={expired} clearHref={linksHref(basePath, { status, perPage })} />
+  ) : links.length === 0 ? (
+    <PageOutOfRange
+      page={page}
+      lastHref={linksHref(basePath, { page: totalPages, perPage, query, status }, "links")}
+      totalPages={totalPages}
+    />
+  ) : (
+    <>
+      <LinksTable links={links} expired={expired} caption={label} />
+      <LinksList links={links} expired={expired} label={label} />
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <p className="text-sm text-muted-foreground tabular-nums max-sm:mr-auto">
+          Showing{" "}
+          <span className="font-medium text-foreground">
+            {formatCount(first)}–{formatCount(last)}
+          </span>{" "}
+          of <span className="font-medium text-foreground">{formatCount(totalCount)}</span> {noun}
+        </p>
+        <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-3 max-sm:contents sm:ml-auto">
+          {(totalPages > 1 || totalCount > PER_PAGE_OPTIONS[0] || perPage !== DEFAULT_PER_PAGE) && (
+            <PerPageSelect perPage={perPage} query={query} />
+          )}
+          {totalPages > 1 && (
+            <LinksPagination
+              basePath={basePath}
+              page={page}
+              totalPages={totalPages}
+              perPage={perPage}
+              query={query}
+              status={status}
+            />
+          )}
+        </div>
+      </div>
+    </>
+  )
 
   return (
-    <LinksProvider basePath={basePath} deleteAction={deleteAction}>
+    <LinksProvider basePath={basePath} status={status} deleteAction={deleteAction}>
       <ServerNowProvider now={now}>
-        <div id="links" className="scroll-mt-24">
-          <LinksHeading count={isEmptyAccount || query ? undefined : totalCount}>
-            {!isEmptyAccount && <LinkSearch query={query} perPage={perPage} className="w-full sm:w-80" />}
-          </LinksHeading>
+        <StatusTabs status={status}>
+          <div id="links" className="scroll-mt-24">
+            <LinksHeading tabs={isEmptyAccount ? undefined : <StatusTabsList counts={counts} />}>
+              {!isEmptyAccount && <LinkSearch query={query} perPage={perPage} className="w-full sm:w-80" />}
+            </LinksHeading>
 
-          <LinksBusyRegion className="mt-4">
-            <p className="sr-only" role="status">
-              {query
-                ? totalCount === 0
-                  ? `No links match “${query}”.`
-                  : `${formatCount(totalCount)} ${noun} for “${query}”.`
-                : ""}
-            </p>
+            <LinksBusyRegion className="mt-4">
+              <p className="sr-only" role="status">
+                {query
+                  ? totalCount === 0
+                    ? `No ${kind}links match “${query}”.`
+                    : `${formatCount(totalCount)} ${noun} for “${query}”.`
+                  : ""}
+              </p>
 
-            {isEmptyAccount ? (
-              <EmptyAccount />
-            ) : totalCount === 0 ? (
-              <NoResults query={query} clearHref={linksHref(basePath, { perPage })} />
-            ) : links.length === 0 ? (
-              <PageOutOfRange page={page} lastHref={linksHref(basePath, { page: totalPages, perPage, query }, "links")} totalPages={totalPages} />
-            ) : (
-              <>
-                <LinksTable links={links} caption={query ? `Links matching “${query}”` : "Your links"} />
-                <LinksList links={links} label={query ? `Links matching “${query}”` : "Your links"} />
-
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-                  <p className="text-sm text-muted-foreground tabular-nums max-sm:mr-auto">
-                    Showing{" "}
-                    <span className="font-medium text-foreground">
-                      {formatCount(first)}–{formatCount(last)}
-                    </span>{" "}
-                    of <span className="font-medium text-foreground">{formatCount(totalCount)}</span> {noun}
-                  </p>
-                  <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-3 max-sm:contents sm:ml-auto">
-                    {(totalPages > 1 || totalCount > PER_PAGE_OPTIONS[0] || perPage !== DEFAULT_PER_PAGE) && (
-                      <PerPageSelect perPage={perPage} query={query} />
-                    )}
-                    {totalPages > 1 && (
-                      <LinksPagination
-                        basePath={basePath}
-                        page={page}
-                        totalPages={totalPages}
-                        perPage={perPage}
-                        query={query}
-                      />
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-          </LinksBusyRegion>
-        </div>
+              {isEmptyAccount ? list : <TabsContent value={status}>{list}</TabsContent>}
+            </LinksBusyRegion>
+          </div>
+        </StatusTabs>
       </ServerNowProvider>
     </LinksProvider>
   )
@@ -143,7 +163,7 @@ function EmptyAccount() {
   const host = siteInfo.baseUrl.host
   return (
     <EmptyCard className="sm:py-20">
-      <div aria-hidden className="absolute inset-0 -z-10 [mask-image:radial-gradient(60%_70%_at_50%_45%,black,transparent)]">
+      <div aria-hidden className="absolute inset-0 -z-10 mask-[radial-gradient(60%_70%_at_50%_45%,black,transparent)]">
         <div className="bg-shell size-full" />
       </div>
       <div className="mx-auto max-w-md">
@@ -176,14 +196,51 @@ function EmptyAccount() {
   )
 }
 
-function NoResults({ query, clearHref }: { query: string; clearHref: string }) {
+function NoActiveLinks({ expiredHref, expiredCount }: { expiredHref: string; expiredCount: number }) {
+  return (
+    <EmptyCard>
+      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+        <LinkIcon aria-hidden className="size-5" />
+      </div>
+      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-balance">No active links</h3>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
+        All of your links have expired. Create a new one, or look back at the {formatCount(expiredCount)} that ran
+        their course.
+      </p>
+      <div className="mt-6 flex flex-col justify-center gap-2 min-[25rem]:flex-row">
+        <CreateLinkButton className="h-10 rounded-xl sm:h-9">New link</CreateLinkButton>
+        <Button asChild variant="outline" className="h-10 rounded-xl sm:h-9">
+          <Link href={expiredHref} scroll={false}>
+            View expired links
+          </Link>
+        </Button>
+      </div>
+    </EmptyCard>
+  )
+}
+
+function NoExpiredLinks() {
+  return (
+    <EmptyCard>
+      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+        <ArchiveIcon aria-hidden className="size-5" />
+      </div>
+      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-balance">No expired links</h3>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
+        Links you give an expiry date land here once it passes. They stop redirecting, but keep their click history.
+      </p>
+    </EmptyCard>
+  )
+}
+
+function NoResults({ query, expired, clearHref }: { query: string; expired: boolean; clearHref: string }) {
   return (
     <EmptyCard>
       <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
         <SearchXIcon aria-hidden className="size-5" />
       </div>
       <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-balance">
-        No links match <span className="break-all">“{query}”</span>
+        No {expired ? "expired " : ""}links match <span className="break-all">“{query}”</span>
       </h3>
       <p className="mx-auto mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
         Search looks at slugs and destination URLs. Check the spelling or try a shorter term.

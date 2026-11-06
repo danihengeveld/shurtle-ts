@@ -26,22 +26,24 @@ export async function ClicksSection() {
 async function loadLinks(searchParams: Promise<DashboardSearchParams>) {
   const userId = await requireUserId()
   const query = parseDashboardQuery(await searchParams)
-  const page = await getShurtlesPaginated(userId, query)
+  // The stats are cached and shared with the stats section; they provide the Active / Expired counts.
+  const [page, stats] = await Promise.all([getShurtlesPaginated(userId, query), getStats(userId)])
   // Request time. Relative dates render from it on the server and during hydration, so both match,
   // and then tick on the client. Cookies and searchParams alone don't make this request-time: a
   // runtime prefetch (partialPrefetching) can resolve them, so defer explicitly with connection().
   await connection()
-  return { page, now: Date.now() }
+  return { page, stats, now: Date.now() }
 }
 
 export async function LinksSection({ searchParams }: { searchParams: Promise<DashboardSearchParams> }) {
-  const { page, now } = await loadLinks(searchParams)
+  const { page, stats, now } = await loadLinks(searchParams)
 
   return (
     <LinksPanel
       now={now}
       data={{
         ...page,
+        counts: { active: stats.activeShurtles, expired: stats.expiredShurtles },
         shurtles: page.shurtles.map(({ slug, url, hits, createdAt, lastHitAt, expiresAt }) => ({
           slug,
           url,

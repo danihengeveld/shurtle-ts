@@ -2,7 +2,7 @@
 
 import { db } from "@/db"
 import { shurtles } from "@/db/schema"
-import { and, eq } from "drizzle-orm"
+import { and, eq, isNull, sql } from "drizzle-orm"
 import { customAlphabet } from "nanoid"
 import { updateTag } from "next/cache"
 import { z } from "zod"
@@ -11,6 +11,7 @@ import { urlHost } from "./log-serializers"
 import { logger } from "./logger"
 import { rateLimits } from "./ratelimits"
 import { createShurtleSchema } from "./schemas"
+import { isExpired } from "./shurtles"
 import { GENERATED_SLUG_LENGTH, SLUG_PATTERN } from "./slugs"
 import { shurtlesTag, statsTag } from "./tags"
 
@@ -81,22 +82,31 @@ export async function createShurtle(
   const { url, slug: customSlug, expiresAt } = parsed.data
   const host = urlHost(url)
 
-  const findExistingSlug = async () => {
+  /** This user's unarchived link for the URL, if any (the scope of the partial unique index). */
+  const findLiveLink = async () => {
     const [existing] = await db
-      .select({ slug: shurtles.slug })
+      .select({ slug: shurtles.slug, expired: isExpired })
       .from(shurtles)
-      .where(and(eq(shurtles.userId, userId), eq(shurtles.url, url)))
+      .where(and(eq(shurtles.userId, userId), eq(shurtles.url, url), isNull(shurtles.archivedAt)))
       .limit(1)
-    return existing?.slug
+    return existing
   }
   const alreadyShortened = (slug: string) => fail({ url: [`You already shortened this URL as /${slug}.`] })
 
   try {
     // Fast path for the common case; the unique (user_id, url) index below is what guarantees it.
-    const existingSlug = await findExistingSlug()
-    if (existingSlug) {
-      logger.debug({ userId, slug: existingSlug }, "create shurtle rejected: url already shortened")
-      return alreadyShortened(existingSlug)
+    const live = await findLiveLink()
+    if (live && !live.expired) {
+      logger.debug({ userId, slug: live.slug }, "create shurtle rejected: url already shortened")
+      return alreadyShortened(live.slug)
+    }
+    if (live) {
+      // Expired but not archived by the daily cron yet: archive it now so the URL can be reused.
+      await db
+        .update(shurtles)
+        .set({ archivedAt: sql`now()` })
+        .where(and(eq(shurtles.slug, live.slug), isNull(shurtles.archivedAt)))
+      logger.info({ userId, slug: live.slug }, "archived expired shurtle to reuse its url")
     }
 
     // Insert-or-skip: no read-then-write race. Without a target, a clash on either unique key (the
@@ -121,10 +131,10 @@ export async function createShurtle(
 
       if (!createdSlug) {
         // A concurrent request created the same URL first: report it rather than retrying.
-        const racedSlug = await findExistingSlug()
-        if (racedSlug) {
-          logger.info({ userId, slug: racedSlug }, "concurrent create of the same url caught by unique index")
-          return alreadyShortened(racedSlug)
+        const raced = await findLiveLink()
+        if (raced) {
+          logger.info({ userId, slug: raced.slug }, "concurrent create of the same url caught by unique index")
+          return alreadyShortened(raced.slug)
         }
       }
     }
@@ -177,7 +187,7 @@ export async function deleteShurtle(slug: string): Promise<DeleteShurtleResult> 
       .returning({ slug: shurtles.slug })
 
     if (deleted.length === 0) {
-      // Already deleted (another tab, the cleanup cron) or not this user's link.
+      // Already deleted (e.g. in another tab) or not this user's link.
       logger.info({ userId, slug }, "delete shurtle found nothing to delete")
       return { ok: false, error: "This shurtle no longer exists." }
     }

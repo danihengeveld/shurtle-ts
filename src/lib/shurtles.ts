@@ -3,16 +3,40 @@ import "server-only"
 import { db } from "@/db"
 import { shurtleHits, shurtles } from "@/db/schema"
 import type { Geo } from "@vercel/functions"
-import { and, desc, eq, gt, gte, ilike, isNull, or, sql } from "drizzle-orm"
+import { and, desc, eq, gte, ilike, not, or, sql } from "drizzle-orm"
 import { cacheLife, cacheTag } from "next/cache"
 import { logger } from "./logger"
 import type { DashboardQuery } from "./pagination"
 import { shurtlesTag, statsTag } from "./tags"
 
+/**
+ * The single definition of "expired": archived, or past its expiry moment (even if the cron hasn't
+ * archived it yet). `coalesce` keeps never-expiring links (`expires_at is null`) out of it: a bare
+ * comparison would be null, and `not (null)` is null too, so they'd drop out of both lists.
+ */
+export const isExpired = sql<boolean>`(${shurtles.archivedAt} is not null or coalesce(${shurtles.expiresAt} <= now(), false))`
+
+/** The user's next upcoming expiry (or null): the moment cached lists and counts go out of date. */
+const nextExpiry = sql<Date | null>`min(${shurtles.expiresAt}) filter (where ${shurtles.archivedAt} is null and ${shurtles.expiresAt} > now())`.mapWith(
+  shurtles.expiresAt,
+)
+
+/**
+ * The built-in "minutes" profile (stale 5 min, revalidate 1 min, expire 1 h), cut short so the entry
+ * expires when the user's next link does. Without this, a link that expires naturally (nothing to
+ * call `updateTag`) would stay under Active, with stale counts, until the cache ran out.
+ */
+function cacheLifeUntil(next: Date | null) {
+  if (!next) return cacheLife("minutes")
+  const seconds = Math.max(1, Math.ceil((next.getTime() - Date.now()) / 1000))
+  cacheLife({ stale: Math.min(300, seconds), revalidate: Math.min(60, seconds), expire: Math.min(3600, seconds) })
+}
+
 export type ShurtleStats = {
   totalShurtles: number
   /** Shurtles that have not expired. */
   activeShurtles: number
+  expiredShurtles: number
   totalHits: number
 }
 
@@ -25,18 +49,25 @@ export type DailyClicks = {
 export async function getStats(userId: string): Promise<ShurtleStats> {
   "use cache"
   cacheTag(statsTag(userId))
-  cacheLife("minutes")
 
   const [row] = await db
     .select({
       totalShurtles: sql<number>`count(*)::int`,
-      activeShurtles: sql<number>`(count(*) filter (where ${shurtles.expiresAt} is null or ${shurtles.expiresAt} > now()))::int`,
+      activeShurtles: sql<number>`(count(*) filter (where not ${isExpired}))::int`,
+      expiredShurtles: sql<number>`(count(*) filter (where ${isExpired}))::int`,
       totalHits: sql<number>`coalesce(sum(${shurtles.hits}), 0)::int`,
+      nextExpiry,
     })
     .from(shurtles)
     .where(eq(shurtles.userId, userId))
 
-  return row ?? { totalShurtles: 0, activeShurtles: 0, totalHits: 0 }
+  cacheLifeUntil(row?.nextExpiry ?? null)
+  return {
+    totalShurtles: row?.totalShurtles ?? 0,
+    activeShurtles: row?.activeShurtles ?? 0,
+    expiredShurtles: row?.expiredShurtles ?? 0,
+    totalHits: row?.totalHits ?? 0,
+  }
 }
 
 /** Clicks per UTC day for the last `days` days (oldest first, zero-filled, includes today). */
@@ -68,28 +99,35 @@ function escapeLike(value: string) {
   return value.replace(/[\\%_]/g, "\\$&")
 }
 
-export async function getShurtlesPaginated(userId: string, { page, perPage, query }: DashboardQuery) {
+export async function getShurtlesPaginated(userId: string, { page, perPage, query, status }: DashboardQuery) {
   "use cache"
   cacheTag(shurtlesTag(userId))
-  cacheLife("minutes")
 
   const pattern = `%${escapeLike(query)}%`
   const where = and(
     eq(shurtles.userId, userId),
+    status === "expired" ? isExpired : not(isExpired),
     query ? or(ilike(shurtles.slug, pattern), ilike(shurtles.url, pattern)) : undefined,
   )
 
-  const [rows, totalCount] = await Promise.all([
+  const [rows, totalCount, [upcoming]] = await Promise.all([
     db
       .select()
       .from(shurtles)
       .where(where)
-      .orderBy(desc(shurtles.createdAt), shurtles.slug)
+      // Active: newest first. Expired: most recently expired first.
+      .orderBy(
+        ...(status === "expired" ? [desc(shurtles.expiresAt)] : []),
+        desc(shurtles.createdAt),
+        shurtles.slug,
+      )
       .limit(perPage)
       .offset((page - 1) * perPage),
     db.$count(shurtles, where),
+    db.select({ nextExpiry }).from(shurtles).where(eq(shurtles.userId, userId)),
   ])
 
+  cacheLifeUntil(upcoming?.nextExpiry ?? null)
   return {
     shurtles: rows,
     totalCount,
@@ -97,25 +135,21 @@ export async function getShurtlesPaginated(userId: string, { page, perPage, quer
     page,
     perPage,
     query,
+    status,
   }
 }
 
-const getUrlBySlugPrepared = db
-  .select({ url: shurtles.url })
+const resolveSlugPrepared = db
+  .select({ url: shurtles.url, expired: isExpired })
   .from(shurtles)
-  .where(
-    and(
-      eq(shurtles.slug, sql.placeholder("slug")),
-      or(isNull(shurtles.expiresAt), gt(shurtles.expiresAt, sql`now()`)),
-    ),
-  )
+  .where(eq(shurtles.slug, sql.placeholder("slug")))
   .limit(1)
-  .prepare("getUrlBySlug")
+  .prepare("resolveSlug")
 
-/** Resolve a slug to its destination, ignoring expired shurtles. */
-export async function getUrlBySlug(slug: string) {
-  const [row] = await getUrlBySlugPrepared.execute({ slug })
-  return row?.url
+/** Look up a short link: `null` when the slug doesn't exist, otherwise its destination and state. */
+export async function resolveSlug(slug: string): Promise<{ url: string; expired: boolean } | null> {
+  const [row] = await resolveSlugPrepared.execute({ slug })
+  return row ?? null
 }
 
 function parseCoordinate(value: string | undefined) {

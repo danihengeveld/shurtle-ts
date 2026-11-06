@@ -46,7 +46,8 @@ export function Features() {
           Paste a link without <code className="font-mono text-[0.875em]">https://</code> and it gets fixed up.
         </FeatureCard>
         <FeatureCard className="lg:col-span-2" title="Links with a shelf life." vignette={<ExpiryVignette />}>
-          Give a link an expiry date and it stops resolving once that day ends. A weekly cleanup clears the leftovers.
+          Give a link an expiry date and time and it stops resolving right then. Expired links stay in your dashboard,
+          click history and all.
         </FeatureCard>
         <FeatureCard className="lg:col-span-2" title="Redirects before render." vignette={<ProxyVignette />}>
           Short links resolve in the Next.js proxy before any page code runs. Visits are logged afterwards, so they

@@ -1,7 +1,7 @@
 import { LogoMark } from "@/components/logo"
 import { siteInfo } from "@/lib/site"
 import { cn } from "@/lib/utils"
-import { CalendarClock, Check, Moon, RotateCcw, Shuffle, Sun } from "lucide-react"
+import { Archive, CalendarClock, Check, Moon, Shuffle, Sun } from "lucide-react"
 
 /*
  * Miniature, static UI scenes for the feature bento. All decorative: each card's heading and copy
@@ -64,8 +64,8 @@ export function ExpiryVignette() {
         <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">Expired</span>
       </div>
       <p className="flex items-center gap-1.5 pl-1 text-xs text-muted-foreground">
-        <RotateCcw className="size-3" />
-        Swept away in the weekly cleanup
+        <Archive className="size-3" />
+        Kept in your dashboard, clicks and all
       </p>
     </div>
   )

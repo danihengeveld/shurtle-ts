@@ -25,7 +25,18 @@ import { toast } from "sonner"
 import { useCopyShortLink } from "../copy-button"
 import { useLinks } from "./links-provider"
 
-export function LinkActions({ slug, url, className }: { slug: string; url: string; className?: string }) {
+export function LinkActions({
+  slug,
+  url,
+  expired = false,
+  className,
+}: {
+  slug: string
+  url: string
+  /** Expired links can't be copied (they don't redirect) or changed; only opened or deleted. */
+  expired?: boolean
+  className?: string
+}) {
   const { deleteAction, markDeleting } = useLinks()
   const { copy } = useCopyShortLink(slug)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -46,7 +57,11 @@ export function LinkActions({ slug, url, className }: { slug: string; url: strin
       deleted.current = result.ok
       setConfirmOpen(false)
       if (result.ok) {
-        toast.success("Link deleted", { description: `${displayShortUrl(slug)} no longer redirects.` })
+        toast.success("Link deleted", {
+          description: expired
+            ? `${displayShortUrl(slug)} and its click history are gone.`
+            : `${displayShortUrl(slug)} no longer redirects.`,
+        })
       } else {
         toast.error(`Couldn't delete ${displayShortUrl(slug)}`, { description: result.error })
       }
@@ -68,10 +83,12 @@ export function LinkActions({ slug, url, className }: { slug: string; url: strin
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5">
-          <DropdownMenuItem onSelect={copy} className="h-9 rounded-lg">
-            <CopyIcon aria-hidden />
-            Copy short link
-          </DropdownMenuItem>
+          {!expired && (
+            <DropdownMenuItem onSelect={copy} className="h-9 rounded-lg">
+              <CopyIcon aria-hidden />
+              Copy short link
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem asChild className="h-9 rounded-lg">
             <a href={url} target="_blank" rel="noopener noreferrer">
               <ExternalLinkIcon aria-hidden />
@@ -105,8 +122,17 @@ export function LinkActions({ slug, url, className }: { slug: string; url: strin
               Delete <span className="font-mono text-[0.9em] font-medium break-all">/{slug}</span>?
             </AlertDialogTitle>
             <AlertDialogDescription className="leading-relaxed">
-              <span className="font-mono text-foreground">{displayShortUrl(slug)}</span> will stop working right away
-              and its click history will be removed. This can&apos;t be undone.
+              {expired ? (
+                <>
+                  This expired link and its click history will be removed for good, and the slug can be used again.
+                </>
+              ) : (
+                <>
+                  <span className="font-mono text-foreground">{displayShortUrl(slug)}</span> will stop working right
+                  away and its click history will be removed.
+                </>
+              )}{" "}
+              This can&apos;t be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">

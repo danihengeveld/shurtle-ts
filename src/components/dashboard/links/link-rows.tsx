@@ -14,13 +14,24 @@ export type LinkRow = Pick<Shurtle, "slug" | "url" | "hits" | "createdAt" | "las
 
 const host = siteInfo.baseUrl.host
 
-function ShortLink({ slug, compactHost = false, className }: { slug: string; compactHost?: boolean; className?: string }) {
+function ShortLink({
+  slug,
+  compactHost = false,
+  expired = false,
+  className,
+}: {
+  slug: string
+  compactHost?: boolean
+  /** Expired links are muted: they no longer redirect. */
+  expired?: boolean
+  className?: string
+}) {
   return (
     <span className={cn("min-w-0 truncate font-mono text-[13px] leading-6", className)} title={`${host}/${slug}`}>
       {/* In the table, the repeated host only shows when there's room; the slug matters most. */}
       <span className={cn("text-muted-foreground", compactHost && "max-xl:sr-only")}>{host}</span>
       <span className="text-muted-foreground">/</span>
-      <span className="font-medium text-foreground">{slug}</span>
+      <span className={cn("font-medium", expired ? "text-muted-foreground" : "text-foreground")}>{slug}</span>
     </span>
   )
 }
@@ -60,7 +71,7 @@ function Clicks({ hits }: { hits: number }) {
 const th = "h-10 px-3 text-left align-middle text-xs font-medium whitespace-nowrap text-muted-foreground first:pl-5 last:pr-3"
 const td = "h-[3.75rem] px-3 align-middle first:pl-5 last:pr-3"
 
-export function LinksTable({ links, caption }: { links: LinkRow[]; caption: string }) {
+export function LinksTable({ links, expired = false, caption }: { links: LinkRow[]; expired?: boolean; caption: string }) {
   return (
     <div className="hidden overflow-hidden rounded-2xl border bg-card shadow-soft md:block">
       <table className="w-full table-fixed border-collapse text-sm">
@@ -92,7 +103,7 @@ export function LinksTable({ links, caption }: { links: LinkRow[]; caption: stri
               Last click
             </th>
             <th scope="col" className={th}>
-              Expires
+              {expired ? "Expired" : "Expires"}
             </th>
             <th scope="col" className={th}>
               <span className="sr-only">Actions</span>
@@ -108,8 +119,9 @@ export function LinksTable({ links, caption }: { links: LinkRow[]; caption: stri
             >
               <td className={td}>
                 <div className="flex min-w-0 items-center gap-0.5">
-                  <ShortLink slug={link.slug} compactHost />
-                  <CopyButton slug={link.slug} className="shrink-0" />
+                  <ShortLink slug={link.slug} compactHost expired={expired} />
+                  {/* A dead link isn't worth sharing: no copy for expired links. */}
+                  {!expired && <CopyButton slug={link.slug} className="shrink-0" />}
                 </div>
               </td>
               <td className={td}>
@@ -122,13 +134,20 @@ export function LinksTable({ links, caption }: { links: LinkRow[]; caption: stri
                 <RelativeTime date={link.createdAt} />
               </td>
               <td className={cn(td, "hidden text-muted-foreground lg:table-cell")}>
-                {link.lastHitAt ? <RelativeTime date={link.lastHitAt} /> : <span aria-label="Never">—</span>}
+                {link.lastHitAt ? (
+                  <RelativeTime date={link.lastHitAt} />
+                ) : (
+                  <>
+                    <span aria-hidden>—</span>
+                    <span className="sr-only">Never</span>
+                  </>
+                )}
               </td>
               <td className={td}>
                 <ExpiryBadge expiresAt={link.expiresAt} />
               </td>
               <td className={cn(td, "text-right")}>
-                <LinkActions slug={link.slug} url={link.url} />
+                <LinkActions slug={link.slug} url={link.url} expired={expired} />
               </td>
             </LinkTableRow>
           ))}
@@ -139,7 +158,7 @@ export function LinksTable({ links, caption }: { links: LinkRow[]; caption: stri
 }
 
 /** Stacked layout for small screens (< md). */
-export function LinksList({ links, label }: { links: LinkRow[]; label: string }) {
+export function LinksList({ links, expired = false, label }: { links: LinkRow[]; expired?: boolean; label: string }) {
   return (
     <ul aria-label={label} className="divide-y overflow-hidden rounded-2xl border bg-card shadow-soft md:hidden">
       {links.map((link) => (
@@ -149,9 +168,9 @@ export function LinksList({ links, label }: { links: LinkRow[]; label: string })
           className="py-3 pr-2 pl-4 transition-opacity duration-200 data-deleting:opacity-40"
         >
           <div className="flex items-center gap-1">
-            <ShortLink slug={link.slug} className="flex-1 text-sm" />
-            <CopyButton slug={link.slug} size="icon-lg" className="shrink-0" />
-            <LinkActions slug={link.slug} url={link.url} className="size-10 shrink-0" />
+            <ShortLink slug={link.slug} expired={expired} className="flex-1 text-sm" />
+            {!expired && <CopyButton slug={link.slug} size="icon-lg" className="shrink-0" />}
+            <LinkActions slug={link.slug} url={link.url} expired={expired} className="size-10 shrink-0" />
           </div>
           <div className="pr-2">
             <Destination url={link.url} className="-mt-0.5" />

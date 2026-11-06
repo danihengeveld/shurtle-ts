@@ -83,7 +83,7 @@ export function formatRelative(date: Date, now: number) {
 
 export type ExpiryStatus =
   | { kind: "never" }
-  | { kind: "expired" }
+  | { kind: "expired"; expiresAt: Date }
   | { kind: "soon"; expiresAt: Date }
   | { kind: "later"; expiresAt: Date }
 
@@ -93,7 +93,7 @@ export const EXPIRING_SOON_MS = 7 * DAY_MS
 export function getExpiryStatus(expiresAt: Date | null, now: number): ExpiryStatus {
   if (!expiresAt) return { kind: "never" }
   const remaining = expiresAt.getTime() - now
-  if (remaining <= 0) return { kind: "expired" }
+  if (remaining <= 0) return { kind: "expired", expiresAt }
   if (remaining < EXPIRING_SOON_MS) return { kind: "soon", expiresAt }
   return { kind: "later", expiresAt }
 }
