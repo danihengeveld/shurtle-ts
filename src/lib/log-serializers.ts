@@ -1,4 +1,4 @@
-import { DrizzleQueryError } from "drizzle-orm"
+import { DrizzleQueryError } from "drizzle-orm";
 
 /**
  * pino `err` serializer that keeps what's needed to debug and drops personal data.
@@ -11,7 +11,7 @@ import { DrizzleQueryError } from "drizzle-orm"
  * constraint name, and the cause chain are kept.
  */
 export function serializeError(error: unknown, depth = 0): unknown {
-  if (!(error instanceof Error)) return error
+  if (!(error instanceof Error)) return error;
 
   if (error instanceof DrizzleQueryError) {
     return {
@@ -21,13 +21,13 @@ export function serializeError(error: unknown, depth = 0): unknown {
       // The stack starts with the full message, params included.
       stack: error.stack?.replace(error.message, "Failed query"),
       ...cause(error, depth),
-    }
+    };
   }
 
   const { code, constraint } = error as Error & {
-    code?: unknown
-    constraint?: unknown
-  }
+    code?: unknown;
+    constraint?: unknown;
+  };
   return {
     type: error.name,
     message: error.message,
@@ -35,17 +35,17 @@ export function serializeError(error: unknown, depth = 0): unknown {
     ...(typeof code === "string" ? { code } : {}),
     ...(typeof constraint === "string" ? { constraint } : {}),
     ...cause(error, depth),
-  }
+  };
 }
 
 function cause(error: Error, depth: number) {
   // Bounded: cause chains can be cyclic.
   return error.cause === undefined || depth >= 3
     ? {}
-    : { cause: serializeError(error.cause, depth + 1) }
+    : { cause: serializeError(error.cause, depth + 1) };
 }
 
 /** Host of a destination URL for logs: enough to triage abuse, without paths or query strings. */
 export function urlHost(url: string) {
-  return URL.parse(url)?.hostname ?? null
+  return URL.parse(url)?.hostname ?? null;
 }

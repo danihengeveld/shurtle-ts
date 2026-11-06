@@ -1,7 +1,14 @@
-import { LogoMark } from "@/components/logo"
-import { siteInfo } from "@/lib/site"
-import { cn } from "cn"
-import { Archive, CalendarClock, Check, Moon, Shuffle, Sun } from "lucide-react"
+import { LogoMark } from "@/components/logo";
+import { siteInfo } from "@/lib/site";
+import { cn } from "cn";
+import {
+  Archive,
+  CalendarClock,
+  Check,
+  Moon,
+  Shuffle,
+  Sun,
+} from "lucide-react";
 
 /*
  * Miniature, static UI scenes for the feature bento. All decorative: each card's heading and copy
@@ -9,12 +16,12 @@ import { Archive, CalendarClock, Check, Moon, Shuffle, Sun } from "lucide-react"
  */
 
 const field =
-  "flex h-10 min-w-0 flex-1 items-center rounded-lg border bg-card px-3 font-mono text-[0.8125rem] shadow-xs"
+  "flex h-10 min-w-0 flex-1 items-center rounded-lg border bg-card px-3 font-mono text-[0.8125rem] shadow-xs";
 const miniLabel =
-  "w-[4.75rem] shrink-0 text-[0.6875rem] font-medium tracking-[0.06em] text-muted-foreground uppercase"
+  "w-[4.75rem] shrink-0 text-[0.6875rem] font-medium tracking-[0.06em] text-muted-foreground uppercase";
 
 export function SlugVignette() {
-  const host = siteInfo.baseUrl.host
+  const host = siteInfo.baseUrl.host;
   return (
     <div className="w-full max-w-md space-y-3">
       <div className="flex items-center gap-3">
@@ -49,7 +56,7 @@ export function SlugVignette() {
         </span>
       </div>
     </div>
-  )
+  );
 }
 
 export function ExpiryVignette() {
@@ -79,7 +86,7 @@ export function ExpiryVignette() {
         Kept in your dashboard, clicks and all
       </p>
     </div>
-  )
+  );
 }
 
 export function ProxyVignette() {
@@ -104,15 +111,15 @@ export function ProxyVignette() {
         example.com/…
       </div>
     </div>
-  )
+  );
 }
 
 /** Illustrative 30-day series; not real data. */
 const CLICKS = [
   3, 5, 4, 6, 8, 5, 7, 9, 6, 8, 11, 9, 7, 10, 12, 9, 13, 11, 10, 14, 12, 16, 13,
   15, 18, 14, 17, 20, 16, 22,
-]
-const MAX_CLICKS = Math.max(...CLICKS)
+];
+const MAX_CLICKS = Math.max(...CLICKS);
 
 export function ClicksVignette() {
   return (
@@ -127,7 +134,7 @@ export function ClicksVignette() {
       </div>
       <div className="relative mt-4 flex h-28 items-end gap-[3px] border-b border-foreground/15 pt-8 sm:gap-1">
         {CLICKS.map((value, i) => {
-          const last = i === CLICKS.length - 1
+          const last = i === CLICKS.length - 1;
           return (
             <span
               key={i}
@@ -143,7 +150,7 @@ export function ClicksVignette() {
                 </span>
               )}
             </span>
-          )
+          );
         })}
       </div>
       <div className="mt-2 flex justify-between font-mono text-[0.625rem] text-muted-foreground">
@@ -151,7 +158,7 @@ export function ClicksVignette() {
         <span>today</span>
       </div>
     </div>
-  )
+  );
 }
 
 export function RateLimitVignette() {
@@ -177,26 +184,26 @@ export function RateLimitVignette() {
         </span>
       </div>
     </div>
-  )
+  );
 }
 
 const LIGHT = {
   bg: "oklch(0.986 0.005 106)",
   fg: "oklch(0.205 0.022 162)",
   line: "oklch(0.905 0.01 110)",
-}
+};
 const DARK = {
   bg: "oklch(0.158 0.013 162)",
   fg: "oklch(0.955 0.012 110)",
   line: "oklch(1 0 0 / 0.12)",
-}
+};
 
 function MiniScreen({
   scheme,
   className,
 }: {
-  scheme: typeof LIGHT
-  className?: string
+  scheme: typeof LIGHT;
+  className?: string;
 }) {
   return (
     <div
@@ -225,7 +232,7 @@ function MiniScreen({
       </div>
       <span className="mt-3 block h-5 w-16 rounded-md bg-brand" />
     </div>
-  )
+  );
 }
 
 export function ThemeVignette() {
@@ -245,5 +252,5 @@ export function ThemeVignette() {
         </span>
       </div>
     </div>
-  )
+  );
 }

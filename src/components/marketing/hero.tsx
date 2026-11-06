@@ -1,11 +1,11 @@
-import { ExternalLink } from "@/components/layout/external-link"
-import { GitHubIcon } from "@/components/layout/github-icon"
-import { Button } from "@/components/ui/button"
-import { siteInfo } from "@/lib/site"
-import { ArrowRight } from "lucide-react"
-import Link from "next/link"
-import { LinkDemo } from "./link-demo"
-import { ShellBackdrop } from "./shell-backdrop"
+import { ExternalLink } from "@/components/layout/external-link";
+import { GitHubIcon } from "@/components/layout/github-icon";
+import { Button } from "@/components/ui/button";
+import { siteInfo } from "@/lib/site";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { LinkDemo } from "./link-demo";
+import { ShellBackdrop } from "./shell-backdrop";
 
 export function Hero() {
   return (
@@ -88,5 +88,5 @@ export function Hero() {
         <LinkDemo className="mx-auto max-w-[29rem] motion-safe:animate-fade-up motion-safe:[animation-delay:120ms] lg:mr-0" />
       </div>
     </section>
-  )
+  );
 }

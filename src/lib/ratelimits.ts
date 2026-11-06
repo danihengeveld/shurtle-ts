@@ -1,12 +1,12 @@
-import "server-only"
+import "server-only";
 
-import { Ratelimit } from "@upstash/ratelimit"
-import { Redis } from "@upstash/redis"
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
   url: process.env.KV_REST_API_URL,
   token: process.env.KV_REST_API_TOKEN,
-})
+});
 
 export const rateLimits = {
   openShurtle: {
@@ -32,4 +32,4 @@ export const rateLimits = {
     limitMessage:
       "You're creating links a little too quickly. Please wait a few minutes and try again.",
   },
-}
+};

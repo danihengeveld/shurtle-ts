@@ -1,5 +1,5 @@
-import { siteInfo } from "@/lib/site"
-import type { MetadataRoute } from "next"
+import { siteInfo } from "@/lib/site";
+import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -8,5 +8,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 1,
     },
-  ]
+  ];
 }

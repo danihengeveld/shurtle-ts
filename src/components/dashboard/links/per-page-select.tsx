@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Select,
@@ -6,18 +6,18 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { PER_PAGE_OPTIONS, type PerPage } from "@/lib/pagination"
-import { useLinks } from "./links-provider"
+} from "@/components/ui/select";
+import { PER_PAGE_OPTIONS, type PerPage } from "@/lib/pagination";
+import { useLinks } from "./links-provider";
 
 export function PerPageSelect({
   perPage,
   query,
 }: {
-  perPage: PerPage
-  query: string
+  perPage: PerPage;
+  query: string;
 }) {
-  const { navigate } = useLinks()
+  const { navigate } = useLinks();
 
   return (
     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -50,5 +50,5 @@ export function PerPageSelect({
         </SelectContent>
       </Select>
     </div>
-  )
+  );
 }

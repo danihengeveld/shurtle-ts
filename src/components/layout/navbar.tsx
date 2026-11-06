@@ -1,9 +1,9 @@
-import { Logo } from "@/components/logo"
-import { ThemeToggle } from "@/components/theme-toggle"
-import Link from "next/link"
-import { Suspense } from "react"
-import { NavLink, NavLinkBase } from "./nav-link"
-import { NavbarAuth } from "./navbar-auth"
+import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
+import Link from "next/link";
+import { Suspense } from "react";
+import { NavLink, NavLinkBase } from "./nav-link";
+import { NavbarAuth } from "./navbar-auth";
 
 export function Navbar() {
   return (
@@ -28,5 +28,5 @@ export function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }

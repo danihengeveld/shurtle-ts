@@ -1,42 +1,42 @@
-"use client"
+"use client";
 
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/ui/calendar";
 import {
   FieldDescription,
   FieldError,
   FieldLegend,
   FieldSet,
-} from "@/components/ui/field"
+} from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/components/ui/input-group"
+} from "@/components/ui/input-group";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { cn } from "cn"
-import { CalendarIcon, ChevronDownIcon, ClockIcon } from "lucide-react"
-import { useState } from "react"
+} from "@/components/ui/popover";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "cn";
+import { CalendarIcon, ChevronDownIcon, ClockIcon } from "lucide-react";
+import { useState } from "react";
 import {
   addLocalDays,
   atLocalTime,
   formatExpiry,
   startOfLocalDay,
   toTimeValue,
-} from "../dashboard/format"
+} from "../dashboard/format";
 
-export type ExpiryPreset = "never" | "1" | "7" | "30" | "custom"
+export type ExpiryPreset = "never" | "1" | "7" | "30" | "custom";
 
 /** `customDate` is the picked calendar day; `customTime` is the local time of day (`"HH:MM"`). */
 export type ExpiryValue = {
-  preset: ExpiryPreset
-  customDate?: Date
-  customTime: string
-}
+  preset: ExpiryPreset;
+  customDate?: Date;
+  customTime: string;
+};
 
 const PRESETS: { value: ExpiryPreset; label: string; long: string }[] = [
   { value: "never", label: "Never", long: "Never expires" },
@@ -44,15 +44,19 @@ const PRESETS: { value: ExpiryPreset; label: string; long: string }[] = [
   { value: "7", label: "7 days", long: "Expires in 7 days" },
   { value: "30", label: "30 days", long: "Expires in 30 days" },
   { value: "custom", label: "Custom", long: "Custom date and time" },
-]
+];
 
 /** Initial value: never expires, with the custom time defaulting to the current time of day. */
 export function initialExpiry(expiresAt?: string): ExpiryValue {
   if (expiresAt) {
-    const date = new Date(expiresAt)
-    return { preset: "custom", customDate: date, customTime: toTimeValue(date) }
+    const date = new Date(expiresAt);
+    return {
+      preset: "custom",
+      customDate: date,
+      customTime: toTimeValue(date),
+    };
   }
-  return { preset: "never", customTime: toTimeValue(new Date()) }
+  return { preset: "never", customTime: toTimeValue(new Date()) };
 }
 
 /**
@@ -60,35 +64,35 @@ export function initialExpiry(expiresAt?: string): ExpiryValue {
  * expire at the current time of day, N days from now (to the minute).
  */
 export function expiryDate(value: ExpiryValue): Date | null {
-  if (value.preset === "never") return null
+  if (value.preset === "never") return null;
   if (value.preset === "custom")
     return value.customDate
       ? atLocalTime(value.customDate, value.customTime)
-      : null
-  const now = new Date()
-  return atLocalTime(addLocalDays(now, Number(value.preset)), toTimeValue(now))
+      : null;
+  const now = new Date();
+  return atLocalTime(addLocalDays(now, Number(value.preset)), toTimeValue(now));
 }
 
 /** ISO timestamp for the form, or "" when the link never expires. */
 export function expiryIso(value: ExpiryValue) {
-  return expiryDate(value)?.toISOString() ?? ""
+  return expiryDate(value)?.toISOString() ?? "";
 }
 
 export function describeExpiry(value: ExpiryValue) {
-  if (value.preset === "never") return "Never expires"
-  const date = expiryDate(value)
-  if (!date) return value.customDate ? "No time picked" : "No date picked"
-  return `Expires ${formatExpiry(date)}`
+  if (value.preset === "never") return "Never expires";
+  const date = expiryDate(value);
+  if (!date) return value.customDate ? "No time picked" : "No date picked";
+  return `Expires ${formatExpiry(date)}`;
 }
 
 /** Client-side check for the custom option; presets are always valid. */
 export function expiryIssue(value: ExpiryValue) {
-  if (value.preset !== "custom") return undefined
-  if (!value.customDate) return "Pick a date, or choose another option."
-  const date = atLocalTime(value.customDate, value.customTime)
-  if (!date) return "Pick a time."
-  if (date.getTime() <= Date.now()) return "Pick a moment in the future."
-  return undefined
+  if (value.preset !== "custom") return undefined;
+  if (!value.customDate) return "Pick a date, or choose another option.";
+  const date = atLocalTime(value.customDate, value.customTime);
+  if (!date) return "Pick a time.";
+  if (date.getTime() <= Date.now()) return "Pick a moment in the future.";
+  return undefined;
 }
 
 const longDate = new Intl.DateTimeFormat("en-US", {
@@ -96,13 +100,13 @@ const longDate = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
   year: "numeric",
-})
+});
 
 /** Shared look of the date button and the time field. */
 const fieldClass = cn(
   "flex h-10 w-full items-center gap-2.5 rounded-xl border border-input bg-card px-3 text-sm shadow-xs transition-[color,box-shadow] outline-none max-sm:h-11 dark:bg-input/30",
   "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50 data-invalid:border-destructive",
-)
+);
 
 export function ExpiryField({
   value,
@@ -110,14 +114,14 @@ export function ExpiryField({
   error,
   errorId,
 }: {
-  value: ExpiryValue
-  onChange: (value: ExpiryValue) => void
-  error?: string
-  errorId: string
+  value: ExpiryValue;
+  onChange: (value: ExpiryValue) => void;
+  error?: string;
+  errorId: string;
 }) {
-  const [pickerOpen, setPickerOpen] = useState(false)
-  const date = expiryDate(value)
-  const today = startOfLocalDay(new Date())
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const date = expiryDate(value);
+  const today = startOfLocalDay(new Date());
 
   return (
     <FieldSet
@@ -133,10 +137,10 @@ export function ExpiryField({
         type="single"
         value={value.preset}
         onValueChange={(next) => {
-          if (!next) return // Keep a selection: clicking the active option doesn't clear it.
-          const preset = next as ExpiryPreset
-          onChange({ ...value, preset })
-          if (preset === "custom" && !value.customDate) setPickerOpen(true)
+          if (!next) return; // Keep a selection: clicking the active option doesn't clear it.
+          const preset = next as ExpiryPreset;
+          onChange({ ...value, preset });
+          if (preset === "custom" && !value.customDate) setPickerOpen(true);
         }}
         spacing={1}
         aria-label="Expiration"
@@ -198,9 +202,9 @@ export function ExpiryField({
                 startMonth={today}
                 disabled={{ before: today }}
                 onSelect={(day) => {
-                  if (!day) return
-                  onChange({ ...value, preset: "custom", customDate: day })
-                  setPickerOpen(false)
+                  if (!day) return;
+                  onChange({ ...value, preset: "custom", customDate: day });
+                  setPickerOpen(false);
                 }}
                 autoFocus
               />
@@ -256,5 +260,5 @@ export function ExpiryField({
         {error}
       </FieldError>
     </FieldSet>
-  )
+  );
 }

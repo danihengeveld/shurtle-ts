@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@/components/ui/input-group"
-import { Kbd } from "@/components/ui/kbd"
-import { Spinner } from "@/components/ui/spinner"
+} from "@/components/ui/input-group";
+import { Kbd } from "@/components/ui/kbd";
+import { Spinner } from "@/components/ui/spinner";
 import {
   DEFAULT_PER_PAGE,
   MAX_SEARCH_LENGTH,
   type PerPage,
-} from "@/lib/pagination"
-import { cn } from "cn"
-import { SearchIcon, XIcon } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import { useLinks } from "./links-provider"
+} from "@/lib/pagination";
+import { cn } from "cn";
+import { SearchIcon, XIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useLinks } from "./links-provider";
 
-const DEBOUNCE_MS = 300
+const DEBOUNCE_MS = 300;
 
 function isEditable(target: EventTarget | null) {
   return (
     target instanceof HTMLElement &&
     (target.isContentEditable ||
       ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
-  )
+  );
 }
 
 /**
@@ -38,28 +38,28 @@ export function LinkSearch({
   perPage,
   className,
 }: {
-  query: string
-  perPage: PerPage
-  className?: string
+  query: string;
+  perPage: PerPage;
+  className?: string;
 }) {
-  const { basePath, status, navigate, isNavigating } = useLinks()
-  const [value, setValue] = useState(query)
-  const [syncedQuery, setSyncedQuery] = useState(query)
-  const [requestedQuery, setRequestedQuery] = useState(query)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const debounce = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const { basePath, status, navigate, isNavigating } = useLinks();
+  const [value, setValue] = useState(query);
+  const [syncedQuery, setSyncedQuery] = useState(query);
+  const [requestedQuery, setRequestedQuery] = useState(query);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const debounce = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // The URL changed from elsewhere (e.g. "Clear search", back button): reflect it in the input,
   // but never clobber what the user is typing for a request that is still on its way.
   if (query !== syncedQuery) {
-    setSyncedQuery(query)
+    setSyncedQuery(query);
     if (query !== requestedQuery) {
-      setValue(query)
-      setRequestedQuery(query)
+      setValue(query);
+      setRequestedQuery(query);
     }
   }
 
-  useEffect(() => () => clearTimeout(debounce.current), [])
+  useEffect(() => () => clearTimeout(debounce.current), []);
 
   // "/" focuses the search, like on GitHub or Linear.
   useEffect(() => {
@@ -71,40 +71,40 @@ export function LinkSearch({
         event.altKey ||
         isEditable(event.target)
       )
-        return
+        return;
       if (
         document.querySelector("[role=dialog], [role=alertdialog], [role=menu]")
       )
-        return
-      event.preventDefault()
-      inputRef.current?.focus()
-      inputRef.current?.select()
+        return;
+      event.preventDefault();
+      inputRef.current?.focus();
+      inputRef.current?.select();
     }
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
-  }, [])
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function search(next: string) {
-    clearTimeout(debounce.current)
-    const trimmed = next.trim().slice(0, MAX_SEARCH_LENGTH)
-    if (trimmed === requestedQuery) return
-    setRequestedQuery(trimmed)
-    navigate({ query: trimmed, perPage, page: 1 })
+    clearTimeout(debounce.current);
+    const trimmed = next.trim().slice(0, MAX_SEARCH_LENGTH);
+    if (trimmed === requestedQuery) return;
+    setRequestedQuery(trimmed);
+    navigate({ query: trimmed, perPage, page: 1 });
   }
 
   function onChange(next: string) {
-    setValue(next)
-    clearTimeout(debounce.current)
-    debounce.current = setTimeout(() => search(next), DEBOUNCE_MS)
+    setValue(next);
+    clearTimeout(debounce.current);
+    debounce.current = setTimeout(() => search(next), DEBOUNCE_MS);
   }
 
   function clear() {
-    setValue("")
-    search("")
-    inputRef.current?.focus()
+    setValue("");
+    search("");
+    inputRef.current?.focus();
   }
 
-  const showSpinner = isNavigating && requestedQuery === value.trim()
+  const showSpinner = isNavigating && requestedQuery === value.trim();
 
   return (
     <form
@@ -112,8 +112,8 @@ export function LinkSearch({
       action={basePath}
       method="get"
       onSubmit={(event) => {
-        event.preventDefault()
-        search(value)
+        event.preventDefault();
+        search(value);
       }}
       className={cn("group relative", className)}
     >
@@ -133,8 +133,8 @@ export function LinkSearch({
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Escape" && value) {
-              event.preventDefault()
-              clear()
+              event.preventDefault();
+              clear();
             }
           }}
           maxLength={MAX_SEARCH_LENGTH}
@@ -182,5 +182,5 @@ export function LinkSearch({
         <input type="hidden" name="status" value={status} />
       )}
     </form>
-  )
+  );
 }

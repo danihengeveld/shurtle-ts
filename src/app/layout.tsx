@@ -1,31 +1,31 @@
-import { Footer } from "@/components/layout/footer"
-import { Navbar } from "@/components/layout/navbar"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { siteInfo } from "@/lib/site"
-import { ClerkProvider } from "@clerk/nextjs"
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import type { Metadata, Viewport } from "next"
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { siteInfo } from "@/lib/site";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-})
+});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-})
+});
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
-})
+});
 
 export const viewport: Viewport = {
   // Shrink the layout (incl. bottom-sheet dialogs) when the on-screen keyboard opens.
@@ -34,7 +34,7 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#fafaf6" },
     { media: "(prefers-color-scheme: dark)", color: "#0b120f" },
   ],
-}
+};
 
 export const metadata: Metadata = {
   metadataBase: siteInfo.baseUrl,
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     description: siteInfo.description,
     creator: siteInfo.author.twitter,
   },
-}
+};
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -142,5 +142,5 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         )}
       </body>
     </html>
-  )
+  );
 }

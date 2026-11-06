@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { SignInButton, UserButton, useAuth } from "@clerk/nextjs"
-import Link from "next/link"
-import { useSyncExternalStore } from "react"
+import { Button } from "@/components/ui/button";
+import { SignInButton, UserButton, useAuth } from "@clerk/nextjs";
+import Link from "next/link";
+import { useSyncExternalStore } from "react";
 
-type AuthGuess = "unknown" | "signed-in" | "signed-out"
+type AuthGuess = "unknown" | "signed-in" | "signed-out";
 
-const noopSubscribe = () => () => {}
+const noopSubscribe = () => () => {};
 
 /**
  * Clerk mirrors the session state in a readable `__client_uat` cookie (0 = signed out). Reading it
@@ -17,24 +17,24 @@ const noopSubscribe = () => () => {}
 function readAuthCookie(): AuthGuess {
   const values = [
     ...document.cookie.matchAll(/(?:^|;\s*)__client_uat(?:_[^=]*)?=(\d+)/g),
-  ].map((m) => Number(m[1]))
-  return values.some((v) => v > 0) ? "signed-in" : "signed-out"
+  ].map((m) => Number(m[1]));
+  return values.some((v) => v > 0) ? "signed-in" : "signed-out";
 }
 
-const SIGN_IN_CLASSES = "h-10 w-full px-3.5"
+const SIGN_IN_CLASSES = "h-10 w-full px-3.5";
 
 /**
  * Auth slot in the navbar. It has a fixed width so nothing around it moves when Clerk loads or the
  * user signs in.
  */
 export function NavbarAuth() {
-  const { isLoaded, isSignedIn } = useAuth()
+  const { isLoaded, isSignedIn } = useAuth();
   const guess = useSyncExternalStore<AuthGuess>(
     noopSubscribe,
     readAuthCookie,
     () => "unknown",
-  )
-  const signedIn = isLoaded ? isSignedIn : guess === "signed-in"
+  );
+  const signedIn = isLoaded ? isSignedIn : guess === "signed-in";
 
   return (
     <div className="flex w-[4.75rem] shrink-0 items-center justify-end">
@@ -73,5 +73,5 @@ export function NavbarAuth() {
         </Button>
       )}
     </div>
-  )
+  );
 }

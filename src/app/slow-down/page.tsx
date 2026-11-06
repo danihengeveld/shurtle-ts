@@ -1,18 +1,18 @@
-import { LogoMark } from "@/components/logo"
-import styles from "@/components/marketing/breather.module.css"
-import { ShellBackdrop } from "@/components/marketing/shell-backdrop"
-import { Button } from "@/components/ui/button"
-import { cn } from "cn"
-import { RotateCw } from "lucide-react"
-import type { Metadata } from "next"
-import Link from "next/link"
+import { LogoMark } from "@/components/logo";
+import styles from "@/components/marketing/breather.module.css";
+import { ShellBackdrop } from "@/components/marketing/shell-backdrop";
+import { Button } from "@/components/ui/button";
+import { cn } from "cn";
+import { RotateCw } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Slow down",
   description:
     "Too many short links opened in a short time. Wait a minute and try again.",
   robots: { index: false },
-}
+};
 
 /**
  * Shown by the proxy (rewrite, HTTP 429) when a visitor opens too many short links in a minute.
@@ -111,5 +111,5 @@ export default function SlowDownPage() {
         </div>
       </div>
     </section>
-  )
+  );
 }

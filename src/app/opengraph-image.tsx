@@ -1,12 +1,12 @@
-import { SHELL_PATH, TURTLE_PATH } from "@/components/logo"
-import { siteInfo } from "@/lib/site"
-import { ImageResponse } from "next/og"
-import { readFile } from "node:fs/promises"
-import { join } from "node:path"
+import { SHELL_PATH, TURTLE_PATH } from "@/components/logo";
+import { siteInfo } from "@/lib/site";
+import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-export const alt = `${siteInfo.name}: ${siteInfo.description}`
-export const size = { width: 1200, height: 630 }
-export const contentType = "image/png"
+export const alt = `${siteInfo.name}: ${siteInfo.description}`;
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
 
 // Brand tokens (dark theme) as sRGB, since the OG renderer doesn't understand oklch().
 const C = {
@@ -16,22 +16,22 @@ const C = {
   brand: "#baf54e",
   brandFg: "#091e0b",
   line: "#1d2721",
-}
+};
 
-const fontDir = join(process.cwd(), "src/components/marketing/og-fonts")
+const fontDir = join(process.cwd(), "src/components/marketing/og-fonts");
 const [display, mono] = await Promise.all([
   readFile(join(fontDir, "BricolageGrotesque-Bold.ttf")),
   readFile(join(fontDir, "GeistMono-Regular.ttf")),
-])
+]);
 
 function Turtle({
   height,
   stroke,
   strokeWidth = 3.1,
 }: {
-  height: number
-  stroke: string
-  strokeWidth?: number
+  height: number;
+  stroke: string;
+  strokeWidth?: number;
 }) {
   return (
     <svg
@@ -50,11 +50,11 @@ function Turtle({
       />
       <circle cx="54.6" cy="12.8" r="1.55" fill={stroke} />
     </svg>
-  )
+  );
 }
 
 export default async function OpengraphImage() {
-  const host = siteInfo.baseUrl.host
+  const host = siteInfo.baseUrl.host;
 
   return new ImageResponse(
     <div
@@ -244,5 +244,5 @@ export default async function OpengraphImage() {
         { name: "Geist Mono", data: mono, weight: 400, style: "normal" },
       ],
     },
-  )
+  );
 }

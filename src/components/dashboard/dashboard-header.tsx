@@ -1,4 +1,4 @@
-import { CreateLinkButton } from "@/components/create/create-link-provider"
+import { CreateLinkButton } from "@/components/create/create-link-provider";
 
 export function DashboardHeader() {
   return (
@@ -19,5 +19,5 @@ export function DashboardHeader() {
         New link
       </CreateLinkButton>
     </header>
-  )
+  );
 }

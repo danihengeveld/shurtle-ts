@@ -1,16 +1,16 @@
-import { LogoMark } from "@/components/logo"
-import { ShellBackdrop } from "@/components/marketing/shell-backdrop"
-import { Button } from "@/components/ui/button"
-import { siteInfo } from "@/lib/site"
-import { ArrowRight } from "lucide-react"
-import type { Metadata } from "next"
-import Link from "next/link"
+import { LogoMark } from "@/components/logo";
+import { ShellBackdrop } from "@/components/marketing/shell-backdrop";
+import { Button } from "@/components/ui/button";
+import { siteInfo } from "@/lib/site";
+import { ArrowRight } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Link expired",
   description: "This short link has expired and no longer redirects.",
   robots: { index: false },
-}
+};
 
 /**
  * Shown by the proxy (rewrite, HTTP 410) when someone opens a short link that has expired. The
@@ -64,7 +64,7 @@ export default function ExpiredPage() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 /** A short link "ticket", punched and stamped expired. */
@@ -91,5 +91,5 @@ function ExpiredTicket() {
         Expired
       </span>
     </div>
-  )
+  );
 }

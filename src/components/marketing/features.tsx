@@ -1,5 +1,5 @@
-import { cn } from "cn"
-import { SectionHeading } from "./section-heading"
+import { cn } from "cn";
+import { SectionHeading } from "./section-heading";
 import {
   ClicksVignette,
   ExpiryVignette,
@@ -7,13 +7,13 @@ import {
   RateLimitVignette,
   SlugVignette,
   ThemeVignette,
-} from "./vignettes"
+} from "./vignettes";
 
 interface FeatureCardProps {
-  title: string
-  children: React.ReactNode
-  vignette: React.ReactNode
-  className?: string
+  title: string;
+  children: React.ReactNode;
+  vignette: React.ReactNode;
+  className?: string;
 }
 
 function FeatureCard({
@@ -44,7 +44,7 @@ function FeatureCard({
         </p>
       </div>
     </li>
-  )
+  );
 }
 
 export function Features() {
@@ -115,5 +115,5 @@ export function Features() {
         </FeatureCard>
       </ul>
     </section>
-  )
+  );
 }

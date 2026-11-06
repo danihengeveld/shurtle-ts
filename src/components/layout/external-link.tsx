@@ -1,4 +1,4 @@
-import { cn } from "cn"
+import { cn } from "cn";
 
 /**
  * Link to another site. Opens in a new tab, and says so to screen readers.
@@ -19,5 +19,5 @@ export function ExternalLink({
       {children}
       <span className="sr-only"> (opens in a new tab)</span>
     </a>
-  )
+  );
 }

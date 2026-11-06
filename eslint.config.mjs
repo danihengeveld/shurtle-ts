@@ -1,6 +1,6 @@
-import nextCoreWebVitals from "eslint-config-next/core-web-vitals"
-import nextTypescript from "eslint-config-next/typescript"
-import prettier from "eslint-config-prettier/flat"
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
+import prettier from "eslint-config-prettier/flat";
 
 const eslintConfig = [
   ...nextCoreWebVitals,
@@ -15,6 +15,6 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
-]
+];
 
-export default eslintConfig
+export default eslintConfig;

@@ -1,35 +1,35 @@
-"use client"
+"use client";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@/components/ui/field"
+} from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/components/ui/input-group"
-import { Spinner } from "@/components/ui/spinner"
-import type { CreateShurtleFormState } from "@/lib/actions"
-import { siteInfo } from "@/lib/site"
-import { SLUG_MAX_LENGTH, SLUG_PATTERN, isReservedSlug } from "@/lib/slugs"
-import { cn } from "cn"
+} from "@/components/ui/input-group";
+import { Spinner } from "@/components/ui/spinner";
+import type { CreateShurtleFormState } from "@/lib/actions";
+import { siteInfo } from "@/lib/site";
+import { SLUG_MAX_LENGTH, SLUG_PATTERN, isReservedSlug } from "@/lib/slugs";
+import { cn } from "cn";
 import {
   CircleAlertIcon,
   ChevronDownIcon,
   LinkIcon,
   SlidersHorizontalIcon,
-} from "lucide-react"
+} from "lucide-react";
 import {
   Collapsible as CollapsiblePrimitive,
   Dialog as DialogPrimitive,
-} from "radix-ui"
-import { startTransition, useEffect, useRef, useState } from "react"
-import { splitUrl } from "../dashboard/format"
+} from "radix-ui";
+import { startTransition, useEffect, useRef, useState } from "react";
+import { splitUrl } from "../dashboard/format";
 import {
   ExpiryField,
   describeExpiry,
@@ -37,45 +37,45 @@ import {
   expiryIssue,
   initialExpiry,
   type ExpiryValue,
-} from "./expiry-field"
+} from "./expiry-field";
 
 /** Mirrors URL_MAX_LENGTH in src/lib/schemas.ts (not imported to keep zod out of the client bundle). */
-const URL_MAX_LENGTH = 2048
+const URL_MAX_LENGTH = 2048;
 
-type FieldName = "url" | "slug" | "expiresAt"
-type FieldErrors = Partial<Record<FieldName, string>>
+type FieldName = "url" | "slug" | "expiresAt";
+type FieldErrors = Partial<Record<FieldName, string>>;
 
 function slugIssue(slug: string) {
-  if (!slug) return undefined
+  if (!slug) return undefined;
   if (slug.length > SLUG_MAX_LENGTH)
-    return `Keep it to ${SLUG_MAX_LENGTH} characters or fewer.`
+    return `Keep it to ${SLUG_MAX_LENGTH} characters or fewer.`;
   if (!SLUG_PATTERN.test(slug))
-    return "Use only letters, numbers, hyphens (-) and underscores (_)."
+    return "Use only letters, numbers, hyphens (-) and underscores (_).";
   if (isReservedSlug(slug))
-    return `“${slug}” is reserved by ${siteInfo.name}. Please choose another one.`
-  return undefined
+    return `“${slug}” is reserved by ${siteInfo.name}. Please choose another one.`;
+  return undefined;
 }
 
 function validate(url: string, slug: string, expiry: ExpiryValue): FieldErrors {
-  const errors: FieldErrors = {}
-  const trimmed = url.trim()
-  if (!trimmed) errors.url = "Enter the URL you want to shorten."
+  const errors: FieldErrors = {};
+  const trimmed = url.trim();
+  if (!trimmed) errors.url = "Enter the URL you want to shorten.";
   else if (trimmed.length > URL_MAX_LENGTH)
-    errors.url = `That URL is too long (max ${URL_MAX_LENGTH} characters).`
-  const slugError = slugIssue(slug.trim())
-  if (slugError) errors.slug = slugError
-  const expiryError = expiryIssue(expiry)
-  if (expiryError) errors.expiresAt = expiryError
-  return errors
+    errors.url = `That URL is too long (max ${URL_MAX_LENGTH} characters).`;
+  const slugError = slugIssue(slug.trim());
+  if (slugError) errors.slug = slugError;
+  const expiryError = expiryIssue(expiry);
+  if (expiryError) errors.expiresAt = expiryError;
+  return errors;
 }
 
 function withoutError(errors: FieldErrors, field: FieldName): FieldErrors {
-  return { ...errors, [field]: undefined }
+  return { ...errors, [field]: undefined };
 }
 
 /** Shurtle sizing on top of shadcn's InputGroup: a taller, rounder field on the card surface. */
 const groupClass =
-  "h-11 rounded-xl bg-card has-[[data-slot=input-group-control]:focus-visible]:ring-ring/40"
+  "h-11 rounded-xl bg-card has-[[data-slot=input-group-control]:focus-visible]:ring-ring/40";
 
 /**
  * FieldError with an icon. Not a live region (`role="alert"` by default): errors are tied to their
@@ -83,7 +83,7 @@ const groupClass =
  * re-validates on every keystroke and would otherwise interrupt screen readers constantly.
  */
 function FormError({ id, children }: { id: string; children?: string }) {
-  if (!children) return null
+  if (!children) return null;
   return (
     <FieldError
       id={id}
@@ -93,7 +93,7 @@ function FormError({ id, children }: { id: string; children?: string }) {
       <CircleAlertIcon aria-hidden className="mt-px size-3.5 shrink-0" />
       {children}
     </FieldError>
-  )
+  );
 }
 
 export function CreateLinkForm({
@@ -102,18 +102,18 @@ export function CreateLinkForm({
   isPending,
   initialSlug,
 }: {
-  state: CreateShurtleFormState
-  formAction: (formData: FormData) => void
-  isPending: boolean
-  initialSlug?: string
+  state: CreateShurtleFormState;
+  formAction: (formData: FormData) => void;
+  isPending: boolean;
+  initialSlug?: string;
 }) {
-  const initialFields = state.status === "error" ? state.fields : undefined
-  const [url, setUrl] = useState(initialFields?.url ?? "")
-  const [slug, setSlug] = useState(initialFields?.slug ?? initialSlug ?? "")
+  const initialFields = state.status === "error" ? state.fields : undefined;
+  const [url, setUrl] = useState(initialFields?.url ?? "");
+  const [slug, setSlug] = useState(initialFields?.slug ?? initialSlug ?? "");
   const [expiry, setExpiry] = useState<ExpiryValue>(() =>
     initialExpiry(initialFields?.expiresAt),
-  )
-  const [clientErrors, setClientErrors] = useState<FieldErrors>({})
+  );
+  const [clientErrors, setClientErrors] = useState<FieldErrors>({});
   const [advancedOpen, setAdvancedOpen] = useState(
     Boolean(
       initialSlug ||
@@ -121,63 +121,63 @@ export function CreateLinkForm({
       initialFields?.expiresAt ||
       hasAdvancedError(state),
     ),
-  )
-  const [seenState, setSeenState] = useState(state)
-  const urlRef = useRef<HTMLInputElement>(null)
-  const slugRef = useRef<HTMLInputElement>(null)
+  );
+  const [seenState, setSeenState] = useState(state);
+  const urlRef = useRef<HTMLInputElement>(null);
+  const slugRef = useRef<HTMLInputElement>(null);
 
   // A new server response with slug/expiry errors: make sure those fields are visible.
   if (state !== seenState) {
-    setSeenState(state)
-    if (hasAdvancedError(state)) setAdvancedOpen(true)
+    setSeenState(state);
+    if (hasAdvancedError(state)) setAdvancedOpen(true);
   }
 
   // Move focus to the first invalid field after a failed submit.
   useEffect(() => {
-    if (state.status !== "error") return
-    if (state.errors.url) urlRef.current?.focus()
-    else if (state.errors.slug) slugRef.current?.focus()
-  }, [state])
+    if (state.status !== "error") return;
+    if (state.errors.url) urlRef.current?.focus();
+    else if (state.errors.slug) slugRef.current?.focus();
+  }, [state]);
 
-  const expiresAt = expiryIso(expiry)
-  const values = { url, slug, expiresAt }
+  const expiresAt = expiryIso(expiry);
+  const values = { url, slug, expiresAt };
 
   /** Client errors win; server errors show until the user edits that field. */
   function errorFor(field: FieldName) {
-    if (clientErrors[field]) return clientErrors[field]
+    if (clientErrors[field]) return clientErrors[field];
     if (state.status === "error" && state.fields[field] === values[field])
-      return state.errors[field]?.[0]
-    return undefined
+      return state.errors[field]?.[0];
+    return undefined;
   }
 
-  const liveSlugError = slugIssue(slug.trim())
+  const liveSlugError = slugIssue(slug.trim());
   const errors = {
     url: errorFor("url"),
     slug: liveSlugError ?? errorFor("slug"),
     expiresAt: errorFor("expiresAt"),
-  }
+  };
   const formError =
-    state.status === "error" ? state.errors.form?.[0] : undefined
+    state.status === "error" ? state.errors.form?.[0] : undefined;
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (isPending) return
-    const found = validate(url, slug, expiry)
-    setClientErrors(found)
-    if (found.url) return urlRef.current?.focus()
+    event.preventDefault();
+    if (isPending) return;
+    const found = validate(url, slug, expiry);
+    setClientErrors(found);
+    if (found.url) return urlRef.current?.focus();
     if (found.slug || found.expiresAt) {
-      setAdvancedOpen(true)
-      if (found.slug) requestAnimationFrame(() => slugRef.current?.focus())
-      return
+      setAdvancedOpen(true);
+      if (found.slug) requestAnimationFrame(() => slugRef.current?.focus());
+      return;
     }
 
     // Built from state rather than the DOM: values survive the collapsed section and failed submits.
-    const formData = new FormData()
-    formData.set("url", url.trim())
-    formData.set("slug", slug.trim())
+    const formData = new FormData();
+    formData.set("url", url.trim());
+    formData.set("slug", slug.trim());
     // Recomputed at submit time: presets count from the moment the link is created.
-    formData.set("expiresAt", expiryIso(expiry))
-    startTransition(() => formAction(formData))
+    formData.set("expiresAt", expiryIso(expiry));
+    startTransition(() => formAction(formData));
   }
 
   const destination = url.trim()
@@ -186,11 +186,11 @@ export function CreateLinkForm({
           ? url.trim()
           : `https://${url.trim()}`,
       )
-    : null
+    : null;
   const summary = [
     slug.trim() ? `/${slug.trim()}` : "Random slug",
     describeExpiry(expiry),
-  ].join(" · ")
+  ].join(" · ");
 
   return (
     <form
@@ -231,9 +231,9 @@ export function CreateLinkForm({
                 placeholder="example.com/a/very/long/link"
                 value={url}
                 onChange={(event) => {
-                  setUrl(event.target.value)
+                  setUrl(event.target.value);
                   if (clientErrors.url)
-                    setClientErrors((current) => withoutError(current, "url"))
+                    setClientErrors((current) => withoutError(current, "url"));
                 }}
                 maxLength={URL_MAX_LENGTH}
                 aria-invalid={Boolean(errors.url) || undefined}
@@ -317,11 +317,11 @@ export function CreateLinkForm({
                     placeholder="my-link"
                     value={slug}
                     onChange={(event) => {
-                      setSlug(event.target.value)
+                      setSlug(event.target.value);
                       if (clientErrors.slug)
                         setClientErrors((current) =>
                           withoutError(current, "slug"),
-                        )
+                        );
                     }}
                     aria-invalid={Boolean(errors.slug) || undefined}
                     aria-describedby={
@@ -341,11 +341,11 @@ export function CreateLinkForm({
               <ExpiryField
                 value={expiry}
                 onChange={(next) => {
-                  setExpiry(next)
+                  setExpiry(next);
                   if (clientErrors.expiresAt)
                     setClientErrors((current) =>
                       withoutError(current, "expiresAt"),
-                    )
+                    );
                 }}
                 error={errors.expiresAt}
                 errorId="create-expiry-error"
@@ -376,14 +376,14 @@ export function CreateLinkForm({
         </Button>
       </div>
     </form>
-  )
+  );
 }
 
 function hasAdvancedError(state: CreateShurtleFormState) {
   return (
     state.status === "error" &&
     Boolean(state.errors.slug || state.errors.expiresAt)
-  )
+  );
 }
 
 function LinkPreview({
@@ -391,9 +391,9 @@ function LinkPreview({
   slugValid,
   destination,
 }: {
-  slug: string
-  slugValid: boolean
-  destination: { host: string; rest: string } | null
+  slug: string;
+  slugValid: boolean;
+  destination: { host: string; rest: string } | null;
 }) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-primary px-4 py-3.5 text-primary-foreground dark:bg-brand-soft dark:text-foreground">
@@ -430,5 +430,5 @@ function LinkPreview({
         )}
       </p>
     </div>
-  )
+  );
 }

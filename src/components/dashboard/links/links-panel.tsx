@@ -1,5 +1,5 @@
-import { CreateLinkButton } from "@/components/create/create-link-provider"
-import { Button } from "@/components/ui/button"
+import { CreateLinkButton } from "@/components/create/create-link-provider";
+import { Button } from "@/components/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -7,47 +7,47 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty"
-import { TabsContent } from "@/components/ui/tabs"
+} from "@/components/ui/empty";
+import { TabsContent } from "@/components/ui/tabs";
 import {
   DEFAULT_PER_PAGE,
   PER_PAGE_OPTIONS,
   type DashboardQuery,
   type LinkStatus,
-} from "@/lib/pagination"
-import { siteInfo } from "@/lib/site"
-import { cn } from "cn"
+} from "@/lib/pagination";
+import { siteInfo } from "@/lib/site";
+import { cn } from "cn";
 import {
   ArchiveIcon,
   ArrowRightIcon,
   LinkIcon,
   SearchXIcon,
-} from "lucide-react"
-import Link from "next/link"
-import { formatCount } from "../format"
-import { ServerNowProvider } from "../time"
-import { linksHref } from "./href"
-import { LinkSearch } from "./link-search"
-import { LinksList, LinksTable, type LinkRow } from "./link-rows"
-import { LinksPagination } from "./links-pagination"
-import { LinksBusyRegion, LinksProvider } from "./links-provider"
-import { PerPageSelect } from "./per-page-select"
-import { StatusTabs, StatusTabsList } from "./status-tabs"
+} from "lucide-react";
+import Link from "next/link";
+import { formatCount } from "../format";
+import { ServerNowProvider } from "../time";
+import { linksHref } from "./href";
+import { LinkSearch } from "./link-search";
+import { LinksList, LinksTable, type LinkRow } from "./link-rows";
+import { LinksPagination } from "./links-pagination";
+import { LinksBusyRegion, LinksProvider } from "./links-provider";
+import { PerPageSelect } from "./per-page-select";
+import { StatusTabs, StatusTabsList } from "./status-tabs";
 
 export type LinksPage = DashboardQuery & {
-  shurtles: LinkRow[]
-  totalCount: number
-  totalPages: number
+  shurtles: LinkRow[];
+  totalCount: number;
+  totalPages: number;
   /** Unfiltered totals per status, for the tabs. */
-  counts: Record<LinkStatus, number>
-}
+  counts: Record<LinkStatus, number>;
+};
 
 export function LinksHeading({
   tabs,
   children,
 }: {
-  tabs?: React.ReactNode
-  children?: React.ReactNode
+  tabs?: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-3 sm:min-h-10 sm:flex-row sm:items-center sm:justify-between">
@@ -63,7 +63,7 @@ export function LinksHeading({
       </div>
       {children}
     </div>
-  )
+  );
 }
 
 /**
@@ -76,11 +76,11 @@ export function LinksPanel({
   basePath = "/dashboard",
   deleteAction,
 }: {
-  data: LinksPage
+  data: LinksPage;
   /** Request time (ms) used to render relative dates on the server without hydration mismatches. */
-  now: number
-  basePath?: string
-  deleteAction?: React.ComponentProps<typeof LinksProvider>["deleteAction"]
+  now: number;
+  basePath?: string;
+  deleteAction?: React.ComponentProps<typeof LinksProvider>["deleteAction"];
 }) {
   const {
     shurtles: links,
@@ -91,22 +91,22 @@ export function LinksPanel({
     query,
     status,
     counts,
-  } = data
-  const isEmptyAccount = counts.active + counts.expired === 0 && !query
-  const expired = status === "expired"
-  const first = (page - 1) * perPage + 1
-  const last = first + links.length - 1
-  const kind = expired ? "expired " : ""
+  } = data;
+  const isEmptyAccount = counts.active + counts.expired === 0 && !query;
+  const expired = status === "expired";
+  const first = (page - 1) * perPage + 1;
+  const last = first + links.length - 1;
+  const kind = expired ? "expired " : "";
   const noun = query
     ? totalCount === 1
       ? "result"
       : "results"
-    : `${kind}${totalCount === 1 ? "link" : "links"}`
+    : `${kind}${totalCount === 1 ? "link" : "links"}`;
   const label = query
     ? `${expired ? "Expired links" : "Links"} matching “${query}”`
     : expired
       ? "Expired links"
-      : "Active links"
+      : "Active links";
 
   const list = isEmptyAccount ? (
     <EmptyAccount />
@@ -171,7 +171,7 @@ export function LinksPanel({
         </div>
       </div>
     </>
-  )
+  );
 
   return (
     <LinksProvider
@@ -215,7 +215,7 @@ export function LinksPanel({
         </StatusTabs>
       </ServerNowProvider>
     </LinksProvider>
-  )
+  );
 }
 
 /** shadcn's Empty as a card: solid border, card surface and the soft shadow of the links table. */
@@ -223,8 +223,8 @@ function EmptyCard({
   className,
   children,
 }: {
-  className?: string
-  children: React.ReactNode
+  className?: string;
+  children: React.ReactNode;
 }) {
   return (
     <Empty
@@ -235,7 +235,7 @@ function EmptyCard({
     >
       {children}
     </Empty>
-  )
+  );
 }
 
 /** EmptyTitle renders a div; keep the heading outline (h2 "Links" → h3) for screen readers. */
@@ -243,8 +243,8 @@ function EmptyHeading({
   className,
   children,
 }: {
-  className?: string
-  children: React.ReactNode
+  className?: string;
+  children: React.ReactNode;
 }) {
   return (
     <EmptyTitle
@@ -257,15 +257,15 @@ function EmptyHeading({
     >
       {children}
     </EmptyTitle>
-  )
+  );
 }
 
 const iconMedia =
-  "size-12 rounded-2xl text-muted-foreground [&_svg:not([class*='size-'])]:size-5"
-const action = "h-10 rounded-xl sm:h-9"
+  "size-12 rounded-2xl text-muted-foreground [&_svg:not([class*='size-'])]:size-5";
+const action = "h-10 rounded-xl sm:h-9";
 
 function EmptyAccount() {
-  const host = siteInfo.baseUrl.host
+  const host = siteInfo.baseUrl.host;
   return (
     <EmptyCard className="gap-7 sm:py-20">
       <div
@@ -304,15 +304,15 @@ function EmptyAccount() {
         <CreateLinkButton size="lg">Create your first link</CreateLinkButton>
       </EmptyContent>
     </EmptyCard>
-  )
+  );
 }
 
 function NoActiveLinks({
   expiredHref,
   expiredCount,
 }: {
-  expiredHref: string
-  expiredCount: number
+  expiredHref: string;
+  expiredCount: number;
 }) {
   return (
     <EmptyCard>
@@ -335,7 +335,7 @@ function NoActiveLinks({
         </Button>
       </EmptyContent>
     </EmptyCard>
-  )
+  );
 }
 
 function NoExpiredLinks() {
@@ -352,7 +352,7 @@ function NoExpiredLinks() {
         </EmptyDescription>
       </EmptyHeader>
     </EmptyCard>
-  )
+  );
 }
 
 function NoResults({
@@ -360,9 +360,9 @@ function NoResults({
   expired,
   clearHref,
 }: {
-  query: string
-  expired: boolean
-  clearHref: string
+  query: string;
+  expired: boolean;
+  clearHref: string;
 }) {
   return (
     <EmptyCard>
@@ -387,7 +387,7 @@ function NoResults({
         </Button>
       </EmptyContent>
     </EmptyCard>
-  )
+  );
 }
 
 function PageOutOfRange({
@@ -395,9 +395,9 @@ function PageOutOfRange({
   totalPages,
   lastHref,
 }: {
-  page: number
-  totalPages: number
-  lastHref: string
+  page: number;
+  totalPages: number;
+  lastHref: string;
 }) {
   return (
     <EmptyCard>
@@ -425,5 +425,5 @@ function PageOutOfRange({
         </Button>
       </EmptyContent>
     </EmptyCard>
-  )
+  );
 }

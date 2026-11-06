@@ -1,8 +1,8 @@
-import { LogoMark } from "@/components/logo"
-import { siteInfo } from "@/lib/site"
-import { cn } from "cn"
-import { CalendarClock, Check, Copy, MousePointerClick } from "lucide-react"
-import styles from "./link-demo.module.css"
+import { LogoMark } from "@/components/logo";
+import { siteInfo } from "@/lib/site";
+import { cn } from "cn";
+import { CalendarClock, Check, Copy, MousePointerClick } from "lucide-react";
+import styles from "./link-demo.module.css";
 
 const LONG_URL = {
   scheme: "https://",
@@ -10,20 +10,20 @@ const LONG_URL = {
   path: "/collections/summer-2026/linen-overshirt-sand",
   query:
     "?variant=44821&utm_source=newsletter&utm_medium=email&utm_campaign=september_drop",
-}
-const LONG_URL_LENGTH = Object.values(LONG_URL).join("").length
-const SLUG = "x7Kp2qR"
+};
+const LONG_URL_LENGTH = Object.values(LONG_URL).join("").length;
+const SLUG = "x7Kp2qR";
 
 const labelClasses =
-  "mb-2 flex items-baseline justify-between text-[0.6875rem] font-medium tracking-[0.08em] text-muted-foreground uppercase"
+  "mb-2 flex items-baseline justify-between text-[0.6875rem] font-medium tracking-[0.08em] text-muted-foreground uppercase";
 
 /**
  * The hero's signature visual: a long URL collapsing into a short link. Purely decorative — the
  * caption and the surrounding copy say the same thing in text.
  */
 export function LinkDemo({ className }: { className?: string }) {
-  const host = siteInfo.baseUrl.host
-  const shortLength = `${host}/${SLUG}`.length
+  const host = siteInfo.baseUrl.host;
+  const shortLength = `${host}/${SLUG}`.length;
 
   return (
     <figure className={cn("relative w-full", className)}>
@@ -159,5 +159,5 @@ export function LinkDemo({ className }: { className?: string }) {
         out. Same destination.
       </figcaption>
     </figure>
-  )
+  );
 }

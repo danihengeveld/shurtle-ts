@@ -1,22 +1,22 @@
-import { Hint } from "@/components/hint"
-import type { Shurtle } from "@/db/schema"
-import { siteInfo } from "@/lib/site"
-import { cn } from "cn"
-import { ArrowUpRightIcon, MousePointerClickIcon } from "lucide-react"
-import { CopyButton } from "../copy-button"
-import { ExpiryBadge } from "../expiry-badge"
-import { formatCount, splitUrl } from "../format"
-import { RelativeTime } from "../time"
-import { LinkActions } from "./link-actions"
-import { LinkListItem, LinkTableRow } from "./links-provider"
+import { Hint } from "@/components/hint";
+import type { Shurtle } from "@/db/schema";
+import { siteInfo } from "@/lib/site";
+import { cn } from "cn";
+import { ArrowUpRightIcon, MousePointerClickIcon } from "lucide-react";
+import { CopyButton } from "../copy-button";
+import { ExpiryBadge } from "../expiry-badge";
+import { formatCount, splitUrl } from "../format";
+import { RelativeTime } from "../time";
+import { LinkActions } from "./link-actions";
+import { LinkListItem, LinkTableRow } from "./links-provider";
 
 /** Only what the list renders; keeps the RSC payload small. */
 export type LinkRow = Pick<
   Shurtle,
   "slug" | "url" | "hits" | "createdAt" | "lastHitAt" | "expiresAt"
->
+>;
 
-const host = siteInfo.baseUrl.host
+const host = siteInfo.baseUrl.host;
 
 function ShortLink({
   slug,
@@ -24,11 +24,11 @@ function ShortLink({
   expired = false,
   className,
 }: {
-  slug: string
-  compactHost?: boolean
+  slug: string;
+  compactHost?: boolean;
   /** Expired links are muted: they no longer redirect. */
-  expired?: boolean
-  className?: string
+  expired?: boolean;
+  className?: string;
 }) {
   return (
     <Hint content={`${host}/${slug}`}>
@@ -58,11 +58,11 @@ function ShortLink({
         </span>
       </span>
     </Hint>
-  )
+  );
 }
 
 function Destination({ url, className }: { url: string; className?: string }) {
-  const { host: destinationHost, rest } = splitUrl(url)
+  const { host: destinationHost, rest } = splitUrl(url);
   return (
     <Hint content={url}>
       <a
@@ -87,7 +87,7 @@ function Destination({ url, className }: { url: string; className?: string }) {
         <span className="sr-only">(opens in a new tab)</span>
       </a>
     </Hint>
-  )
+  );
 }
 
 function Clicks({ hits }: { hits: number }) {
@@ -100,21 +100,21 @@ function Clicks({ hits }: { hits: number }) {
     >
       {formatCount(hits)}
     </span>
-  )
+  );
 }
 
 const th =
-  "h-10 px-3 text-left align-middle text-xs font-medium whitespace-nowrap text-muted-foreground first:pl-5 last:pr-3"
-const td = "h-[3.75rem] px-3 align-middle first:pl-5 last:pr-3"
+  "h-10 px-3 text-left align-middle text-xs font-medium whitespace-nowrap text-muted-foreground first:pl-5 last:pr-3";
+const td = "h-[3.75rem] px-3 align-middle first:pl-5 last:pr-3";
 
 export function LinksTable({
   links,
   expired = false,
   caption,
 }: {
-  links: LinkRow[]
-  expired?: boolean
-  caption: string
+  links: LinkRow[];
+  expired?: boolean;
+  caption: string;
 }) {
   return (
     <div className="hidden overflow-hidden rounded-2xl border bg-card shadow-soft md:block">
@@ -208,7 +208,7 @@ export function LinksTable({
         </tbody>
       </table>
     </div>
-  )
+  );
 }
 
 /** Stacked layout for small screens (< md). */
@@ -217,9 +217,9 @@ export function LinksList({
   expired = false,
   label,
 }: {
-  links: LinkRow[]
-  expired?: boolean
-  label: string
+  links: LinkRow[];
+  expired?: boolean;
+  label: string;
 }) {
   return (
     <ul
@@ -275,5 +275,5 @@ export function LinksList({
         </LinkListItem>
       ))}
     </ul>
-  )
+  );
 }

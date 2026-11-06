@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { cn } from "cn"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { cn } from "cn";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 /** Top-level nav link that marks itself as the current page (for its whole subtree). */
-type NavLinkProps = React.ComponentProps<typeof Link> & { href: string }
+type NavLinkProps = React.ComponentProps<typeof Link> & { href: string };
 
 export function NavLink(props: NavLinkProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
   const active =
-    pathname === props.href || pathname.startsWith(`${props.href}/`)
-  return <NavLinkBase {...props} aria-current={active ? "page" : undefined} />
+    pathname === props.href || pathname.startsWith(`${props.href}/`);
+  return <NavLinkBase {...props} aria-current={active ? "page" : undefined} />;
 }
 
 /**
@@ -30,5 +30,5 @@ export function NavLinkBase({ className, ...props }: NavLinkProps) {
       )}
       {...props}
     />
-  )
+  );
 }

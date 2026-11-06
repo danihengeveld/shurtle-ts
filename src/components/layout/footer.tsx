@@ -1,20 +1,20 @@
-import { Logo } from "@/components/logo"
-import { siteInfo } from "@/lib/site"
-import { ArrowUpRight } from "lucide-react"
-import { cacheLife } from "next/cache"
-import Link from "next/link"
-import { ExternalLink } from "./external-link"
-import { GitHubIcon } from "./github-icon"
+import { Logo } from "@/components/logo";
+import { siteInfo } from "@/lib/site";
+import { ArrowUpRight } from "lucide-react";
+import { cacheLife } from "next/cache";
+import Link from "next/link";
+import { ExternalLink } from "./external-link";
+import { GitHubIcon } from "./github-icon";
 
 /** The year changes rarely; cache it so the footer stays part of the static shell. */
 async function CurrentYear() {
-  "use cache"
-  cacheLife("days")
-  return <>{new Date().getFullYear()}</>
+  "use cache";
+  cacheLife("days");
+  return <>{new Date().getFullYear()}</>;
 }
 
 const linkClasses =
-  "group inline-flex min-h-10 items-center gap-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-8"
+  "group inline-flex min-h-10 items-center gap-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-8";
 
 export function Footer() {
   return (
@@ -102,5 +102,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

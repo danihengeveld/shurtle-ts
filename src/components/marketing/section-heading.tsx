@@ -1,11 +1,11 @@
-import { cn } from "cn"
+import { cn } from "cn";
 
 interface SectionHeadingProps {
-  id: string
-  eyebrow: string
-  title: React.ReactNode
-  children?: React.ReactNode
-  className?: string
+  id: string;
+  eyebrow: string;
+  title: React.ReactNode;
+  children?: React.ReactNode;
+  className?: string;
 }
 
 /** Left-aligned section intro: mono eyebrow, display h2, optional lede. */
@@ -34,5 +34,5 @@ export function SectionHeading({
         </p>
       )}
     </div>
-  )
+  );
 }

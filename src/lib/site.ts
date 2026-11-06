@@ -1,13 +1,13 @@
-import packageJson from "../../package.json"
+import packageJson from "../../package.json";
 
 /**
  * Public origin used to build absolute URLs (metadata, sitemap, short links).
  * Override with NEXT_PUBLIC_SITE_URL, e.g. for self-hosting or preview deployments.
  */
 function resolveBaseUrl() {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL
-  if (process.env.NODE_ENV === "development") return "http://localhost:3000"
-  return "https://shurtle.app"
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.NODE_ENV === "development") return "http://localhost:3000";
+  return "https://shurtle.app";
 }
 
 export const siteInfo = {
@@ -23,14 +23,14 @@ export const siteInfo = {
     url: "https://dani.hengeveld.dev",
     twitter: "@DHengeveld",
   },
-} as const
+} as const;
 
 /** Absolute short link for a slug, e.g. `https://shurtle.app/abc123`. */
 export function shortUrl(slug: string) {
-  return new URL(encodeURIComponent(slug), siteInfo.baseUrl).toString()
+  return new URL(encodeURIComponent(slug), siteInfo.baseUrl).toString();
 }
 
 /** Short link without the protocol, for display, e.g. `shurtle.app/abc123`. */
 export function displayShortUrl(slug: string) {
-  return `${siteInfo.baseUrl.host}/${slug}`
+  return `${siteInfo.baseUrl.host}/${slug}`;
 }

@@ -1,4 +1,4 @@
-import { cn } from "cn"
+import { cn } from "cn";
 
 /**
  * The hexagonal "shell" lattice, filling its positioned parent. The pattern itself is a mask, so the
@@ -9,8 +9,8 @@ export function ShellBackdrop({
   className,
   latticeClassName,
 }: {
-  className?: string
-  latticeClassName?: string
+  className?: string;
+  latticeClassName?: string;
 }) {
   return (
     <div
@@ -24,5 +24,5 @@ export function ShellBackdrop({
         )}
       />
     </div>
-  )
+  );
 }

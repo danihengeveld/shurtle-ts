@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { ExternalLink } from "@/components/layout/external-link"
-import { LogoMark } from "@/components/logo"
-import { Button } from "@/components/ui/button"
-import { siteInfo } from "@/lib/site"
-import { RotateCw } from "lucide-react"
-import { ShellBackdrop } from "./shell-backdrop"
+import { ExternalLink } from "@/components/layout/external-link";
+import { LogoMark } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import { siteInfo } from "@/lib/site";
+import { RotateCw } from "lucide-react";
+import { ShellBackdrop } from "./shell-backdrop";
 
 /** Narrows the error-boundary `error` prop (it may not be an `Error`) to its digest, if any. */
 export function errorDigest(error: unknown) {
@@ -14,18 +14,18 @@ export function errorDigest(error: unknown) {
     "digest" in error &&
     typeof error.digest === "string"
   )
-    return error.digest
-  return undefined
+    return error.digest;
+  return undefined;
 }
 
 interface ErrorViewProps {
-  retry: () => void
-  digest?: string
+  retry: () => void;
+  digest?: string;
   /**
    * The home link. In `global-error` the root layout (and with it client navigation) may be broken,
    * so a plain anchor is used there.
    */
-  homeLink: React.ReactElement
+  homeLink: React.ReactElement;
 }
 
 /** Body of the error boundaries: a turtle on its back, a calm explanation and a retry. */
@@ -92,5 +92,5 @@ export function ErrorView({ retry, digest, homeLink }: ErrorViewProps) {
         </div>
       </div>
     </section>
-  )
+  );
 }

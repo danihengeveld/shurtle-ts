@@ -3,7 +3,7 @@ import {
   sql,
   type InferInsertModel,
   type InferSelectModel,
-} from "drizzle-orm"
+} from "drizzle-orm";
 import {
   index,
   integer,
@@ -14,9 +14,9 @@ import {
   uniqueIndex,
   uuid,
   varchar,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/pg-core";
 
-export const schema = pgSchema("shurtle")
+export const schema = pgSchema("shurtle");
 
 export const shurtles = schema.table(
   "shurtles",
@@ -63,11 +63,11 @@ export const shurtles = schema.table(
       .on(table.userId, table.url)
       .where(sql`archived_at is null`),
   ],
-)
+);
 
 export const shurtlesRelations = relations(shurtles, ({ many }) => ({
   hits: many(shurtleHits),
-}))
+}));
 
 export const shurtleHits = schema.table(
   "hits",
@@ -90,17 +90,17 @@ export const shurtleHits = schema.table(
     index("at_idx").on(table.at.desc()),
     index("country_idx").on(table.country),
   ],
-)
+);
 
 export const shurtleHitsRelations = relations(shurtleHits, ({ one }) => ({
   shurtle: one(shurtles, {
     fields: [shurtleHits.slug],
     references: [shurtles.slug],
   }),
-}))
+}));
 
-export type Shurtle = InferSelectModel<typeof shurtles>
-export type ShurtleInsert = InferInsertModel<typeof shurtles>
+export type Shurtle = InferSelectModel<typeof shurtles>;
+export type ShurtleInsert = InferInsertModel<typeof shurtles>;
 
-export type ShurtleHit = InferSelectModel<typeof shurtleHits>
-export type ShurtleHitInsert = InferInsertModel<typeof shurtleHits>
+export type ShurtleHit = InferSelectModel<typeof shurtleHits>;
+export type ShurtleHitInsert = InferInsertModel<typeof shurtleHits>;

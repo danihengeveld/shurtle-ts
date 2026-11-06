@@ -1,6 +1,6 @@
-import "server-only"
+import "server-only";
 
-import { auth } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server";
 
 /**
  * Resource-level auth check (Clerk's recommended replacement for route matchers in the proxy).
@@ -8,6 +8,6 @@ import { auth } from "@clerk/nextjs/server"
  * Redirects signed-out visitors to sign-in from a page, or responds 404 from a Server Function.
  */
 export async function requireUserId() {
-  const { userId } = await auth.protect()
-  return userId
+  const { userId } = await auth.protect();
+  return userId;
 }

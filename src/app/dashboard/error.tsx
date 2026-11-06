@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { RotateCwIcon } from "lucide-react"
-import Link from "next/link"
-import { useEffect } from "react"
+import { Button } from "@/components/ui/button";
+import { RotateCwIcon } from "lucide-react";
+import Link from "next/link";
+import { useEffect } from "react";
 
 export default function DashboardError({
   error,
   retry,
 }: {
-  error: unknown
-  retry: () => void
+  error: unknown;
+  retry: () => void;
 }) {
   const digest =
     error instanceof Error && "digest" in error
       ? String(error.digest)
-      : undefined
+      : undefined;
 
   useEffect(() => {
-    console.error(error)
-  }, [error])
+    console.error(error);
+  }, [error]);
 
   return (
     <div className="container-page flex flex-1 items-center justify-center py-16 sm:py-24">
@@ -59,5 +59,5 @@ export default function DashboardError({
         )}
       </div>
     </div>
-  )
+  );
 }

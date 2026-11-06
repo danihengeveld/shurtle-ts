@@ -1,9 +1,9 @@
-import { siteInfo } from "@/lib/site"
-import { Check, ShieldCheck } from "lucide-react"
-import { SectionHeading } from "./section-heading"
+import { siteInfo } from "@/lib/site";
+import { Check, ShieldCheck } from "lucide-react";
+import { SectionHeading } from "./section-heading";
 
 const chip =
-  "inline-flex max-w-full items-center gap-1.5 rounded-lg border bg-card px-2.5 py-1.5 text-xs font-medium shadow-xs"
+  "inline-flex max-w-full items-center gap-1.5 rounded-lg border bg-card px-2.5 py-1.5 text-xs font-medium shadow-xs";
 
 export function HowItWorks() {
   const steps = [
@@ -43,7 +43,7 @@ export function HowItWorks() {
         </span>
       ),
     },
-  ]
+  ];
 
   return (
     <section
@@ -101,5 +101,5 @@ export function HowItWorks() {
         </ol>
       </div>
     </section>
-  )
+  );
 }

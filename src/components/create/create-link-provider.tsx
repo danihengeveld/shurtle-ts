@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Kbd } from "@/components/ui/kbd"
-import { createShurtle, type CreateShurtleFormState } from "@/lib/actions"
-import { cn } from "cn"
-import { PlusIcon } from "lucide-react"
-import { createContext, use, useEffect, useState } from "react"
-import { CreateLinkDialog } from "./create-link-dialog"
+import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
+import { createShurtle, type CreateShurtleFormState } from "@/lib/actions";
+import { cn } from "cn";
+import { PlusIcon } from "lucide-react";
+import { createContext, use, useEffect, useState } from "react";
+import { CreateLinkDialog } from "./create-link-dialog";
 
 export type CreateLinkAction = (
   state: CreateShurtleFormState,
   formData: FormData,
-) => Promise<CreateShurtleFormState>
+) => Promise<CreateShurtleFormState>;
 
 type CreateLinkContextValue = {
-  openCreate: (options?: { slug?: string }) => void
-}
+  openCreate: (options?: { slug?: string }) => void;
+};
 
-const CreateLinkContext = createContext<CreateLinkContextValue | null>(null)
+const CreateLinkContext = createContext<CreateLinkContextValue | null>(null);
 
 export function useCreateLink() {
-  const context = use(CreateLinkContext)
+  const context = use(CreateLinkContext);
   if (!context)
-    throw new Error("useCreateLink must be used inside <CreateLinkProvider>")
-  return context
+    throw new Error("useCreateLink must be used inside <CreateLinkProvider>");
+  return context;
 }
 
 function isTypingTarget(target: EventTarget | null) {
@@ -31,7 +31,7 @@ function isTypingTarget(target: EventTarget | null) {
     target instanceof HTMLElement &&
     (target.isContentEditable ||
       ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
-  )
+  );
 }
 
 /**
@@ -45,25 +45,25 @@ export function CreateLinkProvider({
   defaultSlug,
   initialState,
 }: {
-  children: React.ReactNode
-  action?: CreateLinkAction
+  children: React.ReactNode;
+  action?: CreateLinkAction;
   /** Preview / testing only. */
-  defaultOpen?: boolean
-  defaultSlug?: string
-  initialState?: CreateShurtleFormState
+  defaultOpen?: boolean;
+  defaultSlug?: string;
+  initialState?: CreateShurtleFormState;
 }) {
   const [flow, setFlow] = useState({
     open: defaultOpen,
     id: 0,
     slug: defaultSlug,
-  })
+  });
 
   function openCreate(options?: { slug?: string }) {
     setFlow((current) => ({
       open: true,
       id: current.id + 1,
       slug: options?.slug,
-    }))
+    }));
   }
 
   // Keyboard shortcut: "N" opens the dialog from anywhere on the dashboard.
@@ -76,24 +76,24 @@ export function CreateLinkProvider({
         event.altKey ||
         event.shiftKey
       )
-        return
-      if (event.repeat || isTypingTarget(event.target)) return
+        return;
+      if (event.repeat || isTypingTarget(event.target)) return;
       if (
         document.querySelector(
           "[role=dialog], [role=alertdialog], [role=menu], [role=listbox]",
         )
       )
-        return
-      event.preventDefault()
+        return;
+      event.preventDefault();
       setFlow((current) => ({
         open: true,
         id: current.id + 1,
         slug: undefined,
-      }))
+      }));
     }
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
-  }, [])
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <CreateLinkContext value={{ openCreate }}>
@@ -114,7 +114,7 @@ export function CreateLinkProvider({
         initialState={flow.id === 0 ? initialState : undefined}
       />
     </CreateLinkContext>
-  )
+  );
 }
 
 /** Opens the create dialog. With `shortcut`, shows the "N" hint (desktop only). */
@@ -124,9 +124,9 @@ export function CreateLinkButton({
   className,
   ...props
 }: Omit<React.ComponentProps<typeof Button>, "onClick"> & {
-  shortcut?: boolean
+  shortcut?: boolean;
 }) {
-  const { openCreate } = useCreateLink()
+  const { openCreate } = useCreateLink();
   return (
     <Button
       type="button"
@@ -150,5 +150,5 @@ export function CreateLinkButton({
         </Kbd>
       )}
     </Button>
-  )
+  );
 }

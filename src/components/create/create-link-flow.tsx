@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { Hint } from "@/components/hint"
-import { Button } from "@/components/ui/button"
-import type { CreateShurtleFormState } from "@/lib/actions"
-import { displayShortUrl, shortUrl, siteInfo } from "@/lib/site"
-import { CheckIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
-import { Dialog as DialogPrimitive } from "radix-ui"
-import { useActionState } from "react"
-import { CopyButton } from "../dashboard/copy-button"
-import { formatExpiry, splitUrl } from "../dashboard/format"
-import { CreateLinkForm } from "./create-link-form"
-import type { CreateLinkAction } from "./create-link-provider"
+import { Hint } from "@/components/hint";
+import { Button } from "@/components/ui/button";
+import type { CreateShurtleFormState } from "@/lib/actions";
+import { displayShortUrl, shortUrl, siteInfo } from "@/lib/site";
+import { CheckIcon, ExternalLinkIcon, PlusIcon } from "lucide-react";
+import { Dialog as DialogPrimitive } from "radix-ui";
+import { useActionState } from "react";
+import { CopyButton } from "../dashboard/copy-button";
+import { formatExpiry, splitUrl } from "../dashboard/format";
+import { CreateLinkForm } from "./create-link-form";
+import type { CreateLinkAction } from "./create-link-provider";
 
-const IDLE: CreateShurtleFormState = { status: "idle" }
+const IDLE: CreateShurtleFormState = { status: "idle" };
 
 export function CreateLinkFlow({
   action,
@@ -21,13 +21,13 @@ export function CreateLinkFlow({
   onCreateAnother,
   onDone,
 }: {
-  action: CreateLinkAction
-  initialSlug?: string
-  initialState?: CreateShurtleFormState
-  onCreateAnother: () => void
-  onDone: () => void
+  action: CreateLinkAction;
+  initialSlug?: string;
+  initialState?: CreateShurtleFormState;
+  onCreateAnother: () => void;
+  onDone: () => void;
 }) {
-  const [state, formAction, isPending] = useActionState(action, initialState)
+  const [state, formAction, isPending] = useActionState(action, initialState);
 
   if (state.status === "success") {
     return (
@@ -36,7 +36,7 @@ export function CreateLinkFlow({
         onCreateAnother={onCreateAnother}
         onDone={onDone}
       />
-    )
+    );
   }
 
   return (
@@ -65,7 +65,7 @@ export function CreateLinkFlow({
         initialSlug={initialSlug}
       />
     </>
-  )
+  );
 }
 
 function CreateLinkSuccess({
@@ -73,11 +73,11 @@ function CreateLinkSuccess({
   onCreateAnother,
   onDone,
 }: {
-  data: { slug: string; url: string; expiresAt: string | null }
-  onCreateAnother: () => void
-  onDone: () => void
+  data: { slug: string; url: string; expiresAt: string | null };
+  onCreateAnother: () => void;
+  onDone: () => void;
 }) {
-  const destination = splitUrl(data.url)
+  const destination = splitUrl(data.url);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -189,5 +189,5 @@ function CreateLinkSuccess({
         </Button>
       </div>
     </div>
-  )
+  );
 }

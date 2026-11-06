@@ -1,10 +1,10 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "cn"
-import { LinksHeading } from "./links-panel"
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "cn";
+import { LinksHeading } from "./links-panel";
 
-const ROWS = 6
-const widths = ["w-24", "w-32", "w-20", "w-28", "w-24", "w-36"]
-const destinationWidths = ["w-56", "w-40", "w-64", "w-48", "w-52", "w-44"]
+const ROWS = 6;
+const widths = ["w-24", "w-32", "w-20", "w-28", "w-24", "w-36"];
+const destinationWidths = ["w-56", "w-40", "w-64", "w-48", "w-52", "w-44"];
 
 /** Mirrors <LinksPanel> (heading, search, table / list, footer) so nothing shifts when it loads. */
 export function LinksSkeleton() {
@@ -61,5 +61,5 @@ export function LinksSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }

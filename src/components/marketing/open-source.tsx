@@ -1,9 +1,9 @@
-import { ExternalLink } from "@/components/layout/external-link"
-import { GitHubIcon } from "@/components/layout/github-icon"
-import { Button } from "@/components/ui/button"
-import { siteInfo } from "@/lib/site"
-import { ArrowUpRight } from "lucide-react"
-import { ShellBackdrop } from "./shell-backdrop"
+import { ExternalLink } from "@/components/layout/external-link";
+import { GitHubIcon } from "@/components/layout/github-icon";
+import { Button } from "@/components/ui/button";
+import { siteInfo } from "@/lib/site";
+import { ArrowUpRight } from "lucide-react";
+import { ShellBackdrop } from "./shell-backdrop";
 
 const STACK = [
   "Next.js",
@@ -13,10 +13,10 @@ const STACK = [
   "Upstash Redis",
   "Clerk",
   "Tailwind CSS",
-]
+];
 
 export function OpenSource() {
-  const repo = siteInfo.repoUrl.replace(/^https:\/\//, "")
+  const repo = siteInfo.repoUrl.replace(/^https:\/\//, "");
 
   return (
     <section
@@ -109,5 +109,5 @@ export function OpenSource() {
         </div>
       </div>
     </section>
-  )
+  );
 }

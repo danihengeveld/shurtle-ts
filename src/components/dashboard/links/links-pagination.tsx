@@ -1,28 +1,28 @@
-import { buttonVariants } from "@/components/ui/button"
-import type { DashboardQuery } from "@/lib/pagination"
-import { cn } from "cn"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
-import Link from "next/link"
-import { linksHref } from "./href"
+import { buttonVariants } from "@/components/ui/button";
+import type { DashboardQuery } from "@/lib/pagination";
+import { cn } from "cn";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import Link from "next/link";
+import { linksHref } from "./href";
 
 /** 1 … 4 5 6 … 12 */
 function pageItems(page: number, totalPages: number): (number | "gap")[] {
   if (totalPages <= 7)
-    return Array.from({ length: totalPages }, (_, index) => index + 1)
-  const start = Math.max(2, Math.min(page - 1, totalPages - 4))
-  const end = Math.min(totalPages - 1, Math.max(page + 1, 5))
-  const items: (number | "gap")[] = [1]
-  if (start > 2) items.push("gap")
-  for (let current = start; current <= end; current++) items.push(current)
-  if (end < totalPages - 1) items.push("gap")
-  items.push(totalPages)
-  return items
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  const start = Math.max(2, Math.min(page - 1, totalPages - 4));
+  const end = Math.min(totalPages - 1, Math.max(page + 1, 5));
+  const items: (number | "gap")[] = [1];
+  if (start > 2) items.push("gap");
+  for (let current = start; current <= end; current++) items.push(current);
+  if (end < totalPages - 1) items.push("gap");
+  items.push(totalPages);
+  return items;
 }
 
 const pageButton = cn(
   buttonVariants({ variant: "ghost", size: "icon" }),
   "w-auto min-w-9 px-2.5 text-muted-foreground tabular-nums hover:text-foreground max-md:size-10",
-)
+);
 
 export function LinksPagination({
   basePath,
@@ -33,26 +33,26 @@ export function LinksPagination({
   status,
 }: DashboardQuery & { basePath: string; totalPages: number }) {
   const href = (target: number) =>
-    linksHref(basePath, { page: target, perPage, query, status }, "links")
-  const hasPrevious = page > 1
-  const hasNext = page < totalPages
+    linksHref(basePath, { page: target, perPage, query, status }, "links");
+  const hasPrevious = page > 1;
+  const hasNext = page < totalPages;
 
   const step = (direction: "previous" | "next") => {
-    const enabled = direction === "previous" ? hasPrevious : hasNext
-    const Icon = direction === "previous" ? ChevronLeftIcon : ChevronRightIcon
-    const label = direction === "previous" ? "Previous" : "Next"
+    const enabled = direction === "previous" ? hasPrevious : hasNext;
+    const Icon = direction === "previous" ? ChevronLeftIcon : ChevronRightIcon;
+    const label = direction === "previous" ? "Previous" : "Next";
     const className = cn(
       buttonVariants({ variant: "outline", size: "sm" }),
       "h-9 gap-1 rounded-lg bg-card max-md:h-10",
       direction === "previous" ? "pr-3 pl-2" : "pr-2 pl-3",
-    )
+    );
     const content = (
       <>
         {direction === "previous" && <Icon aria-hidden />}
         <span>{label}</span>
         {direction === "next" && <Icon aria-hidden />}
       </>
-    )
+    );
 
     return enabled ? (
       <Link
@@ -70,8 +70,8 @@ export function LinksPagination({
       >
         {content}
       </span>
-    )
-  }
+    );
+  };
 
   return (
     <nav
@@ -113,5 +113,5 @@ export function LinksPagination({
       </span>
       {step("next")}
     </nav>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import type { CreateShurtleFormState } from "@/lib/actions"
-import { XIcon } from "lucide-react"
-import { Dialog as DialogPrimitive } from "radix-ui"
-import type { CreateLinkAction } from "./create-link-provider"
-import { CreateLinkFlow } from "./create-link-flow"
+import type { CreateShurtleFormState } from "@/lib/actions";
+import { XIcon } from "lucide-react";
+import { Dialog as DialogPrimitive } from "radix-ui";
+import type { CreateLinkAction } from "./create-link-provider";
+import { CreateLinkFlow } from "./create-link-flow";
 
 /**
  * A centred dialog on larger screens and a bottom sheet on phones. Its body scrolls on its own,
@@ -19,13 +19,13 @@ export function CreateLinkDialog({
   initialSlug,
   initialState,
 }: {
-  flowId: number
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onCreateAnother: () => void
-  action: CreateLinkAction
-  initialSlug?: string
-  initialState?: CreateShurtleFormState
+  flowId: number;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreateAnother: () => void;
+  action: CreateLinkAction;
+  initialSlug?: string;
+  initialState?: CreateShurtleFormState;
 }) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -57,5 +57,5 @@ export function CreateLinkDialog({
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
-  )
+  );
 }

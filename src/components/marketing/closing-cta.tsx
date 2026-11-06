@@ -1,15 +1,15 @@
-import { LogoMark } from "@/components/logo"
-import { Button } from "@/components/ui/button"
-import { cn } from "cn"
-import { ArrowRight } from "lucide-react"
-import Link from "next/link"
-import styles from "./link-demo.module.css"
+import { LogoMark } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import { cn } from "cn";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import styles from "./link-demo.module.css";
 
 const STREAKS = [
   { width: "w-16 sm:w-24", offset: "ml-6" },
   { width: "w-24 sm:w-36", offset: "" },
   { width: "w-12 sm:w-20", offset: "ml-10" },
-]
+];
 
 export function ClosingCta() {
   return (
@@ -79,5 +79,5 @@ export function ClosingCta() {
         </div>
       </div>
     </section>
-  )
+  );
 }

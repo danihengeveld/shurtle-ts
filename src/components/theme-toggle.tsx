@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,30 +8,30 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Monitor, Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { useSyncExternalStore } from "react"
+} from "@/components/ui/dropdown-menu";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 
 const THEMES = [
   { value: "light", label: "Light", Icon: Sun },
   { value: "dark", label: "Dark", Icon: Moon },
   { value: "system", label: "System", Icon: Monitor },
-] as const
+] as const;
 
-const noopSubscribe = () => () => {}
+const noopSubscribe = () => () => {};
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
   // next-themes only knows the stored choice on the client; render a neutral state until hydrated.
   const hydrated = useSyncExternalStore(
     noopSubscribe,
     () => true,
     () => false,
-  )
+  );
   const current = hydrated
     ? (THEMES.find((t) => t.value === theme) ?? THEMES[2])
-    : undefined
+    : undefined;
 
   return (
     <DropdownMenu>
@@ -74,5 +74,5 @@ export function ThemeToggle() {
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
