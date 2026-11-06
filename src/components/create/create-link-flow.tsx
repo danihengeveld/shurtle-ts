@@ -1,5 +1,6 @@
 "use client"
 
+import { Hint } from "@/components/hint"
 import { Button } from "@/components/ui/button"
 import type { CreateShurtleFormState } from "@/lib/actions"
 import { displayShortUrl, shortUrl, siteInfo } from "@/lib/site"
@@ -113,10 +114,12 @@ function CreateLinkSuccess({
           <dl className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-2.5 px-1 text-sm">
             <div className="flex items-baseline justify-between gap-4">
               <dt className="shrink-0 text-muted-foreground">Redirects to</dt>
-              <dd className="min-w-0 truncate text-right" title={data.url}>
-                <span className="font-medium">{destination.host}</span>
-                <span className="text-muted-foreground">{destination.rest}</span>
-              </dd>
+              <Hint content={data.url}>
+                <dd className="min-w-0 truncate text-right">
+                  <span className="font-medium">{destination.host}</span>
+                  <span className="text-muted-foreground">{destination.rest}</span>
+                </dd>
+              </Hint>
             </div>
             <div className="flex items-baseline justify-between gap-4">
               <dt className="shrink-0 text-muted-foreground">Expires</dt>

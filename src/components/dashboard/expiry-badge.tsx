@@ -1,5 +1,6 @@
 "use client"
 
+import { Hint } from "@/components/hint"
 import { cn } from "cn"
 import { formatDate, formatDateTime, formatRelative, getExpiryStatus } from "./format"
 import { useNow } from "./time"
@@ -34,24 +35,30 @@ export function ExpiryBadge({
       // Muted, not alarming: expiring is the intended end of a link's life. The date says when.
       const withYear = new Date(now).getUTCFullYear() !== status.expiresAt.getUTCFullYear()
       return (
-        <span title={title} className={cn(base, "border-border bg-muted text-muted-foreground", className)}>
-          <span aria-hidden className="size-1.5 rounded-full bg-muted-foreground/60" />
-          Expired {formatDate(status.expiresAt, { timeZone: hydrated ? undefined : "UTC", withYear })}
-        </span>
+        <Hint content={title}>
+          <span className={cn(base, "border-border bg-muted text-muted-foreground", className)}>
+            <span aria-hidden className="size-1.5 rounded-full bg-muted-foreground/60" />
+            Expired {formatDate(status.expiresAt, { timeZone: hydrated ? undefined : "UTC", withYear })}
+          </span>
+        </Hint>
       )
     }
     case "soon":
       return (
-        <span title={title} className={cn(base, "border-warning/40 bg-warning/12 text-foreground", className)}>
-          <span aria-hidden className="size-1.5 rounded-full bg-warning" />
-          Expires {formatRelative(status.expiresAt, now)}
-        </span>
+        <Hint content={title}>
+          <span className={cn(base, "border-warning/40 bg-warning/12 text-foreground", className)}>
+            <span aria-hidden className="size-1.5 rounded-full bg-warning" />
+            Expires {formatRelative(status.expiresAt, now)}
+          </span>
+        </Hint>
       )
     case "later":
       return (
-        <span title={title} className={cn(quiet, className)}>
-          Expires {formatDate(status.expiresAt, { timeZone: hydrated ? undefined : "UTC" })}
-        </span>
+        <Hint content={title}>
+          <span className={cn(quiet, className)}>
+            Expires {formatDate(status.expiresAt, { timeZone: hydrated ? undefined : "UTC" })}
+          </span>
+        </Hint>
       )
   }
 }

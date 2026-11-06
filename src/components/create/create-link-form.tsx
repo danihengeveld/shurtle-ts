@@ -2,11 +2,14 @@
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { Spinner } from "@/components/ui/spinner"
 import type { CreateShurtleFormState } from "@/lib/actions"
 import { siteInfo } from "@/lib/site"
 import { SLUG_MAX_LENGTH, SLUG_PATTERN, isReservedSlug } from "@/lib/slugs"
 import { cn } from "cn"
-import { CircleAlertIcon, ChevronDownIcon, LinkIcon, LoaderCircleIcon, SlidersHorizontalIcon } from "lucide-react"
+import { CircleAlertIcon, ChevronDownIcon, LinkIcon, SlidersHorizontalIcon } from "lucide-react"
 import { Collapsible as CollapsiblePrimitive, Dialog as DialogPrimitive } from "radix-ui"
 import { startTransition, useEffect, useRef, useState } from "react"
 import { splitUrl } from "../dashboard/format"
@@ -15,8 +18,8 @@ import { ExpiryField, describeExpiry, expiryIso, expiryIssue, initialExpiry, typ
 /** Mirrors URL_MAX_LENGTH in src/lib/schemas.ts (not imported to keep zod out of the client bundle). */
 const URL_MAX_LENGTH = 2048
 
-type Field = "url" | "slug" | "expiresAt"
-type FieldErrors = Partial<Record<Field, string>>
+type FieldName = "url" | "slug" | "expiresAt"
+type FieldErrors = Partial<Record<FieldName, string>>
 
 function slugIssue(slug: string) {
   if (!slug) return undefined
@@ -38,23 +41,25 @@ function validate(url: string, slug: string, expiry: ExpiryValue): FieldErrors {
   return errors
 }
 
-function withoutError(errors: FieldErrors, field: Field): FieldErrors {
+function withoutError(errors: FieldErrors, field: FieldName): FieldErrors {
   return { ...errors, [field]: undefined }
 }
 
-const inputClass = cn(
-  "h-11 w-full min-w-0 rounded-xl border border-input bg-card px-3.5 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none placeholder:text-muted-foreground/80 dark:bg-input/30",
-  "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/40",
-  "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/25",
-)
+/** Shurtle sizing on top of shadcn's InputGroup: a taller, rounder field on the card surface. */
+const groupClass = "h-11 rounded-xl bg-card has-[[data-slot=input-group-control]:focus-visible]:ring-ring/40"
 
-function FieldError({ id, children }: { id: string; children?: string }) {
+/**
+ * FieldError with an icon. Not a live region (`role="alert"` by default): errors are tied to their
+ * input via aria-describedby and focus moves to the first invalid field on submit, while the slug
+ * re-validates on every keystroke and would otherwise interrupt screen readers constantly.
+ */
+function FormError({ id, children }: { id: string; children?: string }) {
   if (!children) return null
   return (
-    <p id={id} className="flex items-start gap-1.5 text-[13px] leading-snug font-medium text-destructive">
+    <FieldError id={id} role={undefined} className="flex items-start gap-1.5 text-[13px] leading-snug font-medium">
       <CircleAlertIcon aria-hidden className="mt-px size-3.5 shrink-0" />
       {children}
-    </p>
+    </FieldError>
   )
 }
 
@@ -98,7 +103,7 @@ export function CreateLinkForm({
   const values = { url, slug, expiresAt }
 
   /** Client errors win; server errors show until the user edits that field. */
-  function errorFor(field: Field) {
+  function errorFor(field: FieldName) {
     if (clientErrors[field]) return clientErrors[field]
     if (state.status === "error" && state.fields[field] === values[field]) return state.errors[field]?.[0]
     return undefined
@@ -148,16 +153,13 @@ export function CreateLinkForm({
             </Alert>
           )}
 
-          <div className="grid gap-2">
-            <label htmlFor="create-url" className="text-sm font-medium">
-              Destination URL
-            </label>
-            <div className="relative">
-              <LinkIcon
-                aria-hidden
-                className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
-              />
-              <input
+          <Field className="gap-2">
+            <FieldLabel htmlFor="create-url">Destination URL</FieldLabel>
+            <InputGroup className={groupClass}>
+              <InputGroupAddon className="pl-3.5">
+                <LinkIcon aria-hidden />
+              </InputGroupAddon>
+              <InputGroupInput
                 ref={urlRef}
                 id="create-url"
                 name="url"
@@ -177,11 +179,11 @@ export function CreateLinkForm({
                 maxLength={URL_MAX_LENGTH}
                 aria-invalid={Boolean(errors.url) || undefined}
                 aria-describedby={errors.url ? "create-url-error" : undefined}
-                className={cn(inputClass, "pl-10")}
+                className="h-full text-base placeholder:text-muted-foreground/80 md:text-base"
               />
-            </div>
-            <FieldError id="create-url-error">{errors.url}</FieldError>
-          </div>
+            </InputGroup>
+            <FormError id="create-url-error">{errors.url}</FormError>
+          </Field>
 
           <LinkPreview slug={slug.trim()} slugValid={!liveSlugError} destination={destination} />
 
@@ -206,11 +208,11 @@ export function CreateLinkForm({
               forceMount
               className="grid gap-6 pt-5 data-[state=closed]:hidden data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-1"
             >
-              <div className="grid gap-2">
+              <Field className="gap-2">
                 <div className="flex items-baseline justify-between gap-3">
-                  <label htmlFor="create-slug" className="text-sm font-medium">
+                  <FieldLabel htmlFor="create-slug">
                     Custom slug <span className="font-normal text-muted-foreground">(optional)</span>
-                  </label>
+                  </FieldLabel>
                   <span
                     aria-hidden
                     className={cn(
@@ -221,20 +223,14 @@ export function CreateLinkForm({
                     {slug.length}/{SLUG_MAX_LENGTH}
                   </span>
                 </div>
-                <div
-                  className={cn(
-                    "flex h-11 items-stretch overflow-hidden rounded-xl border border-input bg-card shadow-xs transition-[color,box-shadow,border-color] dark:bg-input/30",
-                    "has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/40",
-                    errors.slug && "border-destructive has-focus-visible:border-destructive has-focus-visible:ring-destructive/25",
-                  )}
-                >
-                  <span
+                <InputGroup className={cn(groupClass, "overflow-hidden")}>
+                  <InputGroupAddon
                     aria-hidden
-                    className="flex shrink-0 items-center border-r bg-muted/60 pr-2.5 pl-3.5 font-mono text-sm text-muted-foreground dark:bg-transparent"
+                    className="h-full self-stretch border-r bg-muted/60 pr-2.5 pl-3.5 font-mono font-normal dark:bg-transparent"
                   >
                     {siteInfo.baseUrl.host}/
-                  </span>
-                  <input
+                  </InputGroupAddon>
+                  <InputGroupInput
                     ref={slugRef}
                     id="create-slug"
                     name="slug"
@@ -251,14 +247,14 @@ export function CreateLinkForm({
                     }}
                     aria-invalid={Boolean(errors.slug) || undefined}
                     aria-describedby={errors.slug ? "create-slug-error create-slug-hint" : "create-slug-hint"}
-                    className="min-w-0 flex-1 bg-transparent px-2.5 font-mono text-base outline-none placeholder:text-muted-foreground/70 sm:text-sm"
+                    className="h-full px-2.5 font-mono text-base placeholder:text-muted-foreground/70 sm:text-sm"
                   />
-                </div>
-                <FieldError id="create-slug-error">{errors.slug}</FieldError>
-                <p id="create-slug-hint" className="text-[13px] text-muted-foreground">
+                </InputGroup>
+                <FormError id="create-slug-error">{errors.slug}</FormError>
+                <FieldDescription id="create-slug-hint" className="text-[13px]">
                   Letters, numbers, - and _. Leave empty for a random one.
-                </p>
-              </div>
+                </FieldDescription>
+              </Field>
 
               <ExpiryField
                 value={expiry}
@@ -281,7 +277,7 @@ export function CreateLinkForm({
           </Button>
         </DialogPrimitive.Close>
         <Button type="submit" disabled={isPending} aria-disabled={isPending} className="h-10 min-w-32 max-sm:flex-2 sm:h-9">
-          {isPending && <LoaderCircleIcon aria-hidden className="animate-spin" />}
+          {isPending && <Spinner aria-hidden />}
           {isPending ? "Creating…" : "Create link"}
         </Button>
       </div>

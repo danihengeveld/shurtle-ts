@@ -1,3 +1,4 @@
+import { Hint } from "@/components/hint"
 import type { Shurtle } from "@/db/schema"
 import { siteInfo } from "@/lib/site"
 import { cn } from "cn"
@@ -27,23 +28,25 @@ function ShortLink({
   className?: string
 }) {
   return (
-    <span className={cn("min-w-0 truncate font-mono text-[13px] leading-6", className)} title={`${host}/${slug}`}>
-      {/* In the table, the repeated host only shows when there's room; the slug matters most. */}
-      <span className={cn("text-muted-foreground", compactHost && "max-xl:sr-only")}>{host}</span>
-      <span className="text-muted-foreground">/</span>
-      <span className={cn("font-medium", expired ? "text-muted-foreground" : "text-foreground")}>{slug}</span>
-    </span>
+    <Hint content={`${host}/${slug}`}>
+      <span className={cn("min-w-0 truncate font-mono text-[13px] leading-6", className)}>
+        {/* In the table, the repeated host only shows when there's room; the slug matters most. */}
+        <span className={cn("text-muted-foreground", compactHost && "max-xl:sr-only")}>{host}</span>
+        <span className="text-muted-foreground">/</span>
+        <span className={cn("font-medium", expired ? "text-muted-foreground" : "text-foreground")}>{slug}</span>
+      </span>
+    </Hint>
   )
 }
 
 function Destination({ url, className }: { url: string; className?: string }) {
   const { host: destinationHost, rest } = splitUrl(url)
   return (
+    <Hint content={url}>
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      title={url}
       className={cn(
         "group/destination inline-flex max-w-full min-w-0 items-center gap-1 rounded-sm text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
         className,
@@ -61,6 +64,7 @@ function Destination({ url, className }: { url: string; className?: string }) {
       />
       <span className="sr-only">(opens in a new tab)</span>
     </a>
+    </Hint>
   )
 }
 

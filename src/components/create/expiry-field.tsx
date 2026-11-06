@@ -1,10 +1,13 @@
 "use client"
 
 import { Calendar } from "@/components/ui/calendar"
+import { FieldDescription, FieldError, FieldLegend, FieldSet } from "@/components/ui/field"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "cn"
 import { CalendarIcon, ChevronDownIcon, ClockIcon } from "lucide-react"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { addLocalDays, atLocalTime, formatExpiry, startOfLocalDay, toTimeValue } from "../dashboard/format"
 
 export type ExpiryPreset = "never" | "1" | "7" | "30" | "custom"
@@ -82,49 +85,47 @@ export function ExpiryField({
   errorId: string
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
-  // Only a click/tap on "Custom" opens the calendar; arrowing through the options must not steal focus.
-  const pointerSelect = useRef(false)
   const date = expiryDate(value)
   const today = startOfLocalDay(new Date())
 
   return (
-    <fieldset aria-describedby={error ? `${errorId} expiry-hint` : "expiry-hint"} className="grid gap-2.5">
-      <legend className="mb-2.5 text-sm font-medium">Expiration</legend>
-      <div
+    <FieldSet aria-describedby={error ? `${errorId} expiry-hint` : "expiry-hint"} className="gap-2.5">
+      <FieldLegend variant="label" className="mb-2.5">
+        Expiration
+      </FieldLegend>
+      {/* Single-select toggle group (radio semantics): arrow keys move between options, Enter/Space
+          picks one. Picking is explicit, so choosing "Custom" can open the calendar right away. */}
+      <ToggleGroup
+        type="single"
+        value={value.preset}
+        onValueChange={(next) => {
+          if (!next) return // Keep a selection: clicking the active option doesn't clear it.
+          const preset = next as ExpiryPreset
+          onChange({ ...value, preset })
+          if (preset === "custom" && !value.customDate) setPickerOpen(true)
+        }}
+        spacing={1}
+        aria-label="Expiration"
+        aria-invalid={Boolean(error) || undefined}
         className={cn(
-          "grid grid-cols-5 gap-1 rounded-xl bg-muted p-1 dark:bg-input/40",
+          "grid w-full grid-cols-5 rounded-xl bg-muted p-1 dark:bg-input/40",
           error && "ring-2 ring-destructive/50",
         )}
       >
         {PRESETS.map((preset) => (
-          <label
+          <ToggleGroupItem
             key={preset.value}
-            onPointerDown={() => {
-              pointerSelect.current = true
-            }}
+            value={preset.value}
+            aria-label={preset.long}
             className={cn(
-              "relative flex h-9 cursor-pointer items-center justify-center rounded-lg px-1 text-[13px] font-medium whitespace-nowrap text-muted-foreground transition-[color,background-color,box-shadow] select-none hover:text-foreground max-sm:h-10",
-              "has-checked:bg-card has-checked:text-foreground has-checked:shadow-[0_1px_2px_oklch(0_0_0/0.08),0_0_0_1px_var(--border)] dark:has-checked:bg-background/70",
-              "has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50",
+              "h-9 w-full cursor-pointer rounded-lg px-1 text-[13px] text-muted-foreground transition-[color,background-color,box-shadow] hover:bg-transparent hover:text-foreground max-sm:h-10",
+              "data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-[0_1px_2px_oklch(0_0_0/0.08),0_0_0_1px_var(--border)] dark:data-[state=on]:bg-background/70",
             )}
           >
-            <input
-              type="radio"
-              name="expiryPreset"
-              value={preset.value}
-              checked={value.preset === preset.value}
-              onChange={() => {
-                onChange({ ...value, preset: preset.value })
-                if (preset.value === "custom" && !value.customDate && pointerSelect.current) setPickerOpen(true)
-                pointerSelect.current = false
-              }}
-              className="sr-only"
-              aria-label={preset.long}
-            />
             {preset.label}
-          </label>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
 
       {value.preset === "custom" && (
         <div className="grid grid-cols-[minmax(0,1fr)_8.5rem] gap-2">
@@ -162,23 +163,25 @@ export function ExpiryField({
 
           {/* Native time input (as in the shadcn date + time picker): the platform's own keyboard and
               wheel UI, in the viewer's 12/24h convention. */}
-          <label data-invalid={Boolean(error) || undefined} className={cn(fieldClass, "cursor-text")}>
-            <ClockIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
-            <span className="sr-only">Expiry time</span>
-            <input
+          <InputGroup className="h-10 rounded-xl bg-card max-sm:h-11">
+            <InputGroupAddon>
+              <ClockIcon aria-hidden />
+            </InputGroupAddon>
+            <InputGroupInput
               type="time"
               step={60}
               required
+              aria-label="Expiry time"
               value={value.customTime}
               onChange={(event) => onChange({ ...value, customTime: event.target.value })}
               aria-invalid={Boolean(error) || undefined}
-              className="w-full min-w-0 appearance-none bg-transparent tabular-nums outline-none [&::-webkit-calendar-picker-indicator]:hidden"
+              className="h-full appearance-none text-sm tabular-nums [&::-webkit-calendar-picker-indicator]:hidden"
             />
-          </label>
+          </InputGroup>
         </div>
       )}
 
-      <p id="expiry-hint" className="text-[13px] leading-relaxed text-muted-foreground">
+      <FieldDescription id="expiry-hint" className="text-[13px] leading-relaxed">
         {value.preset === "never" ? (
           "The link keeps working until you delete it."
         ) : date ? (
@@ -188,12 +191,11 @@ export function ExpiryField({
         ) : (
           "Pick the date and time the link should stop working, in your time zone."
         )}
-      </p>
-      {error && (
-        <p id={errorId} className="text-[13px] font-medium text-destructive">
-          {error}
-        </p>
-      )}
-    </fieldset>
+      </FieldDescription>
+      {/* Not a live region: see FormError in create-link-form.tsx. */}
+      <FieldError id={errorId} role={undefined} className="text-[13px] font-medium">
+        {error}
+      </FieldError>
+    </FieldSet>
   )
 }

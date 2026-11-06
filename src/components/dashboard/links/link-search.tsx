@@ -1,8 +1,11 @@
 "use client"
 
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
+import { Kbd } from "@/components/ui/kbd"
+import { Spinner } from "@/components/ui/spinner"
 import { DEFAULT_PER_PAGE, MAX_SEARCH_LENGTH, type PerPage } from "@/lib/pagination"
 import { cn } from "cn"
-import { LoaderCircleIcon, SearchIcon, XIcon } from "lucide-react"
+import { SearchIcon, XIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useLinks } from "./links-provider"
 
@@ -21,7 +24,7 @@ function isEditable(target: EventTarget | null) {
  * Without JavaScript it is a plain GET form.
  */
 export function LinkSearch({ query, perPage, className }: { query: string; perPage: PerPage; className?: string }) {
-  const { basePath, navigate, isNavigating } = useLinks()
+  const { basePath, status, navigate, isNavigating } = useLinks()
   const [value, setValue] = useState(query)
   const [syncedQuery, setSyncedQuery] = useState(query)
   const [requestedQuery, setRequestedQuery] = useState(query)
@@ -89,12 +92,12 @@ export function LinkSearch({ query, perPage, className }: { query: string; perPa
       <label htmlFor="link-search" className="sr-only">
         Search links
       </label>
-      <SearchIcon
-        aria-hidden
-        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-      />
-      <input
-        ref={inputRef}
+      <InputGroup className="h-10 rounded-xl bg-card has-[[data-slot=input-group-control]:focus-visible]:ring-ring/40">
+        <InputGroupAddon>
+          <SearchIcon aria-hidden />
+        </InputGroupAddon>
+        <InputGroupInput
+          ref={inputRef}
         id="link-search"
         name="q"
         type="search"
@@ -112,39 +115,30 @@ export function LinkSearch({ query, perPage, className }: { query: string; perPa
         spellCheck={false}
         autoCapitalize="none"
         enterKeyHint="search"
-        aria-keyshortcuts="/"
-        className={cn(
-          "h-10 w-full rounded-xl border border-input bg-card pr-10 pl-9 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none placeholder:text-muted-foreground sm:text-sm dark:bg-input/30",
-          "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/40",
-          "[&::-webkit-search-cancel-button]:appearance-none",
-        )}
-      />
+          aria-keyshortcuts="/"
+          className="h-full text-base placeholder:text-muted-foreground sm:text-sm [&::-webkit-search-cancel-button]:appearance-none"
+        />
+        <InputGroupAddon align="inline-end">
+          {showSpinner ? (
+            <span className="flex size-8 items-center justify-center" role="status">
+              <Spinner aria-hidden />
+              <span className="sr-only">Searching…</span>
+            </span>
+          ) : value ? (
+            <InputGroupButton size="icon-sm" onClick={clear} className="rounded-lg">
+              <XIcon aria-hidden />
+              <span className="sr-only">Clear search</span>
+            </InputGroupButton>
+          ) : (
+            <Kbd aria-hidden className="hidden group-focus-within:hidden md:inline-flex">
+              /
+            </Kbd>
+          )}
+        </InputGroupAddon>
+      </InputGroup>
       {perPage !== DEFAULT_PER_PAGE && <input type="hidden" name="perPage" value={perPage} />}
-
-      <div className="absolute inset-y-0 right-1 flex items-center">
-        {showSpinner ? (
-          <span className="flex size-8 items-center justify-center" role="status">
-            <LoaderCircleIcon aria-hidden className="size-4 animate-spin text-muted-foreground" />
-            <span className="sr-only">Searching…</span>
-          </span>
-        ) : value ? (
-          <button
-            type="button"
-            onClick={clear}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          >
-            <XIcon aria-hidden className="size-4" />
-            <span className="sr-only">Clear search</span>
-          </button>
-        ) : (
-          <kbd
-            aria-hidden
-            className="pointer-events-none mr-1.5 hidden h-5 min-w-5 items-center justify-center rounded-md border bg-muted px-1 font-mono text-[11px] text-muted-foreground group-focus-within:hidden md:inline-flex"
-          >
-            /
-          </kbd>
-        )}
-      </div>
+      {/* Without JS the form submits natively: stay on the current tab. */}
+      {status !== "active" && <input type="hidden" name="status" value={status} />}
     </form>
   )
 }

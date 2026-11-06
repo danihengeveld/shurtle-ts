@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { displayShortUrl } from "@/lib/site"
 import { cn } from "cn"
-import { CopyIcon, ExternalLinkIcon, EllipsisIcon, LoaderCircleIcon, Trash2Icon } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
+import { CopyIcon, ExternalLinkIcon, EllipsisIcon, Trash2Icon } from "lucide-react"
 import { useRef, useState, useTransition } from "react"
 import { toast } from "sonner"
 import { useCopyShortLink } from "../copy-button"
@@ -140,7 +141,7 @@ export function LinkActions({
               Cancel
             </AlertDialogCancel>
             <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting} className="max-sm:h-10">
-              {isDeleting ? <LoaderCircleIcon aria-hidden className="animate-spin" /> : <Trash2Icon aria-hidden />}
+              {isDeleting ? <Spinner aria-hidden /> : <Trash2Icon aria-hidden />}
               {isDeleting ? "Deleting…" : "Delete link"}
             </Button>
           </AlertDialogFooter>

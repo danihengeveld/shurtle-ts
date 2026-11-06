@@ -2,6 +2,7 @@ import { Footer } from "@/components/layout/footer"
 import { Navbar } from "@/components/layout/navbar"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { siteInfo } from "@/lib/site"
 import { ClerkProvider } from "@clerk/nextjs"
 import { Analytics } from "@vercel/analytics/next"
@@ -108,11 +109,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             >
               Skip to content
             </a>
-            <Navbar />
-            <main id="main" className="flex flex-1 flex-col">
-              {children}
-            </main>
-            <Footer />
+            {/* 400ms: moving the pointer across the links table shouldn't flash a tooltip per row. */}
+            <TooltipProvider delayDuration={400}>
+              <Navbar />
+              <main id="main" className="flex flex-1 flex-col">
+                {children}
+              </main>
+              <Footer />
+            </TooltipProvider>
             <Toaster />
           </ThemeProvider>
         </ClerkProvider>

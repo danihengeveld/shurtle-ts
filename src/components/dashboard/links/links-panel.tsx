@@ -1,5 +1,6 @@
 import { CreateLinkButton } from "@/components/create/create-link-provider"
 import { Button } from "@/components/ui/button"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { TabsContent } from "@/components/ui/tabs"
 import { DEFAULT_PER_PAGE, PER_PAGE_OPTIONS, type DashboardQuery, type LinkStatus } from "@/lib/pagination"
 import { siteInfo } from "@/lib/site"
@@ -146,52 +147,59 @@ export function LinksPanel({
   )
 }
 
+/** shadcn's Empty as a card: solid border, card surface and the soft shadow of the links table. */
 function EmptyCard({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
-    <div
-      className={cn(
-        "relative isolate overflow-hidden rounded-3xl border bg-card px-6 py-12 text-center shadow-soft sm:py-16",
-        className,
-      )}
+    <Empty
+      className={cn("relative isolate overflow-hidden rounded-3xl border border-solid bg-card py-12 shadow-soft sm:py-16", className)}
     >
       {children}
-    </div>
+    </Empty>
   )
 }
+
+/** EmptyTitle renders a div; keep the heading outline (h2 "Links" → h3) for screen readers. */
+function EmptyHeading({ className, children }: { className?: string; children: React.ReactNode }) {
+  return (
+    <EmptyTitle role="heading" aria-level={3} className={cn("font-display text-xl font-semibold text-balance", className)}>
+      {children}
+    </EmptyTitle>
+  )
+}
+
+const iconMedia = "size-12 rounded-2xl text-muted-foreground [&_svg:not([class*='size-'])]:size-5"
+const action = "h-10 rounded-xl sm:h-9"
 
 function EmptyAccount() {
   const host = siteInfo.baseUrl.host
   return (
-    <EmptyCard className="sm:py-20">
+    <EmptyCard className="gap-7 sm:py-20">
       <div aria-hidden className="absolute inset-0 -z-10 mask-[radial-gradient(60%_70%_at_50%_45%,black,transparent)]">
         <div className="shell-pattern size-full" />
       </div>
-      <div className="mx-auto max-w-md">
-        <div
-          aria-hidden
-          className="mx-auto w-fit max-w-full -rotate-2 rounded-2xl border bg-background/90 px-4 py-3 text-left font-mono text-sm shadow-lift backdrop-blur-sm"
-        >
-          <p className="truncate text-muted-foreground line-through decoration-muted-foreground/40">
-            yoursite.com/blog/2026/11/how-we…
-          </p>
-          <p className="mt-1 flex items-center gap-2">
-            <ArrowRightIcon className="size-3.5 shrink-0 text-brand-ink" />
-            <span className="truncate">
-              <span className="text-muted-foreground">{host}/</span>
-              <span className="font-semibold text-brand-ink">launch</span>
-            </span>
-          </p>
-        </div>
-        <h3 className="mt-8 font-display text-2xl font-semibold tracking-tight text-balance sm:text-[1.75rem]">
-          Shorten your first link
-        </h3>
-        <p className="mx-auto mt-2 max-w-sm text-pretty text-muted-foreground">
+      <EmptyHeader className="max-w-md gap-0">
+        <EmptyMedia className="mb-8 w-full">
+          <div className="w-fit max-w-full -rotate-2 rounded-2xl border bg-background/90 px-4 py-3 text-left font-mono text-sm shadow-lift backdrop-blur-sm">
+            <p className="truncate text-muted-foreground line-through decoration-muted-foreground/40">
+              yoursite.com/blog/2026/11/how-we…
+            </p>
+            <p className="mt-1 flex items-center gap-2">
+              <ArrowRightIcon aria-hidden className="size-3.5 shrink-0 text-brand-ink" />
+              <span className="truncate">
+                <span className="text-muted-foreground">{host}/</span>
+                <span className="font-semibold text-brand-ink">launch</span>
+              </span>
+            </p>
+          </div>
+        </EmptyMedia>
+        <EmptyHeading className="text-2xl sm:text-[1.75rem]">Shorten your first link</EmptyHeading>
+        <EmptyDescription className="mt-2 text-base text-pretty">
           Turn any long URL into a short, memorable link. Every click shows up right here.
-        </p>
-        <CreateLinkButton size="lg" className="mt-7">
-          Create your first link
-        </CreateLinkButton>
-      </div>
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <CreateLinkButton size="lg">Create your first link</CreateLinkButton>
+      </EmptyContent>
     </EmptyCard>
   )
 }
@@ -199,22 +207,24 @@ function EmptyAccount() {
 function NoActiveLinks({ expiredHref, expiredCount }: { expiredHref: string; expiredCount: number }) {
   return (
     <EmptyCard>
-      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-        <LinkIcon aria-hidden className="size-5" />
-      </div>
-      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-balance">No active links</h3>
-      <p className="mx-auto mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
-        All of your links have expired. Create a new one, or look back at the {formatCount(expiredCount)} that ran
-        their course.
-      </p>
-      <div className="mt-6 flex flex-col justify-center gap-2 min-[25rem]:flex-row">
-        <CreateLinkButton className="h-10 rounded-xl sm:h-9">New link</CreateLinkButton>
-        <Button asChild variant="outline" className="h-10 rounded-xl sm:h-9">
+      <EmptyHeader>
+        <EmptyMedia variant="icon" className={iconMedia}>
+          <LinkIcon aria-hidden />
+        </EmptyMedia>
+        <EmptyHeading>No active links</EmptyHeading>
+        <EmptyDescription className="text-pretty">
+          All of your links have expired. Create a new one, or look back at the {formatCount(expiredCount)} that ran
+          their course.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent className="flex-col justify-center gap-2 min-[25rem]:flex-row">
+        <CreateLinkButton className={action}>New link</CreateLinkButton>
+        <Button asChild variant="outline" className={action}>
           <Link href={expiredHref} scroll={false}>
             View expired links
           </Link>
         </Button>
-      </div>
+      </EmptyContent>
     </EmptyCard>
   )
 }
@@ -222,13 +232,15 @@ function NoActiveLinks({ expiredHref, expiredCount }: { expiredHref: string; exp
 function NoExpiredLinks() {
   return (
     <EmptyCard>
-      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-        <ArchiveIcon aria-hidden className="size-5" />
-      </div>
-      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-balance">No expired links</h3>
-      <p className="mx-auto mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
-        Links you give an expiry date land here once it passes. They stop redirecting, but keep their click history.
-      </p>
+      <EmptyHeader>
+        <EmptyMedia variant="icon" className={iconMedia}>
+          <ArchiveIcon aria-hidden />
+        </EmptyMedia>
+        <EmptyHeading>No expired links</EmptyHeading>
+        <EmptyDescription className="text-pretty">
+          Links you give an expiry date land here once it passes. They stop redirecting, but keep their click history.
+        </EmptyDescription>
+      </EmptyHeader>
     </EmptyCard>
   )
 }
@@ -236,20 +248,24 @@ function NoExpiredLinks() {
 function NoResults({ query, expired, clearHref }: { query: string; expired: boolean; clearHref: string }) {
   return (
     <EmptyCard>
-      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-        <SearchXIcon aria-hidden className="size-5" />
-      </div>
-      <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-balance">
-        No {expired ? "expired " : ""}links match <span className="break-all">“{query}”</span>
-      </h3>
-      <p className="mx-auto mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
-        Search looks at slugs and destination URLs. Check the spelling or try a shorter term.
-      </p>
-      <Button asChild variant="outline" className="mt-6 h-10 rounded-xl sm:h-9">
-        <Link href={clearHref} scroll={false}>
-          Clear search
-        </Link>
-      </Button>
+      <EmptyHeader>
+        <EmptyMedia variant="icon" className={iconMedia}>
+          <SearchXIcon aria-hidden />
+        </EmptyMedia>
+        <EmptyHeading>
+          No {expired ? "expired " : ""}links match <span className="break-all">“{query}”</span>
+        </EmptyHeading>
+        <EmptyDescription className="text-pretty">
+          Search looks at slugs and destination URLs. Check the spelling or try a shorter term.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button asChild variant="outline" className={action}>
+          <Link href={clearHref} scroll={false}>
+            Clear search
+          </Link>
+        </Button>
+      </EmptyContent>
     </EmptyCard>
   )
 }
@@ -257,17 +273,21 @@ function NoResults({ query, expired, clearHref }: { query: string; expired: bool
 function PageOutOfRange({ page, totalPages, lastHref }: { page: number; totalPages: number; lastHref: string }) {
   return (
     <EmptyCard>
-      <p className="font-mono text-sm text-muted-foreground tabular-nums">
-        page {formatCount(page)} / {formatCount(totalPages)}
-      </p>
-      <h3 className="mt-3 font-display text-xl font-semibold tracking-tight">This page is empty</h3>
-      <p className="mx-auto mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
-        There {totalPages === 1 ? "is only 1 page" : `are only ${formatCount(totalPages)} pages`} of links. Some may have
-        been deleted.
-      </p>
-      <Button asChild variant="outline" className="mt-6 h-10 rounded-xl sm:h-9">
-        <Link href={lastHref}>Go to {totalPages === 1 ? "the first page" : `page ${formatCount(totalPages)}`}</Link>
-      </Button>
+      <EmptyHeader>
+        <EmptyMedia className="font-mono text-sm text-muted-foreground tabular-nums">
+          page {formatCount(page)} / {formatCount(totalPages)}
+        </EmptyMedia>
+        <EmptyHeading>This page is empty</EmptyHeading>
+        <EmptyDescription className="text-pretty">
+          There {totalPages === 1 ? "is only 1 page" : `are only ${formatCount(totalPages)} pages`} of links. Some may
+          have been deleted.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button asChild variant="outline" className={action}>
+          <Link href={lastHref}>Go to {totalPages === 1 ? "the first page" : `page ${formatCount(totalPages)}`}</Link>
+        </Button>
+      </EmptyContent>
     </EmptyCard>
   )
 }

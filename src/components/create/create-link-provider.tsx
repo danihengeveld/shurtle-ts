@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Kbd } from "@/components/ui/kbd"
 import { createShurtle, type CreateShurtleFormState } from "@/lib/actions"
 import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
@@ -100,12 +101,10 @@ export function CreateLinkButton({
       <PlusIcon aria-hidden className="transition-transform duration-300 group-hover/create:rotate-90" />
       {children}
       {shortcut && (
-        <kbd
-          aria-hidden
-          className="ml-1 hidden h-5 min-w-5 items-center justify-center rounded-md bg-current/15 px-1 font-mono text-[11px] leading-none font-medium opacity-80 md:inline-flex"
-        >
+        // Tinted from the button's own text colour, so it reads on any button variant.
+        <Kbd aria-hidden className="ml-1 hidden bg-current/15 font-mono text-[11px] text-current opacity-80 md:inline-flex">
           N
-        </kbd>
+        </Kbd>
       )}
     </Button>
   )

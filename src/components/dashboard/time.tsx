@@ -1,5 +1,6 @@
 "use client"
 
+import { Hint } from "@/components/hint"
 import { cn } from "cn"
 import { createContext, use, useSyncExternalStore } from "react"
 import { formatDate, formatDateTime, formatRelative } from "./format"
@@ -69,13 +70,11 @@ export function RelativeTime({ date, className }: { date: Date | string; classNa
   const label = now ? formatRelative(value, now) : formatDate(value, { timeZone: "UTC", withYear: true })
 
   return (
-    <time
-      dateTime={value.toISOString()}
-      title={hydrated ? formatDateTime(value) : undefined}
-      className={cn("whitespace-nowrap", className)}
-    >
-      {label}
-    </time>
+    <Hint content={hydrated ? formatDateTime(value) : undefined}>
+      <time dateTime={value.toISOString()} className={cn("whitespace-nowrap", className)}>
+        {label}
+      </time>
+    </Hint>
   )
 }
 
@@ -87,12 +86,10 @@ export function LocalDate({ date, className }: { date: Date | string; className?
   const withYear = new Date(now).getUTCFullYear() !== value.getUTCFullYear()
 
   return (
-    <time
-      dateTime={value.toISOString()}
-      title={hydrated ? formatDateTime(value) : undefined}
-      className={cn("whitespace-nowrap", className)}
-    >
-      {formatDate(value, { timeZone, withYear })}
-    </time>
+    <Hint content={hydrated ? formatDateTime(value) : undefined}>
+      <time dateTime={value.toISOString()} className={cn("whitespace-nowrap", className)}>
+        {formatDate(value, { timeZone, withYear })}
+      </time>
+    </Hint>
   )
 }
