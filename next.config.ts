@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   reactCompiler: true,
   cacheComponents: true,
+  partialPrefetching: true,
   poweredByHeader: false,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }]

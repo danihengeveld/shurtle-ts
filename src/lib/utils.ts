@@ -1,5 +1,13 @@
 import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { extendTailwindMerge } from "tailwind-merge"
+
+const twMerge = extendTailwindMerge<"bg-shell">({
+  extend: {
+    // `bg-shell` (globals.css) is a mask-based motif, not a background colour, so it must not be
+    // merged away by a later `bg-*` colour class.
+    classGroups: { "bg-shell": ["bg-shell"] },
+  },
+})
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
