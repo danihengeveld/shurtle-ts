@@ -1,5 +1,5 @@
-import { siteInfo } from "@/lib/site"
-import type { MetadataRoute } from "next"
+import { siteInfo } from "@/lib/site";
+import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -10,5 +10,5 @@ export default function robots(): MetadataRoute.Robots {
       disallow: ["/dashboard", "/api/"],
     },
     sitemap: new URL("/sitemap.xml", siteInfo.baseUrl).toString(),
-  }
+  };
 }

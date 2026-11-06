@@ -1,28 +1,33 @@
-"use client"
+"use client";
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
-import { useId } from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { formatCount, formatUtcDay, pluralize } from "./format"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { useId } from "react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { formatCount, formatUtcDay, pluralize } from "./format";
 
-type Point = { date: string; clicks: number }
+type Point = { date: string; clicks: number };
 
 /** Round up to a "nice" axis maximum (1, 2, 2.5, 5 × 10ⁿ), with a little headroom. */
 export function niceMax(max: number) {
-  if (max <= 0) return 4
-  const target = max * 1.1
-  const magnitude = 10 ** Math.floor(Math.log10(target))
+  if (max <= 0) return 4;
+  const target = max * 1.1;
+  const magnitude = 10 ** Math.floor(Math.log10(target));
   for (const step of [1, 2, 2.5, 5, 10]) {
-    if (step * magnitude >= target) return Math.max(step * magnitude, 4)
+    if (step * magnitude >= target) return Math.max(step * magnitude, 4);
   }
-  return 10 * magnitude
+  return 10 * magnitude;
 }
 
 const chartConfig = {
   clicks: { label: "Clicks", color: "var(--chart-1)" },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
-const longDay = { weekday: "short", month: "short", day: "numeric" } as const
+const longDay = { weekday: "short", month: "short", day: "numeric" } as const;
 
 /** X-axis label anchored to the edge for the first/last tick, so "Oct 8" and "Today" aren't clipped. */
 function EdgeTick({
@@ -32,34 +37,48 @@ function EdgeTick({
   first,
   last,
 }: {
-  x?: number
-  y?: number
-  payload?: { value: string }
-  first: string
-  last: string
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+  first: string;
+  last: string;
 }) {
-  if (!payload) return null
-  const anchor = payload.value === first ? "start" : payload.value === last ? "end" : "middle"
+  if (!payload) return null;
+  const anchor =
+    payload.value === first
+      ? "start"
+      : payload.value === last
+        ? "end"
+        : "middle";
   return (
-    <text x={x} y={y} dy={12} textAnchor={anchor} className="fill-muted-foreground text-[11px] tabular-nums">
+    <text
+      x={x}
+      y={y}
+      dy={12}
+      textAnchor={anchor}
+      className="fill-muted-foreground text-[11px] tabular-nums"
+    >
       {payload.value === last ? "Today" : formatUtcDay(payload.value)}
     </text>
-  )
+  );
 }
 
 export function ClicksChartPlot({ data }: { data: Point[] }) {
-  const id = useId()
-  const max = Math.max(0, ...data.map((point) => point.clicks))
-  const yMax = niceMax(max)
-  const isEmpty = max === 0
-  const lastIndex = data.length - 1
-  const first = data[0]?.date ?? ""
-  const last = data[lastIndex]?.date ?? ""
-  const middle = data[Math.floor(lastIndex / 2)]?.date
+  const id = useId();
+  const max = Math.max(0, ...data.map((point) => point.clicks));
+  const yMax = niceMax(max);
+  const isEmpty = max === 0;
+  const lastIndex = data.length - 1;
+  const first = data[0]?.date ?? "";
+  const last = data[lastIndex]?.date ?? "";
+  const middle = data[Math.floor(lastIndex / 2)]?.date;
 
   const summary = isEmpty
     ? "No clicks in the last 30 days."
-    : `${pluralize(data.reduce((sum, point) => sum + point.clicks, 0), "click")} in the last 30 days, peaking at ${pluralize(max, "click")} on ${formatUtcDay(data[data.findIndex((point) => point.clicks === max)].date, longDay)}.`
+    : `${pluralize(
+        data.reduce((sum, point) => sum + point.clicks, 0),
+        "click",
+      )} in the last 30 days, peaking at ${pluralize(max, "click")} on ${formatUtcDay(data[data.findIndex((point) => point.clicks === max)].date, longDay)}.`;
 
   return (
     <div className="relative">
@@ -76,11 +95,23 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
           initialDimension={{ width: 560, height: 208 }}
           className="aspect-auto h-[11.5rem] w-full sm:h-52 [&_.recharts-surface]:overflow-visible"
         >
-          <AreaChart data={data} margin={{ top: 8, right: 2, bottom: 0, left: 2 }} accessibilityLayer>
+          <AreaChart
+            data={data}
+            margin={{ top: 8, right: 2, bottom: 0, left: 2 }}
+            accessibilityLayer
+          >
             <defs>
               <linearGradient id={`${id}-fill`} x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-clicks)" stopOpacity={0.22} />
-                <stop offset="100%" stopColor="var(--color-clicks)" stopOpacity={0} />
+                <stop
+                  offset="0%"
+                  stopColor="var(--color-clicks)"
+                  stopOpacity={0.22}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--color-clicks)"
+                  stopOpacity={0}
+                />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
@@ -110,11 +141,14 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
                   <ChartTooltipContent
                     hideIndicator
                     labelFormatter={(_, payload) => {
-                      const date = (payload?.[0]?.payload as Point | undefined)?.date
-                      return date ? formatUtcDay(date, longDay) : null
+                      const date = (payload?.[0]?.payload as Point | undefined)
+                        ?.date;
+                      return date ? formatUtcDay(date, longDay) : null;
                     }}
                     formatter={(value) => (
-                      <span className="font-semibold text-foreground tabular-nums">{pluralize(Number(value), "click")}</span>
+                      <span className="font-semibold text-foreground tabular-nums">
+                        {pluralize(Number(value), "click")}
+                      </span>
                     )}
                   />
                 }
@@ -132,7 +166,14 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
               // "Today" marker on the last point; hovering shows the active dot instead.
               dot={({ index, cx, cy }) =>
                 index === lastIndex && !isEmpty ? (
-                  <circle key="today" cx={cx} cy={cy} r={5} className="fill-chart-1 stroke-card" strokeWidth={3} />
+                  <circle
+                    key="today"
+                    cx={cx}
+                    cy={cy}
+                    r={5}
+                    className="fill-chart-1 stroke-card"
+                    strokeWidth={3}
+                  />
                 ) : (
                   <g key={index} />
                 )
@@ -170,7 +211,9 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
           <tbody>
             {data.map((point) => (
               <tr key={point.date}>
-                <th scope="row">{formatUtcDay(point.date, { ...longDay, year: "numeric" })}</th>
+                <th scope="row">
+                  {formatUtcDay(point.date, { ...longDay, year: "numeric" })}
+                </th>
                 <td>{point.clicks}</td>
               </tr>
             ))}
@@ -178,5 +221,5 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
         </table>
       </div>
     </div>
-  )
+  );
 }

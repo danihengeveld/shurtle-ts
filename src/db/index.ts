@@ -1,11 +1,13 @@
-import "server-only"
+import "server-only";
 
-import { logger } from "@/lib/logger"
-import { drizzle } from "drizzle-orm/neon-serverless"
-import * as schema from "./schema"
+import { logger } from "@/lib/logger";
+import { drizzle } from "drizzle-orm/neon-serverless";
+import * as schema from "./schema";
 
 if (!process.env.POSTGRES_URL) {
-  throw new Error("POSTGRES_URL is not set. Add it to .env.local (see README).")
+  throw new Error(
+    "POSTGRES_URL is not set. Add it to .env.local (see README).",
+  );
 }
 
 // WebSocket-backed pool: supports interactive transactions (used when recording hits) and reuses
@@ -18,4 +20,4 @@ export const db = drizzle(process.env.POSTGRES_URL, {
     process.env.DEBUG_SQL === "1" && {
       logQuery: (query, params) => logger.debug({ query, params }, "sql"),
     },
-})
+});

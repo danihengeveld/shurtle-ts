@@ -1,27 +1,28 @@
-import { buttonVariants } from "@/components/ui/button"
-import type { DashboardQuery } from "@/lib/pagination"
-import { cn } from "cn"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
-import Link from "next/link"
-import { linksHref } from "./href"
+import { buttonVariants } from "@/components/ui/button";
+import type { DashboardQuery } from "@/lib/pagination";
+import { cn } from "cn";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import Link from "next/link";
+import { linksHref } from "./href";
 
 /** 1 … 4 5 6 … 12 */
 function pageItems(page: number, totalPages: number): (number | "gap")[] {
-  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1)
-  const start = Math.max(2, Math.min(page - 1, totalPages - 4))
-  const end = Math.min(totalPages - 1, Math.max(page + 1, 5))
-  const items: (number | "gap")[] = [1]
-  if (start > 2) items.push("gap")
-  for (let current = start; current <= end; current++) items.push(current)
-  if (end < totalPages - 1) items.push("gap")
-  items.push(totalPages)
-  return items
+  if (totalPages <= 7)
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  const start = Math.max(2, Math.min(page - 1, totalPages - 4));
+  const end = Math.min(totalPages - 1, Math.max(page + 1, 5));
+  const items: (number | "gap")[] = [1];
+  if (start > 2) items.push("gap");
+  for (let current = start; current <= end; current++) items.push(current);
+  if (end < totalPages - 1) items.push("gap");
+  items.push(totalPages);
+  return items;
 }
 
 const pageButton = cn(
   buttonVariants({ variant: "ghost", size: "icon" }),
-  "min-w-9 w-auto px-2.5 tabular-nums text-muted-foreground hover:text-foreground max-md:size-10",
-)
+  "w-auto min-w-9 px-2.5 text-muted-foreground tabular-nums hover:text-foreground max-md:size-10",
+);
 
 export function LinksPagination({
   basePath,
@@ -31,45 +32,61 @@ export function LinksPagination({
   query,
   status,
 }: DashboardQuery & { basePath: string; totalPages: number }) {
-  const href = (target: number) => linksHref(basePath, { page: target, perPage, query, status }, "links")
-  const hasPrevious = page > 1
-  const hasNext = page < totalPages
+  const href = (target: number) =>
+    linksHref(basePath, { page: target, perPage, query, status }, "links");
+  const hasPrevious = page > 1;
+  const hasNext = page < totalPages;
 
   const step = (direction: "previous" | "next") => {
-    const enabled = direction === "previous" ? hasPrevious : hasNext
-    const Icon = direction === "previous" ? ChevronLeftIcon : ChevronRightIcon
-    const label = direction === "previous" ? "Previous" : "Next"
+    const enabled = direction === "previous" ? hasPrevious : hasNext;
+    const Icon = direction === "previous" ? ChevronLeftIcon : ChevronRightIcon;
+    const label = direction === "previous" ? "Previous" : "Next";
     const className = cn(
       buttonVariants({ variant: "outline", size: "sm" }),
       "h-9 gap-1 rounded-lg bg-card max-md:h-10",
       direction === "previous" ? "pr-3 pl-2" : "pr-2 pl-3",
-    )
+    );
     const content = (
       <>
         {direction === "previous" && <Icon aria-hidden />}
         <span>{label}</span>
         {direction === "next" && <Icon aria-hidden />}
       </>
-    )
+    );
 
     return enabled ? (
-      <Link href={href(direction === "previous" ? page - 1 : page + 1)} rel={direction === "previous" ? "prev" : "next"} aria-label={`${label} page`} className={className}>
+      <Link
+        href={href(direction === "previous" ? page - 1 : page + 1)}
+        rel={direction === "previous" ? "prev" : "next"}
+        aria-label={`${label} page`}
+        className={className}
+      >
         {content}
       </Link>
     ) : (
-      <span aria-disabled="true" className={cn(className, "pointer-events-none opacity-45")}>
+      <span
+        aria-disabled="true"
+        className={cn(className, "pointer-events-none opacity-45")}
+      >
         {content}
       </span>
-    )
-  }
+    );
+  };
 
   return (
-    <nav aria-label="Pagination" className="flex items-center gap-1.5 max-sm:w-full max-sm:justify-between">
+    <nav
+      aria-label="Pagination"
+      className="flex items-center gap-1.5 max-sm:w-full max-sm:justify-between"
+    >
       {step("previous")}
       <ul className="hidden items-center gap-0.5 sm:flex">
         {pageItems(page, totalPages).map((item, index) =>
           item === "gap" ? (
-            <li key={`gap-${index}`} aria-hidden className="w-6 text-center text-muted-foreground">
+            <li
+              key={`gap-${index}`}
+              aria-hidden
+              className="w-6 text-center text-muted-foreground"
+            >
               …
             </li>
           ) : (
@@ -80,7 +97,8 @@ export function LinksPagination({
                 aria-label={`Page ${item}`}
                 className={cn(
                   pageButton,
-                  item === page && "pointer-events-none border bg-card font-semibold text-foreground shadow-xs",
+                  item === page &&
+                    "pointer-events-none border bg-card font-semibold text-foreground shadow-xs",
                 )}
               >
                 {item}
@@ -95,5 +113,5 @@ export function LinksPagination({
       </span>
       {step("next")}
     </nav>
-  )
+  );
 }

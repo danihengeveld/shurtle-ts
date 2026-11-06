@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   AlertDialog,
@@ -8,23 +8,28 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { displayShortUrl } from "@/lib/site"
-import { cn } from "cn"
-import { Spinner } from "@/components/ui/spinner"
-import { CopyIcon, ExternalLinkIcon, EllipsisIcon, Trash2Icon } from "lucide-react"
-import { useRef, useState, useTransition } from "react"
-import { toast } from "sonner"
-import { useCopyShortLink } from "../copy-button"
-import { useLinks } from "./links-provider"
+} from "@/components/ui/dropdown-menu";
+import { displayShortUrl } from "@/lib/site";
+import { cn } from "cn";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  CopyIcon,
+  ExternalLinkIcon,
+  EllipsisIcon,
+  Trash2Icon,
+} from "lucide-react";
+import { useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { useCopyShortLink } from "../copy-button";
+import { useLinks } from "./links-provider";
 
 export function LinkActions({
   slug,
@@ -32,41 +37,47 @@ export function LinkActions({
   expired = false,
   className,
 }: {
-  slug: string
-  url: string
+  slug: string;
+  url: string;
   /** Expired links can't be copied (they don't redirect) or changed; only opened or deleted. */
-  expired?: boolean
-  className?: string
+  expired?: boolean;
+  className?: string;
 }) {
-  const { deleteAction, markDeleting } = useLinks()
-  const { copy } = useCopyShortLink(slug)
-  const [confirmOpen, setConfirmOpen] = useState(false)
-  const [isDeleting, startDelete] = useTransition()
-  const deleted = useRef(false)
-  const triggerRef = useRef<HTMLButtonElement>(null)
+  const { deleteAction, markDeleting } = useLinks();
+  const { copy } = useCopyShortLink(slug);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isDeleting, startDelete] = useTransition();
+  const deleted = useRef(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   function confirmDelete() {
     startDelete(async () => {
-      markDeleting(slug)
-      let result
+      markDeleting(slug);
+      let result;
       try {
-        result = await deleteAction(slug)
+        result = await deleteAction(slug);
       } catch {
-        result = { ok: false, error: "Something went wrong while deleting your link. Please try again." } as const
+        result = {
+          ok: false,
+          error:
+            "Something went wrong while deleting your link. Please try again.",
+        } as const;
       }
 
-      deleted.current = result.ok
-      setConfirmOpen(false)
+      deleted.current = result.ok;
+      setConfirmOpen(false);
       if (result.ok) {
         toast.success("Link deleted", {
           description: expired
             ? `${displayShortUrl(slug)} and its click history are gone.`
             : `${displayShortUrl(slug)} no longer redirects.`,
-        })
+        });
       } else {
-        toast.error(`Couldn't delete ${displayShortUrl(slug)}`, { description: result.error })
+        toast.error(`Couldn't delete ${displayShortUrl(slug)}`, {
+          description: result.error,
+        });
       }
-    })
+    });
   }
 
   return (
@@ -77,7 +88,10 @@ export function LinkActions({
             ref={triggerRef}
             variant="ghost"
             size="icon-sm"
-            className={cn("text-muted-foreground hover:text-foreground data-[state=open]:bg-accent", className)}
+            className={cn(
+              "text-muted-foreground hover:text-foreground data-[state=open]:bg-accent",
+              className,
+            )}
           >
             <EllipsisIcon aria-hidden />
             <span className="sr-only">Actions for {displayShortUrl(slug)}</span>
@@ -97,22 +111,30 @@ export function LinkActions({
             </a>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)} className="h-9 rounded-lg">
+          <DropdownMenuItem
+            variant="destructive"
+            onSelect={() => setConfirmOpen(true)}
+            className="h-9 rounded-lg"
+          >
             <Trash2Icon aria-hidden />
             Delete…
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={confirmOpen} onOpenChange={(open) => !isDeleting && setConfirmOpen(open)}>
+      <AlertDialog
+        open={confirmOpen}
+        onOpenChange={(open) => !isDeleting && setConfirmOpen(open)}
+      >
         <AlertDialogContent
           className="gap-5 rounded-2xl sm:max-w-md"
           onCloseAutoFocus={(event) => {
             // Return focus to the row's menu button, or, when the row is about to disappear, to the
             // list heading so keyboard and screen reader users keep their place.
-            event.preventDefault()
-            if (deleted.current) document.getElementById("links-heading")?.focus()
-            else triggerRef.current?.focus()
+            event.preventDefault();
+            if (deleted.current)
+              document.getElementById("links-heading")?.focus();
+            else triggerRef.current?.focus();
           }}
         >
           <AlertDialogHeader className="place-items-start gap-3 text-left">
@@ -120,17 +142,25 @@ export function LinkActions({
               <Trash2Icon aria-hidden className="size-5" />
             </div>
             <AlertDialogTitle className="font-display text-xl font-semibold tracking-tight">
-              Delete <span className="font-mono text-[0.9em] font-medium break-all">/{slug}</span>?
+              Delete{" "}
+              <span className="font-mono text-[0.9em] font-medium break-all">
+                /{slug}
+              </span>
+              ?
             </AlertDialogTitle>
             <AlertDialogDescription className="leading-relaxed">
               {expired ? (
                 <>
-                  This expired link and its click history will be removed for good, and the slug can be used again.
+                  This expired link and its click history will be removed for
+                  good, and the slug can be used again.
                 </>
               ) : (
                 <>
-                  <span className="font-mono text-foreground">{displayShortUrl(slug)}</span> will stop working right
-                  away and its click history will be removed.
+                  <span className="font-mono text-foreground">
+                    {displayShortUrl(slug)}
+                  </span>{" "}
+                  will stop working right away and its click history will be
+                  removed.
                 </>
               )}{" "}
               This can&apos;t be undone.
@@ -140,13 +170,22 @@ export function LinkActions({
             <AlertDialogCancel disabled={isDeleting} className="max-sm:h-10">
               Cancel
             </AlertDialogCancel>
-            <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting} className="max-sm:h-10">
-              {isDeleting ? <Spinner aria-hidden /> : <Trash2Icon aria-hidden />}
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+              className="max-sm:h-10"
+            >
+              {isDeleting ? (
+                <Spinner aria-hidden />
+              ) : (
+                <Trash2Icon aria-hidden />
+              )}
               {isDeleting ? "Deleting…" : "Delete link"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

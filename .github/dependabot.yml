@@ -7,13 +7,35 @@ updates:
     # Batch the usual weekly churn into a few PRs instead of one per package.
     groups:
       next-react:
-        patterns: ["next", "eslint-config-next", "react", "react-dom", "@types/react", "@types/react-dom", "babel-plugin-react-compiler"]
+        patterns:
+          [
+            "next",
+            "eslint-config-next",
+            "react",
+            "react-dom",
+            "@types/react",
+            "@types/react-dom",
+            "babel-plugin-react-compiler",
+          ]
       clerk:
         patterns: ["@clerk/*"]
       database:
         patterns: ["drizzle-*", "@neondatabase/*", "@upstash/*"]
       ui:
-        patterns: ["radix-ui", "lucide-react", "sonner", "react-day-picker", "next-themes", "class-variance-authority", "clsx", "tailwind-merge", "tw-animate-css", "tailwindcss", "@tailwindcss/*"]
+        patterns:
+          [
+            "radix-ui",
+            "lucide-react",
+            "sonner",
+            "react-day-picker",
+            "next-themes",
+            "class-variance-authority",
+            "clsx",
+            "tailwind-merge",
+            "tw-animate-css",
+            "tailwindcss",
+            "@tailwindcss/*",
+          ]
       vercel:
         patterns: ["@vercel/*"]
     ignore:

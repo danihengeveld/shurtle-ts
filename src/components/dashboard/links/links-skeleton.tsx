@@ -1,10 +1,10 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "cn"
-import { LinksHeading } from "./links-panel"
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "cn";
+import { LinksHeading } from "./links-panel";
 
-const ROWS = 6
-const widths = ["w-24", "w-32", "w-20", "w-28", "w-24", "w-36"]
-const destinationWidths = ["w-56", "w-40", "w-64", "w-48", "w-52", "w-44"]
+const ROWS = 6;
+const widths = ["w-24", "w-32", "w-20", "w-28", "w-24", "w-36"];
+const destinationWidths = ["w-56", "w-40", "w-64", "w-48", "w-52", "w-44"];
 
 /** Mirrors <LinksPanel> (heading, search, table / list, footer) so nothing shifts when it loads. */
 export function LinksSkeleton() {
@@ -21,9 +21,14 @@ export function LinksSkeleton() {
             <Skeleton className="h-3 w-20" />
           </div>
           {Array.from({ length: ROWS }, (_, index) => (
-            <div key={index} className="flex h-[3.75rem] items-center gap-6 border-b px-5 last:border-0">
+            <div
+              key={index}
+              className="flex h-[3.75rem] items-center gap-6 border-b px-5 last:border-0"
+            >
               <Skeleton className={cn("h-4", widths[index])} />
-              <Skeleton className={cn("ml-[8%] h-4", destinationWidths[index])} />
+              <Skeleton
+                className={cn("ml-[8%] h-4", destinationWidths[index])}
+              />
               <Skeleton className="ml-auto h-4 w-8" />
               <Skeleton className="hidden h-4 w-16 lg:block" />
               <Skeleton className="hidden h-4 w-16 lg:block" />
@@ -40,7 +45,12 @@ export function LinksSkeleton() {
                 <Skeleton className={cn("h-4", widths[index])} />
                 <Skeleton className="mr-2 size-6 rounded-md" />
               </div>
-              <Skeleton className={cn("mt-0.5 h-4 max-w-[80%]", destinationWidths[index])} />
+              <Skeleton
+                className={cn(
+                  "mt-0.5 h-4 max-w-[80%]",
+                  destinationWidths[index],
+                )}
+              />
               <Skeleton className="mt-3.5 mb-0.5 h-3.5 w-44" />
             </div>
           ))}
@@ -51,5 +61,5 @@ export function LinksSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }

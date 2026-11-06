@@ -1,15 +1,21 @@
-import { cn } from "cn"
+import { cn } from "cn";
 
 interface SectionHeadingProps {
-  id: string
-  eyebrow: string
-  title: React.ReactNode
-  children?: React.ReactNode
-  className?: string
+  id: string;
+  eyebrow: string;
+  title: React.ReactNode;
+  children?: React.ReactNode;
+  className?: string;
 }
 
 /** Left-aligned section intro: mono eyebrow, display h2, optional lede. */
-export function SectionHeading({ id, eyebrow, title, children, className }: SectionHeadingProps) {
+export function SectionHeading({
+  id,
+  eyebrow,
+  title,
+  children,
+  className,
+}: SectionHeadingProps) {
   return (
     <div className={cn("max-w-2xl", className)}>
       <p className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
@@ -22,7 +28,11 @@ export function SectionHeading({ id, eyebrow, title, children, className }: Sect
       >
         {title}
       </h2>
-      {children && <p className="mt-5 text-lg/relaxed text-muted-foreground text-pretty">{children}</p>}
+      {children && (
+        <p className="mt-5 text-lg/relaxed text-pretty text-muted-foreground">
+          {children}
+        </p>
+      )}
     </div>
-  )
+  );
 }

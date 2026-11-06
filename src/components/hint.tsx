@@ -1,6 +1,10 @@
-"use client"
+"use client";
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 /**
  * Supplementary detail on hover / keyboard focus (full URLs, exact dates), replacing `title`
@@ -14,11 +18,11 @@ export function Hint({
   side = "top",
   children,
 }: {
-  content: React.ReactNode
-  side?: React.ComponentProps<typeof TooltipContent>["side"]
-  children: React.ReactElement
+  content: React.ReactNode;
+  side?: React.ComponentProps<typeof TooltipContent>["side"];
+  children: React.ReactElement;
 }) {
-  if (!content) return children
+  if (!content) return children;
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
@@ -26,5 +30,5 @@ export function Hint({
         {content}
       </TooltipContent>
     </Tooltip>
-  )
+  );
 }

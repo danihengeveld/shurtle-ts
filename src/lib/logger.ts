@@ -1,7 +1,7 @@
-import "server-only"
+import "server-only";
 
-import pino from "pino"
-import { serializeError } from "./log-serializers"
+import pino from "pino";
+import { serializeError } from "./log-serializers";
 
 /**
  * Structured server logger. Pass values as fields, never inside the message:
@@ -17,7 +17,7 @@ import { serializeError } from "./log-serializers"
  * destination URLs (use `urlHost`). Errors go through `serializeError`, which strips query
  * parameters and row values from database errors.
  */
-const serializers = { err: serializeError }
+const serializers = { err: serializeError };
 
 function createLogger() {
   if (process.env.NODE_ENV === "production") {
@@ -29,16 +29,21 @@ function createLogger() {
       // `"level":"warn"` and an ISO time instead of `40` and epoch millis: readable in any viewer.
       formatters: { level: (label) => ({ level: label }) },
       timestamp: pino.stdTimeFunctions.isoTime,
-    })
+    });
   }
 
   // Dev-only dependency, required lazily: this branch is removed from production builds.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pretty = require("pino-pretty") as typeof import("pino-pretty")
+  const pretty = require("pino-pretty") as typeof import("pino-pretty");
   return pino(
     { level: process.env.LOG_LEVEL ?? "debug", serializers },
-    pretty({ sync: true, colorize: true, ignore: "pid,hostname", translateTime: "SYS:HH:MM:ss" }),
-  )
+    pretty({
+      sync: true,
+      colorize: true,
+      ignore: "pid,hostname",
+      translateTime: "SYS:HH:MM:ss",
+    }),
+  );
 }
 
-export const logger = createLogger()
+export const logger = createLogger();

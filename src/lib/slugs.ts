@@ -4,14 +4,14 @@
  * Client-safe: no server-only imports.
  */
 
-export const SLUG_MIN_LENGTH = 1
-export const SLUG_MAX_LENGTH = 64
-export const SLUG_PATTERN = /^[A-Za-z0-9_-]+$/
+export const SLUG_MIN_LENGTH = 1;
+export const SLUG_MAX_LENGTH = 64;
+export const SLUG_PATTERN = /^[A-Za-z0-9_-]+$/;
 /** Same rule as SLUG_PATTERN, for the HTML `pattern` attribute. */
-export const SLUG_HTML_PATTERN = "[A-Za-z0-9_\\-]+"
+export const SLUG_HTML_PATTERN = "[A-Za-z0-9_\\-]+";
 
 /** Length of auto-generated slugs. */
-export const GENERATED_SLUG_LENGTH = 7
+export const GENERATED_SLUG_LENGTH = 7;
 
 /**
  * Top-level paths owned by the app (or reserved for future use). A slug may never equal one of
@@ -52,10 +52,10 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "sign-up",
   "static",
   "terms",
-])
+]);
 
 export function isReservedSlug(slug: string) {
-  return RESERVED_SLUGS.has(slug.toLowerCase())
+  return RESERVED_SLUGS.has(slug.toLowerCase());
 }
 
 /** True when `slug` is syntactically valid and not reserved. */
@@ -65,5 +65,5 @@ export function isValidSlug(slug: string) {
     slug.length <= SLUG_MAX_LENGTH &&
     SLUG_PATTERN.test(slug) &&
     !isReservedSlug(slug)
-  )
+  );
 }

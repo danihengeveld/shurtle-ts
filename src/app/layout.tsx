@@ -1,31 +1,31 @@
-import { Footer } from "@/components/layout/footer"
-import { Navbar } from "@/components/layout/navbar"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { siteInfo } from "@/lib/site"
-import { ClerkProvider } from "@clerk/nextjs"
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import type { Metadata, Viewport } from "next"
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { siteInfo } from "@/lib/site";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-})
+});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-})
+});
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
-})
+});
 
 export const viewport: Viewport = {
   // Shrink the layout (incl. bottom-sheet dialogs) when the on-screen keyboard opens.
@@ -34,7 +34,7 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#fafaf6" },
     { media: "(prefers-color-scheme: dark)", color: "#0b120f" },
   ],
-}
+};
 
 export const metadata: Metadata = {
   metadataBase: siteInfo.baseUrl,
@@ -46,7 +46,13 @@ export const metadata: Metadata = {
   applicationName: siteInfo.name,
   creator: siteInfo.author.name,
   authors: [{ name: siteInfo.author.name, url: siteInfo.author.url }],
-  keywords: ["shurtle", "url shortener", "link shortener", "short links", "open source"],
+  keywords: [
+    "shurtle",
+    "url shortener",
+    "link shortener",
+    "short links",
+    "open source",
+  ],
   category: "tools",
   icons: {
     icon: [
@@ -70,7 +76,7 @@ export const metadata: Metadata = {
     description: siteInfo.description,
     creator: siteInfo.author.twitter,
   },
-}
+};
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -102,7 +108,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             },
           }}
         >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme disableTransitionOnChange>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            enableColorScheme
+            disableTransitionOnChange
+          >
             <a
               href="#main"
               className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-100 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
@@ -130,5 +142,5 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         )}
       </body>
     </html>
-  )
+  );
 }

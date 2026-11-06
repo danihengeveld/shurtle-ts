@@ -24,15 +24,15 @@ An open source, blazingly fast URL shortener built with Next.js 16, React 19 and
 
 ## 🚀 Tech stack
 
-| Area | Tech |
-| --- | --- |
-| Framework | [Next.js 16](https://nextjs.org/) (App Router, Cache Components, React Compiler, Turbopack) |
-| UI | [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) on [Radix UI](https://www.radix-ui.com/), [Lucide](https://lucide.dev/) icons |
-| Data | [Neon Postgres](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/) |
-| Rate limiting | [Upstash Redis](https://upstash.com/) + `@upstash/ratelimit` |
-| Auth | [Clerk](https://clerk.com/) |
-| Validation | [Zod 4](https://zod.dev/) |
-| Hosting | [Vercel](https://vercel.com/) (Cron for archiving expired links, Analytics, Speed Insights) |
+| Area          | Tech                                                                                                                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework     | [Next.js 16](https://nextjs.org/) (App Router, Cache Components, React Compiler, Turbopack)                                                                                                    |
+| UI            | [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) on [Radix UI](https://www.radix-ui.com/), [Lucide](https://lucide.dev/) icons |
+| Data          | [Neon Postgres](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/)                                                                                                              |
+| Rate limiting | [Upstash Redis](https://upstash.com/) + `@upstash/ratelimit`                                                                                                                                   |
+| Auth          | [Clerk](https://clerk.com/)                                                                                                                                                                    |
+| Validation    | [Zod 4](https://zod.dev/)                                                                                                                                                                      |
+| Hosting       | [Vercel](https://vercel.com/) (Cron for archiving expired links, Analytics, Speed Insights)                                                                                                    |
 
 ### 💰 Free tier notice
 
@@ -108,14 +108,14 @@ The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it m
 
 ### Scripts
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Start the dev server (Turbopack) |
-| `pnpm build` / `pnpm start` | Production build / serve it |
-| `pnpm lint` | ESLint (Next.js core web vitals + TypeScript rules) |
-| `pnpm typecheck` | TypeScript type check |
-| `pnpm db:push` | Push the Drizzle schema to the database |
-| `pnpm db:studio` | Open Drizzle Studio |
+| Command                     | Description                                         |
+| --------------------------- | --------------------------------------------------- |
+| `pnpm dev`                  | Start the dev server (Turbopack)                    |
+| `pnpm build` / `pnpm start` | Production build / serve it                         |
+| `pnpm lint`                 | ESLint (Next.js core web vitals + TypeScript rules) |
+| `pnpm typecheck`            | TypeScript type check                               |
+| `pnpm db:push`              | Push the Drizzle schema to the database             |
+| `pnpm db:studio`            | Open Drizzle Studio                                 |
 
 ### Deploying
 
