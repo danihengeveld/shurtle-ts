@@ -39,16 +39,19 @@ export function ClicksChartSkeleton() {
       <ChartHeader>
         <Skeleton className="mt-2 h-8 w-20" />
       </ChartHeader>
+      {/* Same total height as the chart (plot + 24px x-axis) so nothing shifts when it streams in. */}
       <div className="mt-auto pt-8">
-        <div className="relative flex h-40 flex-col justify-between sm:h-48">
-          <div className="border-t" />
-          <div className="border-t border-border/70" />
-          <div className="border-t" />
-          <Skeleton className="absolute inset-x-0 bottom-0 h-2/3 rounded-none rounded-t-lg opacity-60 [clip-path:polygon(0_70%,10%_55%,22%_62%,35%_40%,48%_48%,60%_25%,72%_38%,85%_15%,100%_30%,100%_100%,0_100%)]" />
-        </div>
-        <div className="mt-2.5 flex h-[16.5px] items-center justify-between">
-          <Skeleton className="h-3 w-10" />
-          <Skeleton className="h-3 w-10" />
+        <div className="flex h-[11.5rem] flex-col sm:h-52">
+          <div className="relative mt-2 ml-8 flex flex-1 flex-col justify-between">
+            <div className="border-t" />
+            <div className="border-t" />
+            <div className="border-t" />
+            <Skeleton className="absolute inset-x-0 bottom-0 h-2/3 rounded-none rounded-t-lg opacity-60 [clip-path:polygon(0_70%,10%_55%,22%_62%,35%_40%,48%_48%,60%_25%,72%_38%,85%_15%,100%_30%,100%_100%,0_100%)]" />
+          </div>
+          <div className="ml-8 flex h-6 items-center justify-between">
+            <Skeleton className="h-3 w-10" />
+            <Skeleton className="h-3 w-10" />
+          </div>
         </div>
       </div>
     </div>
