@@ -1,6 +1,7 @@
 import { clerkMiddleware } from "@clerk/nextjs/server"
 import { geolocation, ipAddress } from "@vercel/functions"
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server"
+import { logger } from "./lib/logger"
 import { rateLimits } from "./lib/ratelimits"
 import { getUrlBySlug, recordHit } from "./lib/shurtles"
 import { isValidSlug } from "./lib/slugs"
@@ -49,13 +50,13 @@ async function resolveShortLink(request: NextRequest, event: NextFetchEvent, slu
       headers.set("RateLimit-Reset", String(resetSeconds))
 
       if (!success) {
-        console.warn(`Rate limit exceeded opening /${slug}`)
+        logger.warn({ slug }, "rate limit exceeded opening short link")
         headers.set("Retry-After", String(resetSeconds))
         return NextResponse.rewrite(new URL("/slow-down", request.url), { status: 429, headers })
       }
     } catch (error) {
       // Fail open: a rate limiter outage must not take every short link down with it.
-      console.error("Rate limiter unavailable:", error)
+      logger.error({ err: error }, "rate limiter unavailable, failing open")
     }
   }
 
@@ -63,7 +64,7 @@ async function resolveShortLink(request: NextRequest, event: NextFetchEvent, slu
   try {
     destination = await getUrlBySlug(slug)
   } catch (error) {
-    console.error(`Failed to resolve /${slug}:`, error)
+    logger.error({ err: error, slug }, "failed to resolve short link")
     headers.set("Retry-After", "30")
     return new NextResponse("Shurtle is temporarily unavailable. Please try again in a moment.", {
       status: 503,
@@ -72,10 +73,13 @@ async function resolveShortLink(request: NextRequest, event: NextFetchEvent, slu
   }
 
   if (!destination) {
+    logger.debug({ slug }, "short link not found")
     // Keep the URL in the address bar so the 404 page can offer to claim the slug.
     return NextResponse.rewrite(new URL("/not-found", request.url), { status: 404, headers })
   }
 
+  // Debug only: every visit is already recorded in shurtle.hits, so production stays quiet.
+  logger.debug({ slug }, "short link resolved")
   event.waitUntil(recordHit(slug, geolocation(request)))
 
   // 307 (not 301/308) so browsers don't cache the redirect: every visit is counted and edits apply.

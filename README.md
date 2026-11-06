@@ -84,8 +84,12 @@ The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it m
    # Defaults to http://localhost:3000 in development and https://shurtle.app otherwise.
    # NEXT_PUBLIC_SITE_URL="https://your-domain.example"
 
-   # Optional: log every SQL query in development
+   # Optional: log every SQL query in development (at debug level)
    # DEBUG_SQL="1"
+
+   # Optional: server log level (trace, debug, info, warn, error). Defaults to debug in
+   # development and info in production, where logs are JSON lines (pino).
+   # LOG_LEVEL="info"
    ```
 
 4. **Create the database schema**

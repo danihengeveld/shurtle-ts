@@ -5,6 +5,7 @@ import { shurtleHits, shurtles } from "@/db/schema"
 import type { Geo } from "@vercel/functions"
 import { and, desc, eq, gt, gte, ilike, isNull, or, sql } from "drizzle-orm"
 import { cacheLife, cacheTag } from "next/cache"
+import { logger } from "./logger"
 import type { DashboardQuery } from "./pagination"
 import { shurtlesTag, statsTag } from "./tags"
 
@@ -143,6 +144,6 @@ export async function recordHit(slug: string, geo: Geo) {
         .where(eq(shurtles.slug, slug))
     })
   } catch (error) {
-    console.error(`Failed to record hit for /${slug}:`, error)
+    logger.error({ err: error, slug }, "failed to record hit")
   }
 }
