@@ -227,23 +227,26 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
           ? `${formatUtcDay(activePoint.date, longDay)}: ${pluralize(activePoint.clicks, "click")}`
           : ""}
       </p>
-      <table className="sr-only">
-        <caption>Clicks per day (UTC), last 30 days</caption>
-        <thead>
-          <tr>
-            <th scope="col">Date</th>
-            <th scope="col">Clicks</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((point) => (
-            <tr key={point.date}>
-              <th scope="row">{formatUtcDay(point.date, { ...longDay, year: "numeric" })}</th>
-              <td>{point.clicks}</td>
+      {/* sr-only goes on a wrapper: a <caption> escapes the clip of an sr-only table in some browsers. */}
+      <div className="sr-only">
+        <table>
+          <caption>Clicks per day (UTC), last 30 days</caption>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Clicks</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((point) => (
+              <tr key={point.date}>
+                <th scope="row">{formatUtcDay(point.date, { ...longDay, year: "numeric" })}</th>
+                <td>{point.clicks}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

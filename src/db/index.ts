@@ -11,5 +11,6 @@ if (!process.env.POSTGRES_URL) {
 // connections across invocations on Vercel Fluid compute.
 export const db = drizzle(process.env.POSTGRES_URL, {
   schema,
-  logger: process.env.NODE_ENV === "development",
+  // Opt-in SQL logging (`DEBUG_SQL=1 pnpm dev`); always-on logging drowns out real dev warnings.
+  logger: process.env.NODE_ENV === "development" && process.env.DEBUG_SQL === "1",
 })

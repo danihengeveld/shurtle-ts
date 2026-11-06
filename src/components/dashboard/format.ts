@@ -125,10 +125,14 @@ export function getTrend(current: number, previous: number): Trend {
   return { kind: change > 0 ? "up" : "down", percent }
 }
 
-/** End of the given local calendar day (23:59:59.999 in the viewer's time zone). */
+/**
+ * End of the given local calendar day (23:59:59 in the viewer's time zone). Whole seconds on
+ * purpose: timestamps are stored with precision 0, and Postgres would round .999 up to midnight of
+ * the next day.
+ */
 export function endOfLocalDay(date: Date) {
   const end = new Date(date)
-  end.setHours(23, 59, 59, 999)
+  end.setHours(23, 59, 59, 0)
   return end
 }
 

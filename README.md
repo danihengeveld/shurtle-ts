@@ -83,6 +83,9 @@ The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it m
    # Optional: public origin used for short links and metadata.
    # Defaults to http://localhost:3000 in development and https://shurtle.app otherwise.
    # NEXT_PUBLIC_SITE_URL="https://your-domain.example"
+
+   # Optional: log every SQL query in development
+   # DEBUG_SQL="1"
    ```
 
 4. **Create the database schema**

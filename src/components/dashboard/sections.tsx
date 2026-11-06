@@ -1,6 +1,7 @@
 import { requireUserId } from "@/lib/auth"
 import { parseDashboardQuery, type DashboardSearchParams } from "@/lib/pagination"
 import { getDailyClicks, getShurtlesPaginated, getStats } from "@/lib/shurtles"
+import { connection } from "next/server"
 import { ClicksChart } from "./clicks-chart"
 import { LinksPanel } from "./links/links-panel"
 import { StatsCards } from "./stats-cards"
@@ -26,8 +27,10 @@ async function loadLinks(searchParams: Promise<DashboardSearchParams>) {
   const userId = await requireUserId()
   const query = parseDashboardQuery(await searchParams)
   const page = await getShurtlesPaginated(userId, query)
-  // Request time (read after the request-time APIs above). Relative dates render from it on the
-  // server and during hydration, so both match, and then tick on the client.
+  // Request time. Relative dates render from it on the server and during hydration, so both match,
+  // and then tick on the client. Cookies and searchParams alone don't make this request-time: a
+  // runtime prefetch (partialPrefetching) can resolve them, so defer explicitly with connection().
+  await connection()
   return { page, now: Date.now() }
 }
 
