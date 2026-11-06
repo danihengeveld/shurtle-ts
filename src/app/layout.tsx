@@ -120,8 +120,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Toaster />
           </ThemeProvider>
         </ClerkProvider>
-        <SpeedInsights />
-        <Analytics />
+        {/* Their scripts are served from /_vercel/* by Vercel only; elsewhere (local dev, `next start`,
+            self-hosting) they'd 404. VERCEL=1 is set on all Vercel builds and deployments. */}
+        {process.env.VERCEL === "1" && (
+          <>
+            <SpeedInsights />
+            <Analytics />
+          </>
+        )}
       </body>
     </html>
   )
