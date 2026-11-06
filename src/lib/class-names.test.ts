@@ -10,6 +10,6 @@ describe("cn (class merging)", () => {
   });
 
   it("still merges conflicting utilities", () => {
-    expect(cn("bg-red-500 px-2", "bg-brand px-4")).toBe("px-4 bg-brand");
+    expect(cn("bg-red-500 px-2", "bg-brand px-4")).toBe("bg-brand px-4");
   });
 });
