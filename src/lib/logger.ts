@@ -37,7 +37,12 @@ function createLogger() {
   const pretty = require("pino-pretty") as typeof import("pino-pretty")
   return pino(
     { level: process.env.LOG_LEVEL ?? "debug", serializers },
-    pretty({ sync: true, colorize: true, ignore: "pid,hostname", translateTime: "SYS:HH:MM:ss" }),
+    pretty({
+      sync: true,
+      colorize: true,
+      ignore: "pid,hostname",
+      translateTime: "SYS:HH:MM:ss",
+    }),
   )
 }
 

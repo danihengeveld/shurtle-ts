@@ -23,7 +23,10 @@ export function HowItWorks() {
       detail: (
         <span className={chip}>
           <span className="truncate font-mono">
-            <span className="text-muted-foreground">{siteInfo.baseUrl.host}/</span>launch-party
+            <span className="text-muted-foreground">
+              {siteInfo.baseUrl.host}/
+            </span>
+            launch-party
           </span>
         </span>
       ),
@@ -43,7 +46,10 @@ export function HowItWorks() {
   ]
 
   return (
-    <section aria-labelledby="how-title" className="border-y border-border/70 bg-muted/35">
+    <section
+      aria-labelledby="how-title"
+      className="border-y border-border/70 bg-muted/35"
+    >
       <div className="container-page grid gap-12 py-20 sm:py-28 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16">
         <SectionHeading
           id="how-title"
@@ -51,15 +57,22 @@ export function HowItWorks() {
           title="From sprawl to shurtle in three moves."
           className="lg:sticky lg:top-28 lg:self-start"
         >
-          No setup, no settings to wade through. If you can paste, you can shurtle.
+          No setup, no settings to wade through. If you can paste, you can
+          shurtle.
         </SectionHeading>
 
         <ol className="relative">
           {steps.map((step, i) => (
-            <li key={step.title} className="relative grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-5 pb-12 last:pb-0 sm:gap-x-7">
+            <li
+              key={step.title}
+              className="relative grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-5 pb-12 last:pb-0 sm:gap-x-7"
+            >
               {/* Track connecting the steps. */}
               {i < steps.length - 1 && (
-                <span aria-hidden="true" className="absolute top-12 bottom-1 left-[1.375rem] w-px -translate-x-1/2 bg-[repeating-linear-gradient(to_bottom,var(--border)_0_6px,transparent_6px_11px)] dark:bg-[repeating-linear-gradient(to_bottom,oklch(1_0_0/0.18)_0_6px,transparent_6px_11px)]" />
+                <span
+                  aria-hidden="true"
+                  className="absolute top-12 bottom-1 left-[1.375rem] w-px -translate-x-1/2 bg-[repeating-linear-gradient(to_bottom,var(--border)_0_6px,transparent_6px_11px)] dark:bg-[repeating-linear-gradient(to_bottom,oklch(1_0_0/0.18)_0_6px,transparent_6px_11px)]"
+                />
               )}
               <span
                 aria-hidden="true"
@@ -76,7 +89,9 @@ export function HowItWorks() {
                   <span className="sr-only">Step {i + 1}: </span>
                   {step.title}
                 </h3>
-                <p className="mt-2 max-w-md text-[0.9375rem]/relaxed text-muted-foreground text-pretty">{step.body}</p>
+                <p className="mt-2 max-w-md text-[0.9375rem]/relaxed text-pretty text-muted-foreground">
+                  {step.body}
+                </p>
                 <div aria-hidden="true" className="mt-4">
                   {step.detail}
                 </div>

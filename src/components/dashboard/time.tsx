@@ -16,7 +16,13 @@ import { formatDate, formatDateTime, formatRelative } from "./format"
 
 const ServerNowContext = createContext<number | null>(null)
 
-export function ServerNowProvider({ now, children }: { now: number; children: React.ReactNode }) {
+export function ServerNowProvider({
+  now,
+  children,
+}: {
+  now: number
+  children: React.ReactNode
+}) {
   return <ServerNowContext value={now}>{children}</ServerNowContext>
 }
 
@@ -54,7 +60,11 @@ const getServerSnapshot = () => null
  */
 export function useNow() {
   const serverNow = use(ServerNowContext)
-  const clientValue = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const clientValue = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  )
   if (clientValue !== null) return { now: clientValue, hydrated: true }
   return { now: serverNow ?? 0, hydrated: false }
 }
@@ -64,14 +74,25 @@ function toDate(value: Date | string) {
 }
 
 /** "3 days ago", with the exact local date & time on hover. */
-export function RelativeTime({ date, className }: { date: Date | string; className?: string }) {
+export function RelativeTime({
+  date,
+  className,
+}: {
+  date: Date | string
+  className?: string
+}) {
   const { now, hydrated } = useNow()
   const value = toDate(date)
-  const label = now ? formatRelative(value, now) : formatDate(value, { timeZone: "UTC", withYear: true })
+  const label = now
+    ? formatRelative(value, now)
+    : formatDate(value, { timeZone: "UTC", withYear: true })
 
   return (
     <Hint content={hydrated ? formatDateTime(value) : undefined}>
-      <time dateTime={value.toISOString()} className={cn("whitespace-nowrap", className)}>
+      <time
+        dateTime={value.toISOString()}
+        className={cn("whitespace-nowrap", className)}
+      >
         {label}
       </time>
     </Hint>
@@ -79,7 +100,13 @@ export function RelativeTime({ date, className }: { date: Date | string; classNa
 }
 
 /** "Nov 6" (or "Nov 6, 2027" outside the current year) in the viewer's time zone once hydrated. */
-export function LocalDate({ date, className }: { date: Date | string; className?: string }) {
+export function LocalDate({
+  date,
+  className,
+}: {
+  date: Date | string
+  className?: string
+}) {
   const { now, hydrated } = useNow()
   const value = toDate(date)
   const timeZone = hydrated ? undefined : "UTC"
@@ -87,7 +114,10 @@ export function LocalDate({ date, className }: { date: Date | string; className?
 
   return (
     <Hint content={hydrated ? formatDateTime(value) : undefined}>
-      <time dateTime={value.toISOString()} className={cn("whitespace-nowrap", className)}>
+      <time
+        dateTime={value.toISOString()}
+        className={cn("whitespace-nowrap", className)}
+      >
         {formatDate(value, { timeZone, withYear })}
       </time>
     </Hint>

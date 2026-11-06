@@ -2,21 +2,30 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ClicksChartPlot } from "./clicks-chart-plot"
 import { formatCount } from "./format"
 
-const card = "flex flex-col rounded-2xl border bg-card p-4 shadow-soft sm:p-5 lg:p-6"
+const card =
+  "flex flex-col rounded-2xl border bg-card p-4 shadow-soft sm:p-5 lg:p-6"
 
 function ChartHeader({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
-        <h3 className="text-[13px] font-medium text-muted-foreground">Clicks · last 30 days</h3>
+        <h3 className="text-[13px] font-medium text-muted-foreground">
+          Clicks · last 30 days
+        </h3>
         {children}
       </div>
-      <p className="mt-0.5 hidden rounded-full border px-2 py-0.5 text-[11px] text-muted-foreground sm:block">Daily · UTC</p>
+      <p className="mt-0.5 hidden rounded-full border px-2 py-0.5 text-[11px] text-muted-foreground sm:block">
+        Daily · UTC
+      </p>
     </div>
   )
 }
 
-export function ClicksChart({ daily }: { daily: { date: string; clicks: number }[] }) {
+export function ClicksChart({
+  daily,
+}: {
+  daily: { date: string; clicks: number }[]
+}) {
   const total = daily.reduce((sum, day) => sum + day.clicks, 0)
 
   return (

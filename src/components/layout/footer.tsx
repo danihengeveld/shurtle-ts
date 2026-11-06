@@ -22,11 +22,18 @@ export function Footer() {
       <div className="container-page py-10 sm:py-12">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-xs">
-            <Link href="/" className="-ml-1 inline-flex rounded-lg p-1 transition-opacity hover:opacity-80">
-              <Logo markClassName="h-6" className="[&>span:last-child]:text-xl" />
+            <Link
+              href="/"
+              className="-ml-1 inline-flex rounded-lg p-1 transition-opacity hover:opacity-80"
+            >
+              <Logo
+                markClassName="h-6"
+                className="[&>span:last-child]:text-xl"
+              />
             </Link>
-            <p className="mt-3 text-sm/relaxed text-muted-foreground text-pretty">
-              {siteInfo.tagline} An open source URL shortener that anyone can run.
+            <p className="mt-3 text-sm/relaxed text-pretty text-muted-foreground">
+              {siteInfo.tagline} An open source URL shortener that anyone can
+              run.
             </p>
           </div>
 
@@ -44,15 +51,27 @@ export function Footer() {
                 </ExternalLink>
               </li>
               <li>
-                <ExternalLink href={siteInfo.releasesUrl} className={linkClasses}>
+                <ExternalLink
+                  href={siteInfo.releasesUrl}
+                  className={linkClasses}
+                >
                   Releases
-                  <ArrowUpRight aria-hidden="true" className="size-3.5 opacity-60 transition-transform group-hover:-translate-y-px group-hover:translate-x-px" />
+                  <ArrowUpRight
+                    aria-hidden="true"
+                    className="size-3.5 opacity-60 transition-transform group-hover:translate-x-px group-hover:-translate-y-px"
+                  />
                 </ExternalLink>
               </li>
               <li>
-                <ExternalLink href={siteInfo.author.url} className={linkClasses}>
+                <ExternalLink
+                  href={siteInfo.author.url}
+                  className={linkClasses}
+                >
                   Author
-                  <ArrowUpRight aria-hidden="true" className="size-3.5 opacity-60 transition-transform group-hover:-translate-y-px group-hover:translate-x-px" />
+                  <ArrowUpRight
+                    aria-hidden="true"
+                    className="size-3.5 opacity-60 transition-transform group-hover:translate-x-px group-hover:-translate-y-px"
+                  />
                 </ExternalLink>
               </li>
             </ul>
@@ -74,7 +93,10 @@ export function Footer() {
             href={siteInfo.releasesUrl}
             className="inline-flex w-fit items-center gap-2 rounded-full border border-border/80 py-1 pr-2.5 pl-2 font-mono text-[0.6875rem] transition-colors hover:border-foreground/30 hover:text-foreground"
           >
-            <span aria-hidden="true" className="size-1.5 rounded-full bg-brand-ink" />
+            <span
+              aria-hidden="true"
+              className="size-1.5 rounded-full bg-brand-ink"
+            />
             <span className="sr-only">Version </span>v{siteInfo.version}
           </ExternalLink>
         </div>

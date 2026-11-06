@@ -8,7 +8,8 @@ const LONG_URL = {
   scheme: "https://",
   host: "www.example.com",
   path: "/collections/summer-2026/linen-overshirt-sand",
-  query: "?variant=44821&utm_source=newsletter&utm_medium=email&utm_campaign=september_drop",
+  query:
+    "?variant=44821&utm_source=newsletter&utm_medium=email&utm_campaign=september_drop",
 }
 const LONG_URL_LENGTH = Object.values(LONG_URL).join("").length
 const SLUG = "x7Kp2qR"
@@ -45,11 +46,17 @@ export function LinkDemo({ className }: { className?: string }) {
           <div className="mt-5">
             <div className={labelClasses}>
               <span>Destination</span>
-              <span className="font-mono tracking-normal normal-case">{LONG_URL_LENGTH} chars</span>
+              <span className="font-mono tracking-normal normal-case">
+                {LONG_URL_LENGTH} chars
+              </span>
             </div>
             <div className="relative overflow-hidden rounded-xl border bg-background px-3.5 py-3">
               <div className={cn(styles.scan, "absolute inset-0")} />
-              <p className={cn("relative font-mono text-[0.75rem]/relaxed break-all sm:text-[0.8125rem]/relaxed")}>
+              <p
+                className={cn(
+                  "relative font-mono text-[0.75rem]/relaxed break-all sm:text-[0.8125rem]/relaxed",
+                )}
+              >
                 <span className="text-muted-foreground">{LONG_URL.scheme}</span>
                 <span className="text-foreground">{LONG_URL.host}</span>
                 <span className="text-muted-foreground">{LONG_URL.path}</span>
@@ -63,9 +70,24 @@ export function LinkDemo({ className }: { className?: string }) {
             <div className="h-px flex-1 bg-border" />
             <div className="flex items-center gap-1.5">
               <div className="flex flex-col items-end gap-[3px]">
-                <span className={cn(styles.speed, "h-0.5 w-3 rounded-full bg-brand-ink/70")} />
-                <span className={cn(styles.speed, "h-0.5 w-5 rounded-full bg-brand-ink")} />
-                <span className={cn(styles.speed, "h-0.5 w-2.5 rounded-full bg-brand-ink/70")} />
+                <span
+                  className={cn(
+                    styles.speed,
+                    "h-0.5 w-3 rounded-full bg-brand-ink/70",
+                  )}
+                />
+                <span
+                  className={cn(
+                    styles.speed,
+                    "h-0.5 w-5 rounded-full bg-brand-ink",
+                  )}
+                />
+                <span
+                  className={cn(
+                    styles.speed,
+                    "h-0.5 w-2.5 rounded-full bg-brand-ink/70",
+                  )}
+                />
               </div>
               <LogoMark className="h-5" />
             </div>
@@ -75,20 +97,34 @@ export function LinkDemo({ className }: { className?: string }) {
           <div>
             <div className={labelClasses}>
               <span>Short link</span>
-              <span className="font-mono tracking-normal normal-case">{shortLength} chars</span>
+              <span className="font-mono tracking-normal normal-case">
+                {shortLength} chars
+              </span>
             </div>
             <div className="relative flex items-center gap-2 rounded-xl border-2 border-foreground bg-background py-1.5 pr-1.5 pl-3.5 dark:border-brand">
               <p className="min-w-0 flex-1 truncate font-mono text-[0.9375rem] sm:text-lg">
                 <span className="text-muted-foreground">{host}/</span>
-                <span className={cn(styles.slug, "font-semibold text-foreground")}>{SLUG}</span>
+                <span
+                  className={cn(styles.slug, "font-semibold text-foreground")}
+                >
+                  {SLUG}
+                </span>
                 <span className="ml-px inline-block h-[1.1em] w-0.5 translate-y-[0.2em] animate-blink rounded-full bg-brand-ink" />
               </p>
               <div className="relative grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground sm:size-10">
                 <Copy className={cn(styles.copy, "absolute size-4")} />
-                <Check className={cn(styles.copied, "absolute size-4")} strokeWidth={2.5} />
+                <Check
+                  className={cn(styles.copied, "absolute size-4")}
+                  strokeWidth={2.5}
+                />
               </div>
 
-              <div className={cn(styles.toast, "absolute right-0 -top-2.5 -translate-y-full")}>
+              <div
+                className={cn(
+                  styles.toast,
+                  "absolute -top-2.5 right-0 -translate-y-full",
+                )}
+              >
                 <div className="flex items-center gap-1.5 rounded-full bg-foreground py-1.5 pr-3 pl-2 text-xs font-medium text-background shadow-lift">
                   <span className="grid size-4 place-items-center rounded-full bg-brand text-brand-foreground">
                     <Check className="size-3" strokeWidth={3} />
@@ -113,8 +149,14 @@ export function LinkDemo({ className }: { className?: string }) {
       </div>
 
       <figcaption className="mt-8 text-center text-sm text-muted-foreground sm:mt-9">
-        <span className="font-mono font-medium text-foreground">{LONG_URL_LENGTH}</span> characters in,{" "}
-        <span className="font-mono font-medium text-foreground">{shortLength}</span> out. Same destination.
+        <span className="font-mono font-medium text-foreground">
+          {LONG_URL_LENGTH}
+        </span>{" "}
+        characters in,{" "}
+        <span className="font-mono font-medium text-foreground">
+          {shortLength}
+        </span>{" "}
+        out. Same destination.
       </figcaption>
     </figure>
   )

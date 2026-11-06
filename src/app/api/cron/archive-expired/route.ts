@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
 
   const secret = process.env.CRON_SECRET
   if (!secret) {
-    logger.error("CRON_SECRET is not configured, refusing to archive expired shurtles")
+    logger.error(
+      "CRON_SECRET is not configured, refusing to archive expired shurtles",
+    )
     return Response.json({ error: "Cron is not configured" }, { status: 500 })
   }
 
@@ -32,7 +34,9 @@ export async function GET(request: NextRequest) {
     const archived = await db
       .update(shurtles)
       .set({ archivedAt: sql`now()` })
-      .where(and(isNull(shurtles.archivedAt), lte(shurtles.expiresAt, sql`now()`)))
+      .where(
+        and(isNull(shurtles.archivedAt), lte(shurtles.expiresAt, sql`now()`)),
+      )
       .returning({ userId: shurtles.userId })
 
     // The dashboard already shows these as expired; refresh cached lists and counts in the background.
@@ -43,10 +47,16 @@ export async function GET(request: NextRequest) {
     }
 
     const durationMs = Math.round(performance.now() - startedAt)
-    logger.info({ archived: archived.length, users: userIds.size, durationMs }, "archived expired shurtles")
+    logger.info(
+      { archived: archived.length, users: userIds.size, durationMs },
+      "archived expired shurtles",
+    )
     return Response.json({ success: true, archived: archived.length })
   } catch (error) {
-    logger.error({ err: error, durationMs: Math.round(performance.now() - startedAt) }, "archiving expired shurtles failed")
+    logger.error(
+      { err: error, durationMs: Math.round(performance.now() - startedAt) },
+      "archiving expired shurtles failed",
+    )
     return Response.json({ error: "Archiving failed" }, { status: 500 })
   }
 }
@@ -55,5 +65,7 @@ function isAuthorized(header: string | null, secret: string) {
   if (!header) return false
   const expected = Buffer.from(`Bearer ${secret}`)
   const received = Buffer.from(header)
-  return received.length === expected.length && timingSafeEqual(received, expected)
+  return (
+    received.length === expected.length && timingSafeEqual(received, expected)
+  )
 }

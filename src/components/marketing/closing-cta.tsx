@@ -13,7 +13,10 @@ const STREAKS = [
 
 export function ClosingCta() {
   return (
-    <section aria-labelledby="cta-title" className="container-page pb-24 sm:pb-32">
+    <section
+      aria-labelledby="cta-title"
+      className="container-page pb-24 sm:pb-32"
+    >
       <div className="grid items-center gap-12 border-t border-border/70 pt-20 sm:pt-28 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div>
           <h2
@@ -29,11 +32,17 @@ export function ClosingCta() {
               short.
             </span>
           </h2>
-          <p className="mt-6 max-w-md text-lg/relaxed text-muted-foreground text-pretty">
-            Sign in, paste, share. The turtle takes it from there, and it&rsquo;s quicker than it looks.
+          <p className="mt-6 max-w-md text-lg/relaxed text-pretty text-muted-foreground">
+            Sign in, paste, share. The turtle takes it from there, and
+            it&rsquo;s quicker than it looks.
           </p>
           <div className="mt-9 flex flex-col items-start gap-4 min-[25rem]:flex-row min-[25rem]:items-center">
-            <Button asChild size="lg" variant="brand" className="group h-12 rounded-xl px-6 text-base">
+            <Button
+              asChild
+              size="lg"
+              variant="brand"
+              className="group h-12 rounded-xl px-6 text-base"
+            >
               <Link href="/dashboard">
                 Start shortening
                 <ArrowRight className="transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5" />
@@ -49,10 +58,21 @@ export function ClosingCta() {
         </div>
 
         {/* The turtle, at full tilt. */}
-        <div aria-hidden="true" className="flex items-center justify-center gap-3 lg:justify-end">
+        <div
+          aria-hidden="true"
+          className="flex items-center justify-center gap-3 lg:justify-end"
+        >
           <div className="flex flex-col items-end gap-3 sm:gap-4">
             {STREAKS.map((streak, i) => (
-              <span key={i} className={cn(styles.speed, "h-1.5 rounded-full bg-brand-ink sm:h-2", streak.width, streak.offset)} />
+              <span
+                key={i}
+                className={cn(
+                  styles.speed,
+                  "h-1.5 rounded-full bg-brand-ink sm:h-2",
+                  streak.width,
+                  streak.offset,
+                )}
+              />
             ))}
           </div>
           <LogoMark className="h-24 sm:h-32" />

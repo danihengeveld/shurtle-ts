@@ -25,6 +25,8 @@ describe("addLocalDays", () => {
   it("keeps the local wall-clock time", () => {
     const start = new Date(2026, 9, 20, 14, 30)
     const later = addLocalDays(start, 14) // crosses the EU/US DST change in late Oct / early Nov
-    expect([later.getDate(), later.getHours(), later.getMinutes()]).toEqual([3, 14, 30])
+    expect([later.getDate(), later.getHours(), later.getMinutes()]).toEqual([
+      3, 14, 30,
+    ])
   })
 })

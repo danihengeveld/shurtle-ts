@@ -6,12 +6,21 @@ const SECRET_URL = "https://example.com/reset?token=s3cret"
 
 describe("serializeError", () => {
   it("drops bound parameters from database errors, keeping the SQL and Postgres code", () => {
-    const pgError = Object.assign(new Error('duplicate key value violates unique constraint "user_id_url_idx"'), {
-      code: "23505",
-      constraint: "user_id_url_idx",
-      detail: `Key (user_id, url)=(user_123, ${SECRET_URL}) already exists.`,
-    })
-    const error = new DrizzleQueryError("insert into shurtles values ($1, $2)", ["abc", SECRET_URL], pgError)
+    const pgError = Object.assign(
+      new Error(
+        'duplicate key value violates unique constraint "user_id_url_idx"',
+      ),
+      {
+        code: "23505",
+        constraint: "user_id_url_idx",
+        detail: `Key (user_id, url)=(user_123, ${SECRET_URL}) already exists.`,
+      },
+    )
+    const error = new DrizzleQueryError(
+      "insert into shurtles values ($1, $2)",
+      ["abc", SECRET_URL],
+      pgError,
+    )
 
     const serialized = serializeError(error)
     const json = JSON.stringify(serialized)
@@ -27,8 +36,14 @@ describe("serializeError", () => {
   })
 
   it("keeps ordinary errors readable", () => {
-    const serialized = serializeError(new TypeError("boom", { cause: new Error("root") }))
-    expect(serialized).toMatchObject({ type: "TypeError", message: "boom", cause: { message: "root" } })
+    const serialized = serializeError(
+      new TypeError("boom", { cause: new Error("root") }),
+    )
+    expect(serialized).toMatchObject({
+      type: "TypeError",
+      message: "boom",
+      cause: { message: "root" },
+    })
   })
 
   it("survives cyclic causes", () => {

@@ -9,7 +9,8 @@ type NavLinkProps = React.ComponentProps<typeof Link> & { href: string }
 
 export function NavLink(props: NavLinkProps) {
   const pathname = usePathname()
-  const active = pathname === props.href || pathname.startsWith(`${props.href}/`)
+  const active =
+    pathname === props.href || pathname.startsWith(`${props.href}/`)
   return <NavLinkBase {...props} aria-current={active ? "page" : undefined} />
 }
 

@@ -1,10 +1,22 @@
 "use client"
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { PER_PAGE_OPTIONS, type PerPage } from "@/lib/pagination"
 import { useLinks } from "./links-provider"
 
-export function PerPageSelect({ perPage, query }: { perPage: PerPage; query: string }) {
+export function PerPageSelect({
+  perPage,
+  query,
+}: {
+  perPage: PerPage
+  query: string
+}) {
   const { navigate } = useLinks()
 
   return (
@@ -15,7 +27,9 @@ export function PerPageSelect({ perPage, query }: { perPage: PerPage; query: str
       </span>
       <Select
         value={String(perPage)}
-        onValueChange={(value) => navigate({ perPage: Number(value) as PerPage, query, page: 1 })}
+        onValueChange={(value) =>
+          navigate({ perPage: Number(value) as PerPage, query, page: 1 })
+        }
       >
         <SelectTrigger
           aria-labelledby="per-page-label"
@@ -25,7 +39,11 @@ export function PerPageSelect({ perPage, query }: { perPage: PerPage; query: str
         </SelectTrigger>
         <SelectContent align="end" className="min-w-[4.5rem]">
           {PER_PAGE_OPTIONS.map((option) => (
-            <SelectItem key={option} value={String(option)} className="tabular-nums">
+            <SelectItem
+              key={option}
+              value={String(option)}
+              className="tabular-nums"
+            >
               {option}
             </SelectItem>
           ))}

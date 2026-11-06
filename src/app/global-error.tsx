@@ -17,7 +17,10 @@ const THEME_SCRIPT = `try{var t=localStorage.getItem("theme"),d=t==="dark"||(t!=
 function readIsDark() {
   try {
     const stored = localStorage.getItem("theme")
-    return stored === "dark" || (stored !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)
+    return (
+      stored === "dark" ||
+      (stored !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)
+    )
   } catch {
     return false
   }
@@ -33,7 +36,13 @@ function subscribeToScheme(onChange: () => void) {
   }
 }
 
-export default function GlobalError({ error, retry }: { error: unknown; retry: () => void }) {
+export default function GlobalError({
+  error,
+  retry,
+}: {
+  error: unknown
+  retry: () => void
+}) {
   const dark = useSyncExternalStore(subscribeToScheme, readIsDark, () => false)
 
   useEffect(() => {
@@ -55,7 +64,9 @@ export default function GlobalError({ error, retry }: { error: unknown; retry: (
         <title>{`Something went wrong · ${siteInfo.name}`}</title>
         <script
           // Applies the theme before first paint when this page is server-rendered.
-          type={typeof window === "undefined" ? "text/javascript" : "text/plain"}
+          type={
+            typeof window === "undefined" ? "text/javascript" : "text/plain"
+          }
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
         />
@@ -64,13 +75,20 @@ export default function GlobalError({ error, retry }: { error: unknown; retry: (
         <header className="border-b border-border/70">
           <div className="container-page flex h-16 items-center">
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- full reload escapes a broken root layout */}
-            <a href="/" className="-ml-1.5 flex h-10 items-center rounded-lg px-1.5">
+            <a
+              href="/"
+              className="-ml-1.5 flex h-10 items-center rounded-lg px-1.5"
+            >
               <Logo />
             </a>
           </div>
         </header>
         <main id="main" className="flex flex-1 flex-col">
-          <ErrorView retry={retry} digest={errorDigest(error)} homeLink={homeLink} />
+          <ErrorView
+            retry={retry}
+            digest={errorDigest(error)}
+            homeLink={homeLink}
+          />
         </main>
       </body>
     </html>

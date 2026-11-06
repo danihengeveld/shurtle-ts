@@ -36,10 +36,10 @@ export function CreateLinkDialog({
             "fixed z-50 flex flex-col overflow-hidden border bg-popover text-popover-foreground shadow-lift outline-none " +
             // Phone: bottom sheet.
             "inset-x-0 bottom-0 max-h-[calc(100dvh-1.5rem)] rounded-t-3xl border-b-0 duration-300 ease-out-expo " +
-            "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=closed]:duration-200 " +
+            "data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=closed]:slide-out-to-bottom data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom " +
             // ≥ sm: centred dialog.
             "sm:inset-auto sm:top-1/2 sm:left-1/2 sm:max-h-[min(48rem,calc(100dvh-4rem))] sm:w-[calc(100%-2rem)] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border-b " +
-            "sm:data-[state=open]:slide-in-from-bottom-4 sm:data-[state=open]:fade-in-0 sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:slide-out-to-bottom-2 sm:data-[state=closed]:fade-out-0 sm:data-[state=closed]:zoom-out-95"
+            "sm:data-[state=closed]:fade-out-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=closed]:slide-out-to-bottom-2 sm:data-[state=open]:fade-in-0 sm:data-[state=open]:zoom-in-95 sm:data-[state=open]:slide-in-from-bottom-4"
           }
         >
           <CreateLinkFlow

@@ -11,14 +11,23 @@ export const LOCALE = "en-US"
 const DAY_MS = 86_400_000
 
 const integerFormat = new Intl.NumberFormat(LOCALE)
-const compactFormat = new Intl.NumberFormat(LOCALE, { notation: "compact", maximumFractionDigits: 1 })
+const compactFormat = new Intl.NumberFormat(LOCALE, {
+  notation: "compact",
+  maximumFractionDigits: 1,
+})
 
 /** 1,284 — or 12.9K / 4.2M once numbers get large. */
 export function formatCount(value: number) {
-  return Math.abs(value) >= 100_000 ? compactFormat.format(value) : integerFormat.format(value)
+  return Math.abs(value) >= 100_000
+    ? compactFormat.format(value)
+    : integerFormat.format(value)
 }
 
-export function pluralize(count: number, singular: string, plural = `${singular}s`) {
+export function pluralize(
+  count: number,
+  singular: string,
+  plural = `${singular}s`,
+) {
   return `${formatCount(count)} ${count === 1 ? singular : plural}`
 }
 
@@ -27,15 +36,24 @@ export function parseUtcDay(day: string) {
   return new Date(`${day}T00:00:00Z`)
 }
 
-export function formatUtcDay(day: string, options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" }) {
-  return new Intl.DateTimeFormat(LOCALE, { timeZone: "UTC", ...options }).format(parseUtcDay(day))
+export function formatUtcDay(
+  day: string,
+  options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" },
+) {
+  return new Intl.DateTimeFormat(LOCALE, {
+    timeZone: "UTC",
+    ...options,
+  }).format(parseUtcDay(day))
 }
 
 /**
  * Short absolute date. Pass `timeZone: "UTC"` for deterministic SSR output; omit it to use the
  * viewer's time zone (client only, after hydration).
  */
-export function formatDate(date: Date, { timeZone, withYear }: { timeZone?: string; withYear?: boolean } = {}) {
+export function formatDate(
+  date: Date,
+  { timeZone, withYear }: { timeZone?: string; withYear?: boolean } = {},
+) {
   return new Intl.DateTimeFormat(LOCALE, {
     timeZone,
     month: "short",
@@ -90,7 +108,10 @@ export type ExpiryStatus =
 /** Links that expire within this window are flagged. */
 export const EXPIRING_SOON_MS = 7 * DAY_MS
 
-export function getExpiryStatus(expiresAt: Date | null, now: number): ExpiryStatus {
+export function getExpiryStatus(
+  expiresAt: Date | null,
+  now: number,
+): ExpiryStatus {
   if (!expiresAt) return { kind: "never" }
   const remaining = expiresAt.getTime() - now
   if (remaining <= 0) return { kind: "expired", expiresAt }

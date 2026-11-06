@@ -5,7 +5,13 @@ import { siteInfo } from "@/lib/site"
 import Link from "next/link"
 import { useEffect } from "react"
 
-export default function RootError({ error, retry }: { error: unknown; retry: () => void }) {
+export default function RootError({
+  error,
+  retry,
+}: {
+  error: unknown
+  retry: () => void
+}) {
   useEffect(() => {
     console.error(error)
   }, [error])
@@ -13,7 +19,11 @@ export default function RootError({ error, retry }: { error: unknown; retry: () 
   return (
     <>
       <title>{`Something went wrong · ${siteInfo.name}`}</title>
-      <ErrorView retry={retry} digest={errorDigest(error)} homeLink={<Link href="/">Back to home</Link>} />
+      <ErrorView
+        retry={retry}
+        digest={errorDigest(error)}
+        homeLink={<Link href="/">Back to home</Link>}
+      />
     </>
   )
 }

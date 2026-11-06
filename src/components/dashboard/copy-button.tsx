@@ -40,7 +40,9 @@ export function useCopyShortLink(slug: string) {
   async function copy() {
     const ok = await writeToClipboard(shortUrl(slug))
     if (!ok) {
-      toast.error("Couldn't copy the link", { description: `Copy it manually: ${shortUrl(slug)}` })
+      toast.error("Couldn't copy the link", {
+        description: `Copy it manually: ${shortUrl(slug)}`,
+      })
       return
     }
     clearTimeout(timeout.current)
@@ -78,10 +80,25 @@ export function CopyButton({
       size={size}
       onClick={copy}
       autoFocus={autoFocus}
-      aria-label={label ? undefined : copied ? `Copied ${displayShortUrl(slug)}` : `Copy ${displayShortUrl(slug)}`}
-      className={cn(!label && "text-muted-foreground hover:text-foreground", className)}
+      aria-label={
+        label
+          ? undefined
+          : copied
+            ? `Copied ${displayShortUrl(slug)}`
+            : `Copy ${displayShortUrl(slug)}`
+      }
+      className={cn(
+        !label && "text-muted-foreground hover:text-foreground",
+        className,
+      )}
     >
-      <Icon className={cn("transition-transform", copied && "scale-110 text-success")} aria-hidden />
+      <Icon
+        className={cn(
+          "transition-transform",
+          copied && "scale-110 text-success",
+        )}
+        aria-hidden
+      />
       {label && <span>{copied ? "Copied" : "Copy link"}</span>}
     </Button>
   )

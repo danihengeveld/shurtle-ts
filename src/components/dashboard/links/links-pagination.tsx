@@ -7,7 +7,8 @@ import { linksHref } from "./href"
 
 /** 1 … 4 5 6 … 12 */
 function pageItems(page: number, totalPages: number): (number | "gap")[] {
-  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1)
+  if (totalPages <= 7)
+    return Array.from({ length: totalPages }, (_, index) => index + 1)
   const start = Math.max(2, Math.min(page - 1, totalPages - 4))
   const end = Math.min(totalPages - 1, Math.max(page + 1, 5))
   const items: (number | "gap")[] = [1]
@@ -20,7 +21,7 @@ function pageItems(page: number, totalPages: number): (number | "gap")[] {
 
 const pageButton = cn(
   buttonVariants({ variant: "ghost", size: "icon" }),
-  "min-w-9 w-auto px-2.5 tabular-nums text-muted-foreground hover:text-foreground max-md:size-10",
+  "w-auto min-w-9 px-2.5 text-muted-foreground tabular-nums hover:text-foreground max-md:size-10",
 )
 
 export function LinksPagination({
@@ -31,7 +32,8 @@ export function LinksPagination({
   query,
   status,
 }: DashboardQuery & { basePath: string; totalPages: number }) {
-  const href = (target: number) => linksHref(basePath, { page: target, perPage, query, status }, "links")
+  const href = (target: number) =>
+    linksHref(basePath, { page: target, perPage, query, status }, "links")
   const hasPrevious = page > 1
   const hasNext = page < totalPages
 
@@ -53,23 +55,38 @@ export function LinksPagination({
     )
 
     return enabled ? (
-      <Link href={href(direction === "previous" ? page - 1 : page + 1)} rel={direction === "previous" ? "prev" : "next"} aria-label={`${label} page`} className={className}>
+      <Link
+        href={href(direction === "previous" ? page - 1 : page + 1)}
+        rel={direction === "previous" ? "prev" : "next"}
+        aria-label={`${label} page`}
+        className={className}
+      >
         {content}
       </Link>
     ) : (
-      <span aria-disabled="true" className={cn(className, "pointer-events-none opacity-45")}>
+      <span
+        aria-disabled="true"
+        className={cn(className, "pointer-events-none opacity-45")}
+      >
         {content}
       </span>
     )
   }
 
   return (
-    <nav aria-label="Pagination" className="flex items-center gap-1.5 max-sm:w-full max-sm:justify-between">
+    <nav
+      aria-label="Pagination"
+      className="flex items-center gap-1.5 max-sm:w-full max-sm:justify-between"
+    >
       {step("previous")}
       <ul className="hidden items-center gap-0.5 sm:flex">
         {pageItems(page, totalPages).map((item, index) =>
           item === "gap" ? (
-            <li key={`gap-${index}`} aria-hidden className="w-6 text-center text-muted-foreground">
+            <li
+              key={`gap-${index}`}
+              aria-hidden
+              className="w-6 text-center text-muted-foreground"
+            >
               …
             </li>
           ) : (
@@ -80,7 +97,8 @@ export function LinksPagination({
                 aria-label={`Page ${item}`}
                 className={cn(
                   pageButton,
-                  item === page && "pointer-events-none border bg-card font-semibold text-foreground shadow-xs",
+                  item === page &&
+                    "pointer-events-none border bg-card font-semibold text-foreground shadow-xs",
                 )}
               >
                 {item}

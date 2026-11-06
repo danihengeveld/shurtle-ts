@@ -24,7 +24,12 @@ interface LogoMarkProps extends React.ComponentProps<"svg"> {
   title?: string
 }
 
-export function LogoMark({ accent = true, title, className, ...props }: LogoMarkProps) {
+export function LogoMark({
+  accent = true,
+  title,
+  className,
+  ...props
+}: LogoMarkProps) {
   return (
     <svg
       viewBox="0 2 64 36"
@@ -57,12 +62,25 @@ interface LogoProps {
 }
 
 /** Mark + wordmark. The wordmark carries the accessible name; the mark is decorative. */
-export function Logo({ className, markClassName, wordmarkClassName, accent = true }: LogoProps) {
+export function Logo({
+  className,
+  markClassName,
+  wordmarkClassName,
+  accent = true,
+}: LogoProps) {
   return (
-    <span className={cn("inline-flex items-center gap-2 text-foreground", className)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 text-foreground",
+        className,
+      )}
+    >
       <LogoMark accent={accent} className={cn("h-7", markClassName)} />
       <span
-        className={cn("font-display text-[1.375rem] leading-none font-bold tracking-[-0.03em]", wordmarkClassName)}
+        className={cn(
+          "font-display text-[1.375rem] leading-none font-bold tracking-[-0.03em]",
+          wordmarkClassName,
+        )}
       >
         Shurtle
       </span>

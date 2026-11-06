@@ -1,5 +1,8 @@
 import { requireUserId } from "@/lib/auth"
-import { parseDashboardQuery, type DashboardSearchParams } from "@/lib/pagination"
+import {
+  parseDashboardQuery,
+  type DashboardSearchParams,
+} from "@/lib/pagination"
 import { getDailyClicks, getShurtlesPaginated, getStats } from "@/lib/shurtles"
 import { connection } from "next/server"
 import { ClicksChart } from "./clicks-chart"
@@ -13,7 +16,10 @@ import { StatsCards } from "./stats-cards"
 
 export async function StatsSection() {
   const userId = await requireUserId()
-  const [stats, daily] = await Promise.all([getStats(userId), getDailyClicks(userId, 30)])
+  const [stats, daily] = await Promise.all([
+    getStats(userId),
+    getDailyClicks(userId, 30),
+  ])
   return <StatsCards stats={stats} daily={daily} />
 }
 
@@ -27,7 +33,10 @@ async function loadLinks(searchParams: Promise<DashboardSearchParams>) {
   const userId = await requireUserId()
   const query = parseDashboardQuery(await searchParams)
   // The stats are cached and shared with the stats section; they provide the Active / Expired counts.
-  const [page, stats] = await Promise.all([getShurtlesPaginated(userId, query), getStats(userId)])
+  const [page, stats] = await Promise.all([
+    getShurtlesPaginated(userId, query),
+    getStats(userId),
+  ])
   // Request time. Relative dates render from it on the server and during hydration, so both match,
   // and then tick on the client. Cookies and searchParams alone don't make this request-time: a
   // runtime prefetch (partialPrefetching) can resolve them, so defer explicitly with connection().
@@ -35,7 +44,11 @@ async function loadLinks(searchParams: Promise<DashboardSearchParams>) {
   return { page, stats, now: Date.now() }
 }
 
-export async function LinksSection({ searchParams }: { searchParams: Promise<DashboardSearchParams> }) {
+export async function LinksSection({
+  searchParams,
+}: {
+  searchParams: Promise<DashboardSearchParams>
+}) {
   const { page, stats, now } = await loadLinks(searchParams)
 
   return (
@@ -43,15 +56,20 @@ export async function LinksSection({ searchParams }: { searchParams: Promise<Das
       now={now}
       data={{
         ...page,
-        counts: { active: stats.activeShurtles, expired: stats.expiredShurtles },
-        shurtles: page.shurtles.map(({ slug, url, hits, createdAt, lastHitAt, expiresAt }) => ({
-          slug,
-          url,
-          hits,
-          createdAt,
-          lastHitAt,
-          expiresAt,
-        })),
+        counts: {
+          active: stats.activeShurtles,
+          expired: stats.expiredShurtles,
+        },
+        shurtles: page.shurtles.map(
+          ({ slug, url, hits, createdAt, lastHitAt, expiresAt }) => ({
+            slug,
+            url,
+            hits,
+            createdAt,
+            lastHitAt,
+            expiresAt,
+          }),
+        ),
       }}
     />
   )

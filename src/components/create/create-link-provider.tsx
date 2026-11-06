@@ -8,7 +8,10 @@ import { PlusIcon } from "lucide-react"
 import { createContext, use, useEffect, useState } from "react"
 import { CreateLinkDialog } from "./create-link-dialog"
 
-export type CreateLinkAction = (state: CreateShurtleFormState, formData: FormData) => Promise<CreateShurtleFormState>
+export type CreateLinkAction = (
+  state: CreateShurtleFormState,
+  formData: FormData,
+) => Promise<CreateShurtleFormState>
 
 type CreateLinkContextValue = {
   openCreate: (options?: { slug?: string }) => void
@@ -18,14 +21,16 @@ const CreateLinkContext = createContext<CreateLinkContextValue | null>(null)
 
 export function useCreateLink() {
   const context = use(CreateLinkContext)
-  if (!context) throw new Error("useCreateLink must be used inside <CreateLinkProvider>")
+  if (!context)
+    throw new Error("useCreateLink must be used inside <CreateLinkProvider>")
   return context
 }
 
 function isTypingTarget(target: EventTarget | null) {
   return (
     target instanceof HTMLElement &&
-    (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+    (target.isContentEditable ||
+      ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
   )
 }
 
@@ -47,20 +52,44 @@ export function CreateLinkProvider({
   defaultSlug?: string
   initialState?: CreateShurtleFormState
 }) {
-  const [flow, setFlow] = useState({ open: defaultOpen, id: 0, slug: defaultSlug })
+  const [flow, setFlow] = useState({
+    open: defaultOpen,
+    id: 0,
+    slug: defaultSlug,
+  })
 
   function openCreate(options?: { slug?: string }) {
-    setFlow((current) => ({ open: true, id: current.id + 1, slug: options?.slug }))
+    setFlow((current) => ({
+      open: true,
+      id: current.id + 1,
+      slug: options?.slug,
+    }))
   }
 
   // Keyboard shortcut: "N" opens the dialog from anywhere on the dashboard.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key.toLowerCase() !== "n" || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
+      if (
+        event.key.toLowerCase() !== "n" ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.shiftKey
+      )
+        return
       if (event.repeat || isTypingTarget(event.target)) return
-      if (document.querySelector("[role=dialog], [role=alertdialog], [role=menu], [role=listbox]")) return
+      if (
+        document.querySelector(
+          "[role=dialog], [role=alertdialog], [role=menu], [role=listbox]",
+        )
+      )
+        return
       event.preventDefault()
-      setFlow((current) => ({ open: true, id: current.id + 1, slug: undefined }))
+      setFlow((current) => ({
+        open: true,
+        id: current.id + 1,
+        slug: undefined,
+      }))
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
@@ -73,7 +102,13 @@ export function CreateLinkProvider({
         flowId={flow.id}
         open={flow.open}
         onOpenChange={(open) => setFlow((current) => ({ ...current, open }))}
-        onCreateAnother={() => setFlow((current) => ({ open: true, id: current.id + 1, slug: undefined }))}
+        onCreateAnother={() =>
+          setFlow((current) => ({
+            open: true,
+            id: current.id + 1,
+            slug: undefined,
+          }))
+        }
         action={action}
         initialSlug={flow.slug}
         initialState={flow.id === 0 ? initialState : undefined}
@@ -88,7 +123,9 @@ export function CreateLinkButton({
   shortcut = false,
   className,
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "onClick"> & { shortcut?: boolean }) {
+}: Omit<React.ComponentProps<typeof Button>, "onClick"> & {
+  shortcut?: boolean
+}) {
   const { openCreate } = useCreateLink()
   return (
     <Button
@@ -98,11 +135,17 @@ export function CreateLinkButton({
       className={cn("group/create", className)}
       {...props}
     >
-      <PlusIcon aria-hidden className="transition-transform duration-300 group-hover/create:rotate-90" />
+      <PlusIcon
+        aria-hidden
+        className="transition-transform duration-300 group-hover/create:rotate-90"
+      />
       {children}
       {shortcut && (
         // Tinted from the button's own text colour, so it reads on any button variant.
-        <Kbd aria-hidden className="ml-1 hidden bg-current/15 font-mono text-[11px] text-current opacity-80 md:inline-flex">
+        <Kbd
+          aria-hidden
+          className="ml-1 hidden bg-current/15 font-mono text-[11px] text-current opacity-80 md:inline-flex"
+        >
           N
         </Kbd>
       )}

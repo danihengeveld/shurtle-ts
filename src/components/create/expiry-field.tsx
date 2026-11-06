@@ -1,19 +1,42 @@
 "use client"
 
 import { Calendar } from "@/components/ui/calendar"
-import { FieldDescription, FieldError, FieldLegend, FieldSet } from "@/components/ui/field"
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  FieldDescription,
+  FieldError,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "cn"
 import { CalendarIcon, ChevronDownIcon, ClockIcon } from "lucide-react"
 import { useState } from "react"
-import { addLocalDays, atLocalTime, formatExpiry, startOfLocalDay, toTimeValue } from "../dashboard/format"
+import {
+  addLocalDays,
+  atLocalTime,
+  formatExpiry,
+  startOfLocalDay,
+  toTimeValue,
+} from "../dashboard/format"
 
 export type ExpiryPreset = "never" | "1" | "7" | "30" | "custom"
 
 /** `customDate` is the picked calendar day; `customTime` is the local time of day (`"HH:MM"`). */
-export type ExpiryValue = { preset: ExpiryPreset; customDate?: Date; customTime: string }
+export type ExpiryValue = {
+  preset: ExpiryPreset
+  customDate?: Date
+  customTime: string
+}
 
 const PRESETS: { value: ExpiryPreset; label: string; long: string }[] = [
   { value: "never", label: "Never", long: "Never expires" },
@@ -38,7 +61,10 @@ export function initialExpiry(expiresAt?: string): ExpiryValue {
  */
 export function expiryDate(value: ExpiryValue): Date | null {
   if (value.preset === "never") return null
-  if (value.preset === "custom") return value.customDate ? atLocalTime(value.customDate, value.customTime) : null
+  if (value.preset === "custom")
+    return value.customDate
+      ? atLocalTime(value.customDate, value.customTime)
+      : null
   const now = new Date()
   return atLocalTime(addLocalDays(now, Number(value.preset)), toTimeValue(now))
 }
@@ -65,11 +91,16 @@ export function expiryIssue(value: ExpiryValue) {
   return undefined
 }
 
-const longDate = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+const longDate = new Intl.DateTimeFormat("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+})
 
 /** Shared look of the date button and the time field. */
 const fieldClass = cn(
-  "flex h-10 w-full items-center gap-2.5 rounded-xl border border-input bg-card px-3 text-sm shadow-xs transition-[color,box-shadow] outline-none dark:bg-input/30 max-sm:h-11",
+  "flex h-10 w-full items-center gap-2.5 rounded-xl border border-input bg-card px-3 text-sm shadow-xs transition-[color,box-shadow] outline-none max-sm:h-11 dark:bg-input/30",
   "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50 data-invalid:border-destructive",
 )
 
@@ -89,7 +120,10 @@ export function ExpiryField({
   const today = startOfLocalDay(new Date())
 
   return (
-    <FieldSet aria-describedby={error ? `${errorId} expiry-hint` : "expiry-hint"} className="gap-2.5">
+    <FieldSet
+      aria-describedby={error ? `${errorId} expiry-hint` : "expiry-hint"}
+      className="gap-2.5"
+    >
       <FieldLegend variant="label" className="mb-2.5">
         Expiration
       </FieldLegend>
@@ -134,13 +168,25 @@ export function ExpiryField({
               <button
                 type="button"
                 data-invalid={Boolean(error) || undefined}
-                className={cn(fieldClass, "cursor-pointer text-left", !value.customDate && "text-muted-foreground")}
+                className={cn(
+                  fieldClass,
+                  "cursor-pointer text-left",
+                  !value.customDate && "text-muted-foreground",
+                )}
               >
-                <CalendarIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+                <CalendarIcon
+                  aria-hidden
+                  className="size-4 shrink-0 text-muted-foreground"
+                />
                 <span className="min-w-0 flex-1 truncate">
-                  {value.customDate ? longDate.format(value.customDate) : "Pick a date…"}
+                  {value.customDate
+                    ? longDate.format(value.customDate)
+                    : "Pick a date…"}
                 </span>
-                <ChevronDownIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+                <ChevronDownIcon
+                  aria-hidden
+                  className="size-4 shrink-0 text-muted-foreground"
+                />
                 <span className="sr-only">, open calendar</span>
               </button>
             </PopoverTrigger>
@@ -173,7 +219,9 @@ export function ExpiryField({
               required
               aria-label="Expiry time"
               value={value.customTime}
-              onChange={(event) => onChange({ ...value, customTime: event.target.value })}
+              onChange={(event) =>
+                onChange({ ...value, customTime: event.target.value })
+              }
               aria-invalid={Boolean(error) || undefined}
               className="h-full appearance-none text-sm tabular-nums [&::-webkit-calendar-picker-indicator]:hidden"
             />
@@ -181,19 +229,30 @@ export function ExpiryField({
         </div>
       )}
 
-      <FieldDescription id="expiry-hint" className="text-[13px] leading-relaxed">
+      <FieldDescription
+        id="expiry-hint"
+        className="text-[13px] leading-relaxed"
+      >
         {value.preset === "never" ? (
           "The link keeps working until you delete it."
         ) : date ? (
           <>
-            Stops working on <span className="font-medium text-foreground">{formatExpiry(date)}</span>, your time.
+            Stops working on{" "}
+            <span className="font-medium text-foreground">
+              {formatExpiry(date)}
+            </span>
+            , your time.
           </>
         ) : (
           "Pick the date and time the link should stop working, in your time zone."
         )}
       </FieldDescription>
       {/* Not a live region: see FormError in create-link-form.tsx. */}
-      <FieldError id={errorId} role={undefined} className="text-[13px] font-medium">
+      <FieldError
+        id={errorId}
+        role={undefined}
+        className="text-[13px] font-medium"
+      >
         {error}
       </FieldError>
     </FieldSet>

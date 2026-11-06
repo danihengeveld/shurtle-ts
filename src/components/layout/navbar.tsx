@@ -11,12 +11,14 @@ export function Navbar() {
       <div className="container-page flex h-16 items-center gap-1 sm:gap-2">
         <Link
           href="/"
-          className="-ml-1.5 mr-1 flex h-10 items-center rounded-lg px-1.5 transition-opacity hover:opacity-80 sm:mr-3"
+          className="mr-1 -ml-1.5 flex h-10 items-center rounded-lg px-1.5 transition-opacity hover:opacity-80 sm:mr-3"
         >
           <Logo wordmarkClassName="max-[23.5rem]:sr-only" />
         </Link>
         <nav aria-label="Main">
-          <Suspense fallback={<NavLinkBase href="/dashboard">Dashboard</NavLinkBase>}>
+          <Suspense
+            fallback={<NavLinkBase href="/dashboard">Dashboard</NavLinkBase>}
+          >
             <NavLink href="/dashboard">Dashboard</NavLink>
           </Suspense>
         </nav>

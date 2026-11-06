@@ -50,29 +50,53 @@ export function LinksProvider({
 }) {
   const router = useRouter()
   const [isNavigating, startNavigation] = useTransition()
-  const [deleting, markDeleting] = useOptimistic(NO_SLUGS, (current, slug: string) => new Set(current).add(slug))
+  const [deleting, markDeleting] = useOptimistic(
+    NO_SLUGS,
+    (current, slug: string) => new Set(current).add(slug),
+  )
 
   function navigate(query: Partial<DashboardQuery>) {
     startNavigation(() => {
-      router.replace(linksHref(basePath, { status, ...query }), { scroll: false })
+      router.replace(linksHref(basePath, { status, ...query }), {
+        scroll: false,
+      })
     })
   }
 
   return (
-    <LinksContext value={{ basePath, status, navigate, isNavigating, deleting, markDeleting, deleteAction }}>
+    <LinksContext
+      value={{
+        basePath,
+        status,
+        navigate,
+        isNavigating,
+        deleting,
+        markDeleting,
+        deleteAction,
+      }}
+    >
       {children}
     </LinksContext>
   )
 }
 
 /** Wraps the list body: dims it (and marks it busy) while a search / page change is loading. */
-export function LinksBusyRegion({ className, children }: { className?: string; children: React.ReactNode }) {
+export function LinksBusyRegion({
+  className,
+  children,
+}: {
+  className?: string
+  children: React.ReactNode
+}) {
   const { isNavigating } = useLinks()
   return (
     <div
       aria-busy={isNavigating || undefined}
       data-busy={isNavigating || undefined}
-      className={cn("transition-opacity duration-200 data-busy:opacity-60 data-busy:delay-150", className)}
+      className={cn(
+        "transition-opacity duration-200 data-busy:opacity-60 data-busy:delay-150",
+        className,
+      )}
     >
       {children}
     </div>
@@ -80,21 +104,45 @@ export function LinksBusyRegion({ className, children }: { className?: string; c
 }
 
 /** A table row that dims and becomes inert while its delete is in flight. */
-export function LinkTableRow({ slug, className, children }: { slug: string; className?: string; children: React.ReactNode }) {
+export function LinkTableRow({
+  slug,
+  className,
+  children,
+}: {
+  slug: string
+  className?: string
+  children: React.ReactNode
+}) {
   const { deleting } = useLinks()
   const isDeleting = deleting.has(slug)
   return (
-    <tr data-deleting={isDeleting || undefined} inert={isDeleting} className={className}>
+    <tr
+      data-deleting={isDeleting || undefined}
+      inert={isDeleting}
+      className={className}
+    >
       {children}
     </tr>
   )
 }
 
-export function LinkListItem({ slug, className, children }: { slug: string; className?: string; children: React.ReactNode }) {
+export function LinkListItem({
+  slug,
+  className,
+  children,
+}: {
+  slug: string
+  className?: string
+  children: React.ReactNode
+}) {
   const { deleting } = useLinks()
   const isDeleting = deleting.has(slug)
   return (
-    <li data-deleting={isDeleting || undefined} inert={isDeleting} className={className}>
+    <li
+      data-deleting={isDeleting || undefined}
+      inert={isDeleting}
+      className={className}
+    >
       {children}
     </li>
   )

@@ -1,9 +1,18 @@
 "use client"
 
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import { Kbd } from "@/components/ui/kbd"
 import { Spinner } from "@/components/ui/spinner"
-import { DEFAULT_PER_PAGE, MAX_SEARCH_LENGTH, type PerPage } from "@/lib/pagination"
+import {
+  DEFAULT_PER_PAGE,
+  MAX_SEARCH_LENGTH,
+  type PerPage,
+} from "@/lib/pagination"
 import { cn } from "cn"
 import { SearchIcon, XIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
@@ -14,7 +23,8 @@ const DEBOUNCE_MS = 300
 function isEditable(target: EventTarget | null) {
   return (
     target instanceof HTMLElement &&
-    (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+    (target.isContentEditable ||
+      ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
   )
 }
 
@@ -23,7 +33,15 @@ function isEditable(target: EventTarget | null) {
  * input stays responsive and the current results remain visible until the new ones arrive.
  * Without JavaScript it is a plain GET form.
  */
-export function LinkSearch({ query, perPage, className }: { query: string; perPage: PerPage; className?: string }) {
+export function LinkSearch({
+  query,
+  perPage,
+  className,
+}: {
+  query: string
+  perPage: PerPage
+  className?: string
+}) {
   const { basePath, status, navigate, isNavigating } = useLinks()
   const [value, setValue] = useState(query)
   const [syncedQuery, setSyncedQuery] = useState(query)
@@ -46,8 +64,18 @@ export function LinkSearch({ query, perPage, className }: { query: string; perPa
   // "/" focuses the search, like on GitHub or Linear.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey || isEditable(event.target)) return
-      if (document.querySelector("[role=dialog], [role=alertdialog], [role=menu]")) return
+      if (
+        event.key !== "/" ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        isEditable(event.target)
+      )
+        return
+      if (
+        document.querySelector("[role=dialog], [role=alertdialog], [role=menu]")
+      )
+        return
       event.preventDefault()
       inputRef.current?.focus()
       inputRef.current?.select()
@@ -98,47 +126,61 @@ export function LinkSearch({ query, perPage, className }: { query: string; perPa
         </InputGroupAddon>
         <InputGroupInput
           ref={inputRef}
-        id="link-search"
-        name="q"
-        type="search"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Escape" && value) {
-            event.preventDefault()
-            clear()
-          }
-        }}
-        maxLength={MAX_SEARCH_LENGTH}
-        placeholder="Search slugs and URLs"
-        autoComplete="off"
-        spellCheck={false}
-        autoCapitalize="none"
-        enterKeyHint="search"
+          id="link-search"
+          name="q"
+          type="search"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && value) {
+              event.preventDefault()
+              clear()
+            }
+          }}
+          maxLength={MAX_SEARCH_LENGTH}
+          placeholder="Search slugs and URLs"
+          autoComplete="off"
+          spellCheck={false}
+          autoCapitalize="none"
+          enterKeyHint="search"
           aria-keyshortcuts="/"
           className="h-full text-base placeholder:text-muted-foreground sm:text-sm [&::-webkit-search-cancel-button]:appearance-none"
         />
         <InputGroupAddon align="inline-end">
           {showSpinner ? (
-            <span className="flex size-8 items-center justify-center" role="status">
+            <span
+              className="flex size-8 items-center justify-center"
+              role="status"
+            >
               <Spinner aria-hidden />
               <span className="sr-only">Searching…</span>
             </span>
           ) : value ? (
-            <InputGroupButton size="icon-sm" onClick={clear} className="rounded-lg">
+            <InputGroupButton
+              size="icon-sm"
+              onClick={clear}
+              className="rounded-lg"
+            >
               <XIcon aria-hidden />
               <span className="sr-only">Clear search</span>
             </InputGroupButton>
           ) : (
-            <Kbd aria-hidden className="hidden group-focus-within:hidden md:inline-flex">
+            <Kbd
+              aria-hidden
+              className="hidden group-focus-within:hidden md:inline-flex"
+            >
               /
             </Kbd>
           )}
         </InputGroupAddon>
       </InputGroup>
-      {perPage !== DEFAULT_PER_PAGE && <input type="hidden" name="perPage" value={perPage} />}
+      {perPage !== DEFAULT_PER_PAGE && (
+        <input type="hidden" name="perPage" value={perPage} />
+      )}
       {/* Without JS the form submits natively: stay on the current tab. */}
-      {status !== "active" && <input type="hidden" name="status" value={status} />}
+      {status !== "active" && (
+        <input type="hidden" name="status" value={status} />
+      )}
     </form>
   )
 }

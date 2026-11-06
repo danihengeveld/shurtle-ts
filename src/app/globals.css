@@ -19,7 +19,9 @@
 @theme inline {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-display: var(--font-bricolage), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    var(--font-bricolage), var(--font-geist-sans), ui-sans-serif, system-ui,
+    sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -57,8 +59,12 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 14px);
 
-  --shadow-soft: 0 1px 2px oklch(0.2 0.02 160 / 0.04), 0 4px 16px -4px oklch(0.2 0.02 160 / 0.08);
-  --shadow-lift: 0 1px 2px oklch(0.2 0.02 160 / 0.05), 0 12px 40px -12px oklch(0.2 0.02 160 / 0.18);
+  --shadow-soft:
+    0 1px 2px oklch(0.2 0.02 160 / 0.04),
+    0 4px 16px -4px oklch(0.2 0.02 160 / 0.08);
+  --shadow-lift:
+    0 1px 2px oklch(0.2 0.02 160 / 0.05),
+    0 12px 40px -12px oklch(0.2 0.02 160 / 0.18);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -150,8 +156,10 @@
   --chart-1: oklch(0.88 0.19 127);
   --chart-2: oklch(0.6 0.12 140);
 
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.3), 0 4px 16px -4px oklch(0 0 0 / 0.35);
-  --shadow-lift: 0 1px 2px oklch(0 0 0 / 0.3), 0 16px 48px -12px oklch(0 0 0 / 0.55);
+  --shadow-soft:
+    0 1px 2px oklch(0 0 0 / 0.3), 0 4px 16px -4px oklch(0 0 0 / 0.35);
+  --shadow-lift:
+    0 1px 2px oklch(0 0 0 / 0.3), 0 16px 48px -12px oklch(0 0 0 / 0.55);
 }
 
 /* Centered page column used by every page and the site chrome. */

@@ -24,8 +24,14 @@ const noopSubscribe = () => () => {}
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   // next-themes only knows the stored choice on the client; render a neutral state until hydrated.
-  const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false)
-  const current = hydrated ? (THEMES.find((t) => t.value === theme) ?? THEMES[2]) : undefined
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  )
+  const current = hydrated
+    ? (THEMES.find((t) => t.value === theme) ?? THEMES[2])
+    : undefined
 
   return (
     <DropdownMenu>
@@ -51,9 +57,16 @@ export function ThemeToggle() {
         <DropdownMenuLabel className="px-2 pt-1 pb-1.5 text-xs font-medium text-muted-foreground">
           Theme
         </DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={hydrated ? theme : undefined} onValueChange={setTheme}>
+        <DropdownMenuRadioGroup
+          value={hydrated ? theme : undefined}
+          onValueChange={setTheme}
+        >
           {THEMES.map(({ value, label, Icon }) => (
-            <DropdownMenuRadioItem key={value} value={value} className="h-9 rounded-lg">
+            <DropdownMenuRadioItem
+              key={value}
+              value={value}
+              className="h-9 rounded-lg"
+            >
               <Icon />
               {label}
             </DropdownMenuRadioItem>

@@ -29,6 +29,7 @@ export const rateLimits = {
       enableProtection: true,
       analytics: true,
     }),
-    limitMessage: "You're creating links a little too quickly. Please wait a few minutes and try again.",
+    limitMessage:
+      "You're creating links a little too quickly. Please wait a few minutes and try again.",
   },
 }

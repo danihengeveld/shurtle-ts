@@ -5,9 +5,18 @@ import { cn } from "cn"
  * fade has to live on a wrapper: pass a `[mask-image:…]` gradient via `className`. `latticeClassName`
  * replaces the default lattice colour (a `bg-*` class).
  */
-export function ShellBackdrop({ className, latticeClassName }: { className?: string; latticeClassName?: string }) {
+export function ShellBackdrop({
+  className,
+  latticeClassName,
+}: {
+  className?: string
+  latticeClassName?: string
+}) {
   return (
-    <div aria-hidden="true" className={cn("pointer-events-none absolute inset-0 -z-10", className)}>
+    <div
+      aria-hidden="true"
+      className={cn("pointer-events-none absolute inset-0 -z-10", className)}
+    >
       <div
         className={cn(
           "absolute inset-0 shell-pattern",

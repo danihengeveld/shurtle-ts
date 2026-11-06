@@ -29,14 +29,18 @@ function first(value: string | string[] | undefined) {
 }
 
 /** Parse and clamp untrusted search params into a safe query. */
-export function parseDashboardQuery(params: DashboardSearchParams): DashboardQuery {
+export function parseDashboardQuery(
+  params: DashboardSearchParams,
+): DashboardQuery {
   const page = Number.parseInt(first(params.page) ?? "", 10)
   const perPage = Number.parseInt(first(params.perPage) ?? "", 10)
   const query = (first(params.q) ?? "").trim().slice(0, MAX_SEARCH_LENGTH)
 
   return {
     page: Number.isSafeInteger(page) && page > 0 ? page : 1,
-    perPage: (PER_PAGE_OPTIONS as readonly number[]).includes(perPage) ? (perPage as PerPage) : DEFAULT_PER_PAGE,
+    perPage: (PER_PAGE_OPTIONS as readonly number[]).includes(perPage)
+      ? (perPage as PerPage)
+      : DEFAULT_PER_PAGE,
     query,
     status: first(params.status) === "expired" ? "expired" : "active",
   }

@@ -24,7 +24,10 @@ export function serializeError(error: unknown, depth = 0): unknown {
     }
   }
 
-  const { code, constraint } = error as Error & { code?: unknown; constraint?: unknown }
+  const { code, constraint } = error as Error & {
+    code?: unknown
+    constraint?: unknown
+  }
   return {
     type: error.name,
     message: error.message,
@@ -37,7 +40,9 @@ export function serializeError(error: unknown, depth = 0): unknown {
 
 function cause(error: Error, depth: number) {
   // Bounded: cause chains can be cyclic.
-  return error.cause === undefined || depth >= 3 ? {} : { cause: serializeError(error.cause, depth + 1) }
+  return error.cause === undefined || depth >= 3
+    ? {}
+    : { cause: serializeError(error.cause, depth + 1) }
 }
 
 /** Host of a destination URL for logs: enough to triage abuse, without paths or query strings. */

@@ -31,11 +31,18 @@ function slugFromPath(pathname: string | null) {
 }
 
 export function NotFoundContent() {
-  const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false)
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  )
 
   return (
     <section
-      className={cn(styles.root, "relative isolate flex flex-1 items-center overflow-hidden")}
+      className={cn(
+        styles.root,
+        "relative isolate flex flex-1 items-center overflow-hidden",
+      )}
       data-ready={hydrated ? "" : undefined}
       suppressHydrationWarning
     >
@@ -62,7 +69,11 @@ function subscribeToHistory(onChange: () => void) {
 
 function NotFoundVariant({ hydrated }: { hydrated: boolean }) {
   const pathname = usePathname()
-  const browserPath = useSyncExternalStore(subscribeToHistory, () => window.location.pathname, () => null)
+  const browserPath = useSyncExternalStore(
+    subscribeToHistory,
+    () => window.location.pathname,
+    () => null,
+  )
   // The page is prerendered for `/not-found`; only trust the pathname once we're in the browser. If
   // the router still reports the rewrite target, fall back to the address bar.
   const path = pathname === "/not-found" ? browserPath : pathname
@@ -70,8 +81,10 @@ function NotFoundVariant({ hydrated }: { hydrated: boolean }) {
   return slug ? <ClaimSlug slug={slug} /> : <GenericNotFound />
 }
 
-const eyebrow = "flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase"
-const title = "mt-5 font-display text-[2.5rem] leading-[1.02] font-bold tracking-[-0.04em] text-balance sm:text-6xl"
+const eyebrow =
+  "flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase"
+const title =
+  "mt-5 font-display text-[2.5rem] leading-[1.02] font-bold tracking-[-0.04em] text-balance sm:text-6xl"
 const lede = "mt-6 max-w-lg text-lg/relaxed text-muted-foreground text-pretty"
 const actions = "mt-9 flex flex-col gap-3 min-[25rem]:flex-row"
 const cta = "h-12 rounded-xl px-6 text-base"
@@ -83,18 +96,21 @@ export function ClaimSlug({ slug }: { slug: string }) {
     <>
       <div className="min-w-0">
         <p className={eyebrow}>
-          <span aria-hidden="true" className="size-2 rotate-45 rounded-[2px] bg-brand-ink" />
+          <span
+            aria-hidden="true"
+            className="size-2 rotate-45 rounded-[2px] bg-brand-ink"
+          />
           404 · Not claimed yet
         </p>
         <h1 className={title}>
-          <span className="rounded-[0.14em] bg-brand px-[0.12em] font-mono text-[0.8em] font-semibold tracking-[-0.03em] break-all text-brand-foreground [box-decoration-break:clone]">
+          <span className="rounded-[0.14em] bg-brand [box-decoration-break:clone] px-[0.12em] font-mono text-[0.8em] font-semibold tracking-[-0.03em] break-all text-brand-foreground">
             /{slug}
           </span>{" "}
           is up for grabs.
         </h1>
         <p className={lede}>
-          There&rsquo;s no short link here, at least not yet. It may have expired, or nobody has claimed it. Make it
-          yours in a few seconds.
+          There&rsquo;s no short link here, at least not yet. It may have
+          expired, or nobody has claimed it. Make it yours in a few seconds.
         </p>
         <div className={actions}>
           <Button asChild size="lg" className={cn(cta, "group")}>
@@ -109,7 +125,10 @@ export function ClaimSlug({ slug }: { slug: string }) {
         </div>
       </div>
 
-      <div aria-hidden="true" className="relative mx-auto w-full max-w-md select-none lg:mr-0">
+      <div
+        aria-hidden="true"
+        className="relative mx-auto w-full max-w-md select-none lg:mr-0"
+      >
         <div className="absolute inset-0 translate-x-1.5 translate-y-2.5 rotate-[1.75deg] rounded-[1.75rem] bg-brand sm:translate-x-3.5 sm:translate-y-3.5 sm:rotate-[2.5deg]" />
         <div className="relative rounded-[1.75rem] border bg-card p-5 shadow-lift sm:p-6">
           <div className="flex items-center justify-between gap-3">
@@ -138,7 +157,9 @@ export function ClaimSlug({ slug }: { slug: string }) {
             </div>
             <div className="h-px flex-1 bg-border" />
           </div>
-          <p className="mt-4 text-center text-sm text-muted-foreground">Waiting for a destination…</p>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Waiting for a destination…
+          </p>
         </div>
       </div>
     </>
@@ -150,13 +171,16 @@ export function GenericNotFound() {
     <>
       <div className="min-w-0">
         <p className={eyebrow}>
-          <span aria-hidden="true" className="size-2 rotate-45 rounded-[2px] bg-brand-ink" />
+          <span
+            aria-hidden="true"
+            className="size-2 rotate-45 rounded-[2px] bg-brand-ink"
+          />
           404 · Page not found
         </p>
         <h1 className={title}>This page has gone into its shell.</h1>
         <p className={lede}>
-          We couldn&rsquo;t find what you were looking for. If you followed a short link, it may have expired or been
-          deleted.
+          We couldn&rsquo;t find what you were looking for. If you followed a
+          short link, it may have expired or been deleted.
         </p>
         <div className={actions}>
           <Button asChild size="lg" className={cta}>
