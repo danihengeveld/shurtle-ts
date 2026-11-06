@@ -1,88 +1,52 @@
 # 🐢 Shurtle
 
-A modern, lightning-fast URL shortener built with Next.js 16 and the latest web technologies. Shurtle makes it easy to create, manage, and track your shortened URLs with a beautiful, responsive interface.
+An open source, blazingly fast URL shortener built with Next.js 16, React 19 and modern web technologies. Shurtle makes it easy to create, manage and track short links with a polished, accessible interface.
+
+**Live:** [shurtle.app](https://shurtle.app)
 
 ## ✨ Features
 
-### Core Functionality
+- **🔗 Short links** — paste a long URL and get a short, readable link (`shurtle.app/x7Kp2q`). Links without `https://` are fixed up for you.
+- **🎯 Custom slugs** — choose your own slug, or claim a free one straight from the 404 page.
+- **⏳ Expiring links** — optionally expire a link at the end of a chosen day; expired links stop resolving and are cleaned up weekly.
+- **📈 Click stats** — per-link click counts, last-click time and a 30-day clicks chart on your dashboard.
+- **🔎 Dashboard** — search, paginate, copy and delete your links.
+- **🛡️ Abuse protection** — rate limiting on opening and creating links.
+- **🌙 Dark mode** — light, dark and system themes.
+- **🔐 Authentication** — sign-in powered by Clerk.
 
-- **🔗 URL Shortening** - Transform long URLs into short, memorable links
-- **🎯 Custom Slugs** - Create personalized short URLs with custom slugs (optional)
-- **🗂️ Dashboard** - Manage all your shortened URLs in one place
+## 🧠 How it works
 
-### Advanced Features
+- **Redirects happen in the proxy.** `src/proxy.ts` (formerly "middleware") recognises single-segment paths like `/abc123`, rate-limits by IP, looks up the destination and responds with a `307` redirect before any page renders. The visit is recorded in the background with `waitUntil`, so it never slows the redirect down. Unknown slugs render the 404 page (status 404) and offer to claim the slug.
+- **The dashboard streams.** With Cache Components (partial prerendering) the page shell is static, while the user's stats, chart and links stream in behind Suspense boundaries. Per-user data is cached with `"use cache"` and invalidated instantly after you create or delete a link (`updateTag`).
+- **Auth is checked where data is read.** Every Server Component and Server Function that touches user data calls `requireUserId()` (`src/lib/auth.ts`), rather than relying on path matching in the proxy.
+- **One set of slug rules.** `src/lib/slugs.ts` defines the slug format and reserved paths, and is shared by validation, the proxy and the UI.
 
-- **⚡ Rate Limiting** - Smart rate limiting to prevent abuse and protect your credit card
-- **🌙 Dark Mode** - Beautiful dark/light theme support
-- **🔐 Authentication** - Secure user authentication with Clerk
-- **📄 Pagination** - Pagination for large collections of shurtles
-- **🗑️ Management** - Delete unwanted shurtles
+## 🚀 Tech stack
 
-## 🎯 Why Shurtle is Cool
+| Area | Tech |
+| --- | --- |
+| Framework | [Next.js 16](https://nextjs.org/) (App Router, Cache Components, React Compiler, Turbopack) |
+| UI | [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) on [Radix UI](https://www.radix-ui.com/), [Lucide](https://lucide.dev/) icons |
+| Data | [Neon Postgres](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/) |
+| Rate limiting | [Upstash Redis](https://upstash.com/) + `@upstash/ratelimit` |
+| Auth | [Clerk](https://clerk.com/) |
+| Validation | [Zod 4](https://zod.dev/) |
+| Hosting | [Vercel](https://vercel.com/) (Cron for archiving expired links, Analytics, Speed Insights) |
 
-### Performance First
+### 💰 Free tier notice
 
-- **⚡ Partial Prerendering** - Static shell with dynamic content streaming
-- **🚀 Server Components** - Optimal balance of performance and security
-- **📦 Optimized Bundles** - Minimal JavaScript for lightning-fast loads
-- **🎯 Smart Caching** - Intelligent caching strategies for better UX
+The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it may have usage limits or occasional downtime.
 
-### User Experience
-
-- **🎯 Intuitive Interface** - Clean, modern design that's easy to use, thanks to @shadcn
-- **⚡ Fast Interactions** - Optimistic updates and smooth transitions
-- **🌙 Theme Support** - Beautiful dark and light modes
-
-### Developer Experience
-
-- **🛠️ TypeScript** - Type-safe code for better maintainability
-- **📦 Drizzle ORM** - Type-safe database interactions
-
-## 🚀 Tech Stack
-
-### Frontend
-
-- **[Next.js 15](https://nextjs.org/)** - React framework with App Router and Partial Prerendering
-- **[React 19](https://react.dev/)** - Latest React with Server Components and Suspense
-- **[Tailwind CSS v4](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[shadcn/ui](https://ui.shadcn.com/)** - Beautiful, accessible UI components
-- **[Lucide React](https://lucide.dev/)** - Modern icon library
-
-### Backend & Database
-
-- **[Neon Postgres (via Vercel)](https://neon.tech/)** - Serverless Postgres database for storing shurtles
-- **[Upstash Redis (via Vercel)](https://upstash.com/)** - Serverless Redis for caching and rate limiting
-- **[Drizzle ORM](https://orm.drizzle.team/)** - Type-safe database toolkit
-- **[Clerk](https://clerk.com/)** - Complete authentication solution
-
-### Development & Deployment
-
-- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
-- **[Vercel](https://vercel.com/)** - Deployment and hosting platform
-
-## 🌐 Live Demo
-
-Check out the live version of Shurtle: **[shurtle.app](https://shurtle.app)**
-
-### 💰 Free Tier Notice
-
-This project is currently deployed using free tiers of various services:
-
-- **Vercel** - Free hosting and deployment
-- **Neon Postgres** - Free database tier (limited storage and requests)
-- **Upstash Redis** - Free Redis tier (limited storage and requests)
-- **Clerk** - Free authentication tier (limited monthly active users)
-
-This means the live demo may have usage limitations or occasional downtime.
-
-## 🏃‍♂️ Running Locally
+## 🏃 Running locally
 
 ### Prerequisites
 
-- Node.js 22.x (LTS)
-- pnpm
-- A Vercel account (for databases) or Neon and Upstash accounts
-- A Clerk account (for authentication)
+- Node.js 22 or newer (24 LTS recommended)
+- pnpm (`corepack enable` picks up the version pinned in `package.json`)
+- A Postgres database ([Neon](https://neon.tech/) or via the Vercel dashboard)
+- An [Upstash](https://upstash.com/) Redis database
+- A [Clerk](https://clerk.com/) application
 
 ### Setup
 
@@ -90,7 +54,7 @@ This means the live demo may have usage limitations or occasional downtime.
 
    ```bash
    git clone https://github.com/danihengeveld/shurtle-ts.git
-   cd shurtle
+   cd shurtle-ts
    ```
 
 2. **Install dependencies**
@@ -99,70 +63,75 @@ This means the live demo may have usage limitations or occasional downtime.
    pnpm install
    ```
 
-3. **Set up environment variables**
-
-   Create a `.env.local` file in the root directory:
+3. **Configure environment variables** in a `.env.local` file in the project root:
 
    ```env
    # Database (Neon Postgres)
-   POSTGRES_URL="your-postgres-url"
+   POSTGRES_URL="postgres://..."
 
-   # Redis (Upstash)
-   KV_REST_API_URL="your-upstash-redis-url"
-   KV_REST_API_TOKEN="your-upstash-redis-token"
+   # Rate limiting (Upstash Redis)
+   KV_REST_API_URL="https://...upstash.io"
+   KV_REST_API_TOKEN="..."
 
    # Authentication (Clerk)
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your-clerk-publishable-key"
-   CLERK_SECRET_KEY="your-clerk-secret-key"
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
+   CLERK_SECRET_KEY="sk_..."
+
+   # Protects the daily archive-expired cron endpoint (any long random string)
+   CRON_SECRET="..."
+
+   # Optional: public origin used for short links and metadata.
+   # Defaults to http://localhost:3000 in development and https://shurtle.app otherwise.
+   # NEXT_PUBLIC_SITE_URL="https://your-domain.example"
+
+   # Optional: log every SQL query in development (at debug level)
+   # DEBUG_SQL="1"
+
+   # Optional: server log level (trace, debug, info, warn, error). Defaults to debug in
+   # development and info in production, where logs are JSON lines (pino).
+   # LOG_LEVEL="info"
    ```
 
-4. **Set up the database**
+4. **Create the database schema**
 
    ```bash
-   # Push the database schema
-   pnpm exec drizzle-kit push
+   pnpm db:push
    ```
 
-5. **Run the development server**
+5. **Start the development server**
 
    ```bash
    pnpm dev
    ```
 
-6. **Open your browser**
+   Then open [http://localhost:3000](http://localhost:3000).
 
-   Navigate to [http://localhost:3000](http://localhost:3000) to see Shurtle in action!
+### Scripts
 
-### Database Setup
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Start the dev server (Turbopack) |
+| `pnpm build` / `pnpm start` | Production build / serve it |
+| `pnpm lint` | ESLint (Next.js core web vitals + TypeScript rules) |
+| `pnpm typecheck` | TypeScript type check |
+| `pnpm db:push` | Push the Drizzle schema to the database |
+| `pnpm db:studio` | Open Drizzle Studio |
 
-1. Create a new Postgres database via your Vercel dashboard or on [Neon](https://neon.tech/).
-2. Copy the connection strings to your `.env.local` file.
-3. Run `npx drizzle-kit push:pg` to set up the schema.
+### Deploying
 
-### Redis Setup
-
-1. Create a new Redis instance via your Vercel dashboard on [Upstash](https://upstash.com/).
-2. Copy the REST API URL and token to your `.env.local` file.
-
-### Authentication Setup
-
-1. Create a new application on [Clerk](https://clerk.com/).
-2. Copy your publishable and secret keys to your `.env.local` file.
+Deploy to Vercel with the environment variables above. `vercel.json` schedules `/api/cron/archive-expired` daily to archive expired links (they stop redirecting the moment they expire either way, and are never deleted automatically); Vercel sends `CRON_SECRET` automatically as a bearer token.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+Contributions are welcome! Please open an issue first to discuss larger changes. CI runs lint, type checking and a production build on every pull request.
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
+Open source under the [MIT License](LICENSE).
 
 ## 👤 Author
 
 **Dani Hengeveld**
+
 - Website: [dani.hengeveld.dev](https://dani.hengeveld.dev)
 - GitHub: [@danihengeveld](https://github.com/danihengeveld)
-
----
-
-Built with ❤️ using Next.js 16, React 19.2, Clerk and modern web technologies.

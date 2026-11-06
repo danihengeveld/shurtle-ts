@@ -1,6 +1,31 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: npm
+    directory: /
     schedule:
-      interval: "weekly"
+      interval: weekly
+    # Batch the usual weekly churn into a few PRs instead of one per package.
+    groups:
+      next-react:
+        patterns: ["next", "eslint-config-next", "react", "react-dom", "@types/react", "@types/react-dom", "babel-plugin-react-compiler"]
+      clerk:
+        patterns: ["@clerk/*"]
+      database:
+        patterns: ["drizzle-*", "@neondatabase/*", "@upstash/*"]
+      ui:
+        patterns: ["radix-ui", "lucide-react", "sonner", "react-day-picker", "next-themes", "class-variance-authority", "clsx", "tailwind-merge", "tw-animate-css", "tailwindcss", "@tailwindcss/*"]
+      vercel:
+        patterns: ["@vercel/*"]
+    ignore:
+      # typescript-eslint (via eslint-config-next) supports TypeScript < 6.1 and
+      # eslint-plugin-react does not support ESLint 10 yet.
+      - dependency-name: typescript
+        versions: [">=6.1"]
+      - dependency-name: eslint
+        versions: [">=10"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

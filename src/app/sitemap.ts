@@ -1,19 +1,12 @@
-import type { MetadataRoute } from 'next'
-import { siteInfo } from './site-info'
+import { siteInfo } from "@/lib/site"
+import type { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: siteInfo.baseUrl.toString(),
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
+      changeFrequency: "monthly",
       priority: 1,
     },
-    {
-      url: siteInfo.baseUrl + 'not-found',
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.1,
-    }
   ]
 }

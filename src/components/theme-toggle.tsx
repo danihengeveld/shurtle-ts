@@ -1,39 +1,64 @@
 "use client"
 
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Monitor, Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
+import { useSyncExternalStore } from "react"
+
+const THEMES = [
+  { value: "light", label: "Light", Icon: Sun },
+  { value: "dark", label: "Dark", Icon: Moon },
+  { value: "system", label: "System", Icon: Monitor },
+] as const
+
+const noopSubscribe = () => () => {}
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
+  // next-themes only knows the stored choice on the client; render a neutral state until hydrated.
+  const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false)
+  const current = hydrated ? (THEMES.find((t) => t.value === theme) ?? THEMES[2]) : undefined
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
+        <Button
+          variant="ghost"
+          size="icon-lg"
+          className="text-muted-foreground hover:text-foreground data-[state=open]:bg-accent data-[state=open]:text-foreground"
+          aria-label={current ? `Theme: ${current.label}` : "Theme"}
+        >
+          {current ? (
+            <current.Icon className="size-[1.125rem]" />
+          ) : (
+            <>
+              {/* Before hydration, follow the class next-themes put on <html>. */}
+              <Sun className="size-[1.125rem] dark:hidden" />
+              <Moon className="hidden size-[1.125rem] dark:block" />
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="min-w-40 rounded-xl p-1.5">
+        <DropdownMenuLabel className="px-2 pt-1 pb-1.5 text-xs font-medium text-muted-foreground">
+          Theme
+        </DropdownMenuLabel>
+        <DropdownMenuRadioGroup value={hydrated ? theme : undefined} onValueChange={setTheme}>
+          {THEMES.map(({ value, label, Icon }) => (
+            <DropdownMenuRadioItem key={value} value={value} className="h-9 rounded-lg">
+              <Icon />
+              {label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

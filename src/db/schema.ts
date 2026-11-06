@@ -1,18 +1,29 @@
-import { relations, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
-import { index, integer, pgSchema, point, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { relations, sql, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
+import { index, integer, pgSchema, point, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const schema = pgSchema("shurtle");
 
 export const shurtles = schema.table("shurtles", {
 	slug: varchar("slug", { length: 255 }).primaryKey(),
-	url: varchar("url", { length: 255 }).notNull(),
+	// `text`, not varchar(255): real-world URLs are routinely longer than 255 characters.
+	// Length is validated in the app (see URL_MAX_LENGTH in src/lib/schemas.ts).
+	url: text("url").notNull(),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'date', precision: 0 }),
 	hits: integer("hits").default(0).notNull(),
 	userId: varchar("user_id", { length: 255 }).notNull(),
 	lastHitAt: timestamp("last_hit_at", { withTimezone: true, mode: 'date', precision: 0 }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date', precision: 0 }).defaultNow().notNull()
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date', precision: 0 }).defaultNow().notNull(),
+	// Set when an expired shurtle is archived (by the daily cron, or when its URL is shortened again).
+	// A shurtle counts as expired once `expires_at` has passed, even before it is archived; see
+	// `isExpired` in src/lib/shurtles.ts. Expired shurtles are kept, never deleted automatically.
+	archivedAt: timestamp("archived_at", { withTimezone: true, mode: 'date', precision: 0 })
 }, (table) => [
-	index("user_id_idx").on(table.userId)
+	// Serves the dashboard list (filter by user, newest first) and per-user stats.
+	index("user_id_created_at_idx").on(table.userId, table.createdAt.desc()),
+	// One live shurtle per destination per user, enforced even for concurrent creates. Archived ones
+	// are excluded so a URL can be shortened again after its link expired. URLs are capped at 2048
+	// ASCII characters (normalized by URL parsing), well within the btree entry size limit.
+	uniqueIndex("user_id_url_idx").on(table.userId, table.url).where(sql`archived_at is null`)
 ])
 
 export const shurtlesRelations = relations(shurtles, ({ many }) => ({
@@ -28,7 +39,8 @@ export const shurtleHits = schema.table("hits", {
 	city: varchar("city", { length: 255 }),
 	coordinates: point("coordinates", { mode: 'xy' })
 }, (table) => [
-	index("slug_idx").on(table.slug),
+	// Serves the cascade on delete and the per-shurtle daily clicks range scan.
+	index("slug_at_idx").on(table.slug, table.at),
 	index("at_idx").on(table.at.desc()),
 	index("country_idx").on(table.country)
 ])
