@@ -1,0 +1,58 @@
+/* A one-minute ring that fills once, plus a slow "breathing" turtle. Static (full ring) without motion. */
+
+.ring {
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ring {
+    animation: fill 60s linear both;
+  }
+  .breathe {
+    animation: breathe 4.5s ease-in-out infinite;
+  }
+  .z {
+    animation: drift 3.6s ease-in-out infinite both;
+  }
+  .z:nth-child(2) {
+    animation-delay: 1.2s;
+  }
+  .z:nth-child(3) {
+    animation-delay: 2.4s;
+  }
+}
+
+@keyframes fill {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04) translateY(-1px);
+  }
+}
+
+@keyframes drift {
+  0% {
+    opacity: 0;
+    transform: translate(0, 4px);
+  }
+  30%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(6px, -14px);
+  }
+}

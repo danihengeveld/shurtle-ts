@@ -1,27 +1,82 @@
-import Link from "next/link";
+import { Logo } from "@/components/logo"
+import { siteInfo } from "@/lib/site"
+import { ArrowUpRight } from "lucide-react"
+import { cacheLife } from "next/cache"
+import Link from "next/link"
+import { ExternalLink } from "./external-link"
+import { GitHubIcon } from "./github-icon"
+
+/** The year changes rarely; cache it so the footer stays part of the static shell. */
+async function CurrentYear() {
+  "use cache"
+  cacheLife("days")
+  return <>{new Date().getFullYear()}</>
+}
+
+const linkClasses =
+  "group inline-flex min-h-10 items-center gap-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-8"
 
 export function Footer() {
   return (
-    <footer className="w-full border-t py-6" role="contentinfo">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center gap-4 md:flex-row md:justify-between">
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-          &copy; 2025 Dani Hengeveld. All rights reserved.
-        </p>
-        <div className="flex gap-6">
-          <div className="flex items-center gap-2">
-            <Link
-              href="https://github.com/danihengeveld/shurtle-ts/releases"
-              target="_blank"
-              className="text-sm text-gray-500 hover:underline dark:text-gray-400">
-              Releases
+    <footer className="border-t border-border/70">
+      <div className="container-page py-10 sm:py-12">
+        <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-xs">
+            <Link href="/" className="-ml-1 inline-flex rounded-lg p-1 transition-opacity hover:opacity-80">
+              <Logo markClassName="h-6" className="[&>span:last-child]:text-xl" />
             </Link>
-            {/* <Link href="/privacy" className="text-sm text-gray-500 hover:underline dark:text-gray-400">
-              Privacy
-            </Link> */}
+            <p className="mt-3 text-sm/relaxed text-muted-foreground text-pretty">
+              {siteInfo.tagline} An open source URL shortener that anyone can run.
+            </p>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Version: 1.4.3
+
+          <nav aria-label="Footer">
+            <ul className="grid grid-cols-2 gap-x-8 gap-y-1 sm:flex sm:items-center sm:gap-x-6">
+              <li>
+                <Link href="/dashboard" className={linkClasses}>
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <ExternalLink href={siteInfo.repoUrl} className={linkClasses}>
+                  <GitHubIcon className="size-3.5" />
+                  Source
+                </ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href={siteInfo.releasesUrl} className={linkClasses}>
+                  Releases
+                  <ArrowUpRight aria-hidden="true" className="size-3.5 opacity-60 transition-transform group-hover:-translate-y-px group-hover:translate-x-px" />
+                </ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href={siteInfo.author.url} className={linkClasses}>
+                  Author
+                  <ArrowUpRight aria-hidden="true" className="size-3.5 opacity-60 transition-transform group-hover:-translate-y-px group-hover:translate-x-px" />
+                </ExternalLink>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-3 border-t border-border/70 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            &copy; <CurrentYear /> {siteInfo.author.name}. Open source under the{" "}
+            <ExternalLink
+              href={`${siteInfo.repoUrl}/blob/main/LICENSE`}
+              className="underline decoration-border underline-offset-4 transition-colors hover:text-foreground hover:decoration-current"
+            >
+              MIT License
+            </ExternalLink>
+            .
           </p>
+          <ExternalLink
+            href={siteInfo.releasesUrl}
+            className="inline-flex w-fit items-center gap-2 rounded-full border border-border/80 py-1 pr-2.5 pl-2 font-mono text-[0.6875rem] transition-colors hover:border-foreground/30 hover:text-foreground"
+          >
+            <span aria-hidden="true" className="size-1.5 rounded-full bg-brand-ink" />
+            <span className="sr-only">Version </span>v{siteInfo.version}
+          </ExternalLink>
         </div>
       </div>
     </footer>
