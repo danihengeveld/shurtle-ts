@@ -43,3 +43,6 @@ next-env.d.ts
 # clerk configuration (can include secrets)
 /.clerk/
 .env*.local
+
+# pnpm store (created in-repo when the store is on another filesystem)
+/.pnpm-store

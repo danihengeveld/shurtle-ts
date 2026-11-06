@@ -9,8 +9,14 @@
   "portsAttributes": {
     "3000": { "label": "Next.js dev server", "onAutoForward": "notify" }
   },
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+  ],
+  "containerEnv": {
+    "npm_config_store_dir": "${containerWorkspaceFolder}/node_modules/.pnpm-store"
+  },
   "onCreateCommand": "corepack enable && corepack install",
-  "postCreateCommand": "pnpm install --frozen-lockfile",
+  "postCreateCommand": "sudo chown vscode:vscode node_modules && pnpm install --frozen-lockfile",
   "customizations": {
     "vscode": {
       "extensions": [
