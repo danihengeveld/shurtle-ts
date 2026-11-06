@@ -125,15 +125,36 @@ export function getTrend(current: number, previous: number): Trend {
   return { kind: change > 0 ? "up" : "down", percent }
 }
 
+const TIME_VALUE = /^([01]\d|2[0-3]):([0-5]\d)$/
+
+/** Local time of day as `"HH:MM"` (24h), the value format of `<input type="time">`. */
+export function toTimeValue(date: Date) {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
+}
+
 /**
- * End of the given local calendar day (23:59:59 in the viewer's time zone). Whole seconds on
- * purpose: timestamps are stored with precision 0, and Postgres would round .999 up to midnight of
- * the next day.
+ * The local calendar day of `day` at `time` (`"HH:MM"`) in the viewer's time zone, or null when the
+ * time is missing or malformed. Seconds are zero: timestamps are stored in whole seconds, and a
+ * fractional second would be rounded by Postgres.
  */
-export function endOfLocalDay(date: Date) {
-  const end = new Date(date)
-  end.setHours(23, 59, 59, 0)
-  return end
+export function atLocalTime(day: Date, time: string) {
+  const match = TIME_VALUE.exec(time)
+  if (!match) return null
+  const result = new Date(day)
+  result.setHours(Number(match[1]), Number(match[2]), 0, 0)
+  return result
+}
+
+/** `"Fri, Nov 13, 2026, 8:45 PM"`: an expiry moment in the viewer's time zone (client only). */
+export function formatExpiry(date: Date) {
+  return new Intl.DateTimeFormat(LOCALE, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date)
 }
 
 export function startOfLocalDay(date: Date) {
@@ -142,6 +163,7 @@ export function startOfLocalDay(date: Date) {
   return start
 }
 
+/** Same local wall-clock time `days` calendar days later (stays put across DST changes). */
 export function addLocalDays(date: Date, days: number) {
   const next = new Date(date)
   next.setDate(next.getDate() + days)

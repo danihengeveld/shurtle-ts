@@ -7,7 +7,7 @@ import { CheckIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import { useActionState } from "react"
 import { CopyButton } from "../dashboard/copy-button"
-import { splitUrl } from "../dashboard/format"
+import { formatExpiry, splitUrl } from "../dashboard/format"
 import { CreateLinkForm } from "./create-link-form"
 import type { CreateLinkAction } from "./create-link-provider"
 
@@ -54,7 +54,6 @@ export function CreateLinkFlow({
   )
 }
 
-const longDate = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
 
 function CreateLinkSuccess({
   data,
@@ -73,7 +72,7 @@ function CreateLinkSuccess({
         <div className="relative isolate overflow-hidden px-5 pt-8 pb-6 text-center sm:px-8 sm:pt-10">
           <div
             aria-hidden
-            className="absolute inset-0 -z-10 [mask-image:radial-gradient(70%_80%_at_50%_0%,black,transparent)]"
+            className="absolute inset-0 -z-10 mask-[radial-gradient(70%_80%_at_50%_0%,black,transparent)]"
           >
             <div className="bg-shell size-full opacity-80" />
           </div>
@@ -96,7 +95,7 @@ function CreateLinkSuccess({
 
         <div className="px-5 pb-6 sm:px-8">
           <div className="rounded-2xl border bg-card p-3 shadow-soft sm:p-4">
-            <p className="px-2 pt-1 pb-3 text-center font-mono text-lg leading-snug font-medium [overflow-wrap:anywhere] sm:text-xl">
+            <p className="px-2 pt-1 pb-3 text-center font-mono text-lg leading-snug font-medium wrap-anywhere sm:text-xl">
               <span className="text-muted-foreground">{siteInfo.baseUrl.host}/</span>
               <span className="text-brand-ink">{data.slug}</span>
             </p>
@@ -121,7 +120,7 @@ function CreateLinkSuccess({
             </div>
             <div className="flex items-baseline justify-between gap-4">
               <dt className="shrink-0 text-muted-foreground">Expires</dt>
-              <dd className="text-right">{data.expiresAt ? `After ${longDate.format(new Date(data.expiresAt))}` : "Never"}</dd>
+              <dd className="text-right">{data.expiresAt ? formatExpiry(new Date(data.expiresAt)) : "Never"}</dd>
             </div>
           </dl>
         </div>

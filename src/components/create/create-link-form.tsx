@@ -10,7 +10,7 @@ import { CircleAlertIcon, ChevronDownIcon, LinkIcon, LoaderCircleIcon, SlidersHo
 import { Collapsible as CollapsiblePrimitive, Dialog as DialogPrimitive } from "radix-ui"
 import { startTransition, useEffect, useRef, useState } from "react"
 import { splitUrl } from "../dashboard/format"
-import { ExpiryField, describeExpiry, expiryIso, type ExpiryValue } from "./expiry-field"
+import { ExpiryField, describeExpiry, expiryIso, expiryIssue, initialExpiry, type ExpiryValue } from "./expiry-field"
 
 /** Mirrors URL_MAX_LENGTH in src/lib/schemas.ts (not imported to keep zod out of the client bundle). */
 const URL_MAX_LENGTH = 2048
@@ -33,7 +33,8 @@ function validate(url: string, slug: string, expiry: ExpiryValue): FieldErrors {
   else if (trimmed.length > URL_MAX_LENGTH) errors.url = `That URL is too long (max ${URL_MAX_LENGTH} characters).`
   const slugError = slugIssue(slug.trim())
   if (slugError) errors.slug = slugError
-  if (expiry.preset === "custom" && !expiry.customDate) errors.expiresAt = "Pick a date, or choose another option."
+  const expiryError = expiryIssue(expiry)
+  if (expiryError) errors.expiresAt = expiryError
   return errors
 }
 
@@ -71,9 +72,7 @@ export function CreateLinkForm({
   const initialFields = state.status === "error" ? state.fields : undefined
   const [url, setUrl] = useState(initialFields?.url ?? "")
   const [slug, setSlug] = useState(initialFields?.slug ?? initialSlug ?? "")
-  const [expiry, setExpiry] = useState<ExpiryValue>(() =>
-    initialFields?.expiresAt ? { preset: "custom", customDate: new Date(initialFields.expiresAt) } : { preset: "never" },
-  )
+  const [expiry, setExpiry] = useState<ExpiryValue>(() => initialExpiry(initialFields?.expiresAt))
   const [clientErrors, setClientErrors] = useState<FieldErrors>({})
   const [advancedOpen, setAdvancedOpen] = useState(
     Boolean(initialSlug || initialFields?.slug || initialFields?.expiresAt || hasAdvancedError(state)),
@@ -129,7 +128,8 @@ export function CreateLinkForm({
     const formData = new FormData()
     formData.set("url", url.trim())
     formData.set("slug", slug.trim())
-    formData.set("expiresAt", expiresAt)
+    // Recomputed at submit time: presets count from the moment the link is created.
+    formData.set("expiresAt", expiryIso(expiry))
     startTransition(() => formAction(formData))
   }
 
@@ -280,7 +280,7 @@ export function CreateLinkForm({
             Cancel
           </Button>
         </DialogPrimitive.Close>
-        <Button type="submit" disabled={isPending} aria-disabled={isPending} className="h-10 min-w-32 max-sm:flex-[2] sm:h-9">
+        <Button type="submit" disabled={isPending} aria-disabled={isPending} className="h-10 min-w-32 max-sm:flex-2 sm:h-9">
           {isPending && <LoaderCircleIcon aria-hidden className="animate-spin" />}
           {isPending ? "Creating…" : "Create link"}
         </Button>
