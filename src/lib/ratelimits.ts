@@ -1,5 +1,7 @@
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import "server-only"
+
+import { Ratelimit } from "@upstash/ratelimit"
+import { Redis } from "@upstash/redis"
 
 const redis = new Redis({
   url: process.env.KV_REST_API_URL,
@@ -8,23 +10,25 @@ const redis = new Redis({
 
 export const rateLimits = {
   openShurtle: {
+    // Per IP. Generous enough for shared IPs (offices, campuses, mobile carriers) while still
+    // stopping slug enumeration and scraping.
     limiter: new Ratelimit({
       redis,
       prefix: "ratelimit:openShurtle",
-      limiter: Ratelimit.slidingWindow(5, "1 m"), // 5 requests per minute
+      limiter: Ratelimit.slidingWindow(60, "1 m"),
       enableProtection: true,
-      analytics: true
+      analytics: true,
     }),
-    limitMessage: "You are opening too many Shurtles. Please wait a minute before trying again."
   },
   createShurtle: {
+    // Per user.
     limiter: new Ratelimit({
       redis,
       prefix: "ratelimit:createShurtle",
-      limiter: Ratelimit.slidingWindow(5, "5 m"), // 5 requests per 5 minutes
+      limiter: Ratelimit.slidingWindow(10, "5 m"),
       enableProtection: true,
-      analytics: true
+      analytics: true,
     }),
-    limitMessage: "You are creating too many Shurtles. Please wait 5 minutes before trying again."
-  }
+    limitMessage: "You're creating links a little too quickly. Please wait a few minutes and try again.",
+  },
 }

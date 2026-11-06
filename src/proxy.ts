@@ -1,90 +1,92 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { geolocation, ipAddress } from '@vercel/functions'
-import { NextRequest, NextResponse } from 'next/server'
-import { rateLimits } from './lib/ratelimits'
-import { getUrlBySlug, recordHit } from './lib/shurtles'
+import { clerkMiddleware } from "@clerk/nextjs/server"
+import { geolocation, ipAddress } from "@vercel/functions"
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server"
+import { rateLimits } from "./lib/ratelimits"
+import { getUrlBySlug, recordHit } from "./lib/shurtles"
+import { isValidSlug } from "./lib/slugs"
 
-const isReservedRoute = createRouteMatcher(['/', '/dashboard(.*)', '/shurtle(.*)', '/not-found', '/api/(.*)', '/sitemap.xml', '/robots.txt'])
-const isPublicRoute = createRouteMatcher(['/', '/not-found', '/api/(.*)', '/sitemap.xml', '/robots.txt'])
+/**
+ * Clerk makes the session available to Server Components and Server Functions. Authorization is
+ * enforced where the data is read (`requireUserId()`), not here — Clerk has deprecated
+ * path-matching auth checks in the proxy.
+ */
+const clerk = clerkMiddleware()
 
-export default clerkMiddleware(async (auth, req, ctx) => {
-  const path = req.nextUrl.pathname;
-  console.debug(`Middleware processing request: ${req.method} ${path}`);
+export default async function proxy(request: NextRequest, event: NextFetchEvent) {
+  const slug = slugFromPath(request.nextUrl.pathname)
 
-  if (isReservedRoute(req)) {
-    console.debug(`Request to reserved route: ${path}`);
-    if (!isPublicRoute(req)) {
-      console.debug(`Protected route access: ${path}`);
-      await auth.protect()
-    }
-    return
+  // Short links skip Clerk entirely: they need no session and should redirect as fast as possible.
+  if (slug) return resolveShortLink(request, event, slug)
+
+  return clerk(request, event)
+}
+
+/** Returns the slug when `pathname` is a single, valid, non-reserved segment like `/abc123`. */
+function slugFromPath(pathname: string) {
+  const match = /^\/([^/]+)\/?$/.exec(pathname)
+  if (!match) return null
+
+  try {
+    const slug = decodeURIComponent(match[1])
+    return isValidSlug(slug) ? slug : null
+  } catch {
+    return null // Malformed percent-encoding
   }
+}
 
-  console.info(`Processing potential shurtle slug: ${path}`);
-  //If not a reserved route, we should try to match the slug and redirect.
+async function resolveShortLink(request: NextRequest, event: NextFetchEvent, slug: string) {
+  const headers = new Headers({ "Cache-Control": "private, no-store" })
 
-  // Check for rate limits first
-  const ip = ipAddress(req) || '127.0.0.1' // Fallback to localhost if IP is not available
-  console.debug(`Request IP address: ${ip}`);
-
-  let headers: Headers | undefined = undefined
-
+  const ip = ipAddress(request)
   if (ip) {
-    console.debug(`Checking rate limit for IP: ${ip}`);
-    const { success, limit, remaining, reset, pending } = await rateLimits.openShurtle.limiter.limit(ip)
-    ctx.waitUntil(pending) // Explicitly wait for the rate limit check to complete
+    try {
+      const { success, limit, remaining, reset, pending } = await rateLimits.openShurtle.limiter.limit(ip)
+      event.waitUntil(pending)
 
-    headers = createRateLimitHeaders(req, limit, remaining, reset)
-    console.debug(`Rate limit headers set: limit=${limit}, remaining=${remaining}`);
+      const resetSeconds = Math.max(0, Math.ceil((reset - Date.now()) / 1000))
+      headers.set("RateLimit-Limit", String(limit))
+      headers.set("RateLimit-Remaining", String(remaining))
+      headers.set("RateLimit-Reset", String(resetSeconds))
 
-    if (!success) {
-      // If the rate limit is exceeded, we should return a 429 response with the appropriate headers.
-      console.warn(`Rate limit exceeded for IP: ${ip}, path: ${req.nextUrl.pathname}`);
-      return NextResponse.json({
-        message: rateLimits.openShurtle.limitMessage
-      }, {
-        status: 429,
-        headers: headers
-      })
+      if (!success) {
+        console.warn(`Rate limit exceeded opening /${slug}`)
+        headers.set("Retry-After", String(resetSeconds))
+        return NextResponse.rewrite(new URL("/slow-down", request.url), { status: 429, headers })
+      }
+    } catch (error) {
+      // Fail open: a rate limiter outage must not take every short link down with it.
+      console.error("Rate limiter unavailable:", error)
     }
   }
 
-  const slug = req.nextUrl.pathname.split('/').pop()
-
-  if (slug && slug.length > 0) {
-    console.debug(`Attempting to resolve slug: ${slug}`)
-    const url = await getUrlBySlug(slug)
-
-    if (url) {
-      const requestGeo = geolocation(req)
-      console.info(`Redirecting slug: ${slug} to ${url}`)
-      ctx.waitUntil(recordHit(slug, requestGeo)) // Record the hit on a background process
-      return NextResponse.redirect(url, { headers: headers })
-    } else {
-      console.info(`Slug not found: ${slug}`)
-      // If the slug is not found, we should return the not found page.
-      return NextResponse.redirect(new URL('/not-found', req.url), { headers: headers })
-    }
+  let destination: string | undefined
+  try {
+    destination = await getUrlBySlug(slug)
+  } catch (error) {
+    console.error(`Failed to resolve /${slug}:`, error)
+    headers.set("Retry-After", "30")
+    return new NextResponse("Shurtle is temporarily unavailable. Please try again in a moment.", {
+      status: 503,
+      headers,
+    })
   }
-})
 
-function createRateLimitHeaders(req: NextRequest, limit: number, remaining: number, resetUnixTimestampMs: number) {
-  const headers = new Headers(req.headers)
-  headers.set('Retry-After', new Date(resetUnixTimestampMs).toUTCString())
-  headers.set('RateLimit-Limit', limit.toString())
-  headers.set('RateLimit-Remaining', remaining.toString())
+  if (!destination) {
+    // Keep the URL in the address bar so the 404 page can offer to claim the slug.
+    return NextResponse.rewrite(new URL("/not-found", request.url), { status: 404, headers })
+  }
 
-  const resetDeltaSeconds = Math.floor((resetUnixTimestampMs - Date.now()) / 1000)
-  headers.set('RateLimit-Reset', resetDeltaSeconds.toString())
+  event.waitUntil(recordHit(slug, geolocation(request)))
 
-  return headers
+  // 307 (not 301/308) so browsers don't cache the redirect: every visit is counted and edits apply.
+  return NextResponse.redirect(destination, { status: 307, headers })
 }
 
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
-    '/(api|trpc)(.*)'
-  ]
+    "/(api|trpc)(.*)",
+  ],
 }

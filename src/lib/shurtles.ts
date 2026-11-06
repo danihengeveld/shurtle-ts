@@ -1,143 +1,148 @@
+import "server-only"
+
 import { db } from "@/db"
 import { shurtleHits, shurtles } from "@/db/schema"
-import { Geo } from "@vercel/functions"
-import { count, eq, sql, sum } from "drizzle-orm"
+import type { Geo } from "@vercel/functions"
+import { and, desc, eq, gt, gte, ilike, isNull, or, sql } from "drizzle-orm"
 import { cacheLife, cacheTag } from "next/cache"
+import type { DashboardQuery } from "./pagination"
+import { shurtlesTag, statsTag } from "./tags"
 
-const userStatsPrepared = db.select({
-  totalHits: sum(shurtles.hits),
-  totalShurtles: count(),
-}).from(shurtles).where(eq(shurtles.userId, sql.placeholder('userId'))).prepare('userStats')
+export type ShurtleStats = {
+  totalShurtles: number
+  /** Shurtles that have not expired. */
+  activeShurtles: number
+  totalHits: number
+}
 
+export type DailyClicks = {
+  /** UTC calendar day, `YYYY-MM-DD`. */
+  date: string
+  clicks: number
+}
 
-export async function getStats(userId: string) {
+export async function getStats(userId: string): Promise<ShurtleStats> {
   "use cache"
-  cacheTag(`user:${userId}/stats`)
+  cacheTag(statsTag(userId))
   cacheLife("minutes")
 
-  console.debug(`Fetching stats for user: ${userId}`);
+  const [row] = await db
+    .select({
+      totalShurtles: sql<number>`count(*)::int`,
+      activeShurtles: sql<number>`(count(*) filter (where ${shurtles.expiresAt} is null or ${shurtles.expiresAt} > now()))::int`,
+      totalHits: sql<number>`coalesce(sum(${shurtles.hits}), 0)::int`,
+    })
+    .from(shurtles)
+    .where(eq(shurtles.userId, userId))
 
-  try {
-    const userStats = await userStatsPrepared.execute({
-      userId: userId
-    });
+  return row ?? { totalShurtles: 0, activeShurtles: 0, totalHits: 0 }
+}
 
-    const stats = {
-      totalHits: userStats[0]?.totalHits ? parseInt(userStats[0].totalHits) : 0,
-      totalShurtles: userStats[0]?.totalShurtles || 0,
-    }
+/** Clicks per UTC day for the last `days` days (oldest first, zero-filled, includes today). */
+export async function getDailyClicks(userId: string, days = 30): Promise<DailyClicks[]> {
+  "use cache"
+  cacheTag(statsTag(userId))
+  cacheLife("minutes")
 
-    // Ensure totalHits is not null
-    stats.totalHits = stats.totalHits || 0
+  const today = new Date()
+  today.setUTCHours(0, 0, 0, 0)
+  const since = new Date(today.getTime() - (days - 1) * 86_400_000)
 
-    console.debug(`User ${userId} stats: ${stats.totalShurtles} shurtles, ${stats.totalHits} total hits`);
-    return stats;
-  } catch (error) {
-    console.error(`Error fetching stats for user ${userId}:`, error);
-    // Return default stats on error
-    return {
-      totalHits: 0,
-      totalShurtles: 0
-    };
+  const day = sql<string>`to_char(date_trunc('day', ${shurtleHits.at} at time zone 'UTC'), 'YYYY-MM-DD')`
+  const rows = await db
+    .select({ date: day, clicks: sql<number>`count(*)::int` })
+    .from(shurtleHits)
+    .innerJoin(shurtles, eq(shurtles.slug, shurtleHits.slug))
+    .where(and(eq(shurtles.userId, userId), gte(shurtleHits.at, since)))
+    .groupBy(day)
+
+  const clicksByDate = new Map(rows.map((row) => [row.date, row.clicks]))
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(since.getTime() + index * 86_400_000).toISOString().slice(0, 10)
+    return { date, clicks: clicksByDate.get(date) ?? 0 }
+  })
+}
+
+function escapeLike(value: string) {
+  return value.replace(/[\\%_]/g, "\\$&")
+}
+
+export async function getShurtlesPaginated(userId: string, { page, perPage, query }: DashboardQuery) {
+  "use cache"
+  cacheTag(shurtlesTag(userId))
+  cacheLife("minutes")
+
+  const pattern = `%${escapeLike(query)}%`
+  const where = and(
+    eq(shurtles.userId, userId),
+    query ? or(ilike(shurtles.slug, pattern), ilike(shurtles.url, pattern)) : undefined,
+  )
+
+  const [rows, totalCount] = await Promise.all([
+    db
+      .select()
+      .from(shurtles)
+      .where(where)
+      .orderBy(desc(shurtles.createdAt), shurtles.slug)
+      .limit(perPage)
+      .offset((page - 1) * perPage),
+    db.$count(shurtles, where),
+  ])
+
+  return {
+    shurtles: rows,
+    totalCount,
+    totalPages: Math.max(1, Math.ceil(totalCount / perPage)),
+    page,
+    perPage,
+    query,
   }
 }
 
-const paginatedUserShurtlesPrepared = db.query.shurtles.findMany({
-  where: (shurtles, { eq }) => eq(shurtles.userId, sql.placeholder('userId')),
-  orderBy: (shurtles, { desc }) => desc(shurtles.createdAt),
-  limit: sql.placeholder('perPage'),
-  offset: sql.placeholder('offset'),
-}).prepare('paginatedUserShurtles')
+const getUrlBySlugPrepared = db
+  .select({ url: shurtles.url })
+  .from(shurtles)
+  .where(
+    and(
+      eq(shurtles.slug, sql.placeholder("slug")),
+      or(isNull(shurtles.expiresAt), gt(shurtles.expiresAt, sql`now()`)),
+    ),
+  )
+  .limit(1)
+  .prepare("getUrlBySlug")
 
-export async function getShurtlesPaginated(userId: string, page = 1, perPage = 10) {
-  "use cache"
-  cacheTag(`user:${userId}/shurtles`)
-  cacheLife("minutes")
-
-  console.debug(`Fetching paginated shurtles for user ${userId}, page ${page}, perPage ${perPage}`);
-
-  try {
-    // Calculate offset
-    const offset = (page - 1) * perPage
-
-    const paginatedUserShurtles = await paginatedUserShurtlesPrepared.execute({
-      userId: userId,
-      perPage: perPage,
-      offset: offset,
-    });
-
-    const totalUserShurtles = await db.$count(shurtles, eq(shurtles.userId, userId));
-    const totalPages = Math.ceil(totalUserShurtles / perPage)
-
-    console.debug(`Found ${paginatedUserShurtles.length} shurtles for user ${userId}, total: ${totalUserShurtles}, pages: ${totalPages}`);
-
-    return {
-      shurtles: paginatedUserShurtles,
-      totalPages,
-      currentPage: page,
-    }
-  } catch (error) {
-    console.error(`Error fetching paginated shurtles for user ${userId}:`, error);
-    throw error; // Re-throw as this is a critical operation that should fail visibly
-  }
-}
-
-const getUrlBySlugPrepared = db.query.shurtles.findFirst({
-  where: (shurtles, { eq, and, gt, or, isNull }) => and(
-    eq(shurtles.slug, sql.placeholder('slug')),
-    or(
-      isNull(shurtles.expiresAt),
-      gt(shurtles.expiresAt, sql`NOW()`)
-    )
-  ),
-  columns: {
-    url: true
-  }
-}).prepare('getUrlBySlug')
-
+/** Resolve a slug to its destination, ignoring expired shurtles. */
 export async function getUrlBySlug(slug: string) {
-  console.debug(`Looking up URL for slug: ${slug}`)
-  const shurtle = await getUrlBySlugPrepared.execute({ slug: slug })
-
-  if (shurtle?.url) {
-    console.debug(`Slug ${slug} resolved to ${shurtle.url}`)
-  } else {
-    console.debug(`No valid URL found for slug: ${slug}`)
-  }
-
-  return shurtle?.url
+  const [row] = await getUrlBySlugPrepared.execute({ slug })
+  return row?.url
 }
 
-export async function recordHit(slug: string, requestGeo: Geo) {
-  const coordinates = requestGeo.latitude && requestGeo.longitude
-    ? { x: new Number(requestGeo.longitude).valueOf(), y: new Number(requestGeo.latitude).valueOf() }
-    : null
+function parseCoordinate(value: string | undefined) {
+  const parsed = value === undefined ? Number.NaN : Number.parseFloat(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
 
-  console.debug(`Recording hit for slug: ${slug} from location: ${requestGeo.city || 'unknown'}, ${requestGeo.country || 'unknown'}`)
+/** Record a visit. Runs in the background after the redirect is sent; never throws. */
+export async function recordHit(slug: string, geo: Geo) {
+  const longitude = parseCoordinate(geo.longitude)
+  const latitude = parseCoordinate(geo.latitude)
 
   try {
     await db.transaction(async (tx) => {
-      // Insert the hit record
       await tx.insert(shurtleHits).values({
-        slug: slug,
-        country: requestGeo.country,
-        region: requestGeo.countryRegion,
-        city: requestGeo.city,
-        coordinates: coordinates
+        slug,
+        country: geo.country,
+        region: geo.countryRegion,
+        city: geo.city,
+        coordinates: longitude !== null && latitude !== null ? { x: longitude, y: latitude } : null,
       })
 
-      // Update the shurtle's hits and lastHitAt
-      await tx.update(shurtles)
-        .set({
-          hits: sql`${shurtles.hits} + 1`,
-          lastHitAt: sql`NOW()`
-        })
+      await tx
+        .update(shurtles)
+        .set({ hits: sql`${shurtles.hits} + 1`, lastHitAt: sql`now()` })
         .where(eq(shurtles.slug, slug))
     })
-
-    console.debug(`Successfully recorded hit for slug: ${slug}`)
   } catch (error) {
-    console.error(`Failed to record hit for slug: ${slug}`, error)
-    // Don't rethrow, as this is a background process
+    console.error(`Failed to record hit for /${slug}:`, error)
   }
 }
