@@ -27,6 +27,8 @@ const bricolage = Bricolage_Grotesque({
 })
 
 export const viewport: Viewport = {
+  // Shrink the layout (incl. bottom-sheet dialogs) when the on-screen keyboard opens.
+  interactiveWidget: "resizes-content",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fafaf6" },
     { media: "(prefers-color-scheme: dark)", color: "#0b120f" },
