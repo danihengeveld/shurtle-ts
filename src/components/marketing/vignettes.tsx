@@ -1,6 +1,6 @@
 import { LogoMark } from "@/components/logo"
 import { siteInfo } from "@/lib/site"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { Archive, CalendarClock, Check, Moon, Shuffle, Sun } from "lucide-react"
 
 /*

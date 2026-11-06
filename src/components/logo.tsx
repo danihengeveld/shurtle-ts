@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 
 /**
  * The Shurtle turtle, drawn as a single rounded stroke so it stays crisp from favicon size up to

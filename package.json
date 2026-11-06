@@ -52,7 +52,7 @@
     "pino": "^10.4.0",
     "radix-ui": "1.8.1",
     "react": "19.3.1",
-    "react-day-picker": "9.14.0",
+    "react-day-picker": "10.0.2",
     "react-dom": "19.3.1",
     "server-only": "0.0.1",
     "sonner": "2.0.8",

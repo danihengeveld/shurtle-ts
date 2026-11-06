@@ -1,6 +1,6 @@
 import { LogoMark } from "@/components/logo"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import styles from "./link-demo.module.css"

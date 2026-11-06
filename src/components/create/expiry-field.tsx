@@ -2,7 +2,7 @@
 
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { CalendarIcon, ChevronDownIcon, ClockIcon } from "lucide-react"
 import { useRef, useState } from "react"
 import { addLocalDays, atLocalTime, formatExpiry, startOfLocalDay, toTimeValue } from "../dashboard/format"

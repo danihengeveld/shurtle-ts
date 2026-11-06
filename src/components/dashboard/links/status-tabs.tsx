@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { LinkStatus } from "@/lib/pagination"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { useState } from "react"
 import { formatCount } from "../format"
 import { useLinks } from "./links-provider"

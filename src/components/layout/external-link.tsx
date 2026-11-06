@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 
 /**
  * Link to another site. Opens in a new tab, and says so to screen readers.

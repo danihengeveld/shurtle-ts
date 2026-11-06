@@ -74,7 +74,7 @@ function CreateLinkSuccess({
             aria-hidden
             className="absolute inset-0 -z-10 mask-[radial-gradient(70%_80%_at_50%_0%,black,transparent)]"
           >
-            <div className="bg-shell size-full opacity-80" />
+            <div className="shell-pattern size-full opacity-80" />
           </div>
           <div
             aria-hidden

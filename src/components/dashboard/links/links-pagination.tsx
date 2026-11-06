@@ -1,6 +1,6 @@
 import { buttonVariants } from "@/components/ui/button"
 import type { DashboardQuery } from "@/lib/pagination"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import Link from "next/link"
 import { linksHref } from "./href"

@@ -174,8 +174,10 @@
  * Brand motif: a faint hexagonal "shell" lattice. Coloured via `background-color`
  * (defaults to the border colour) and shaped by an SVG mask, so it themes automatically.
  * Pair with a `mask-radial-*` / gradient overlay to fade it out at the edges.
+ * Deliberately not named `bg-*`: class mergers (`cn`) would read it as a background colour and drop
+ * it when a `bg-*` colour class follows.
  */
-@utility bg-shell {
+@utility shell-pattern {
   background-color: var(--border);
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 1 55 16.5v31L28 63 1 47.5v-31Z M28 63v34 M1 16.5 -26 1 M55 16.5 82 1' fill='none' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E");
   mask-size: 56px 97px;

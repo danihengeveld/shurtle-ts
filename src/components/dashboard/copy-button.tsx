@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { displayShortUrl, shortUrl } from "@/lib/site"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { CheckIcon, CopyIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"

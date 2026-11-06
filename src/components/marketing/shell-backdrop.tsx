@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 
 /**
  * The hexagonal "shell" lattice, filling its positioned parent. The pattern itself is a mask, so the
@@ -8,8 +8,12 @@ import { cn } from "@/lib/utils"
 export function ShellBackdrop({ className, latticeClassName }: { className?: string; latticeClassName?: string }) {
   return (
     <div aria-hidden="true" className={cn("pointer-events-none absolute inset-0 -z-10", className)}>
-      {/* Not `cn()`: tailwind-merge would treat `bg-shell` as a background colour and drop it. */}
-      <div className={`absolute inset-0 bg-shell ${latticeClassName ?? "bg-foreground/[0.08] dark:bg-foreground/[0.07]"}`} />
+      <div
+        className={cn(
+          "absolute inset-0 shell-pattern",
+          latticeClassName ?? "bg-foreground/8 dark:bg-foreground/7",
+        )}
+      />
     </div>
   )
 }

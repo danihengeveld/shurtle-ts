@@ -16,7 +16,7 @@ export default function DashboardError({ error, retry }: { error: unknown; retry
     <div className="container-page flex flex-1 items-center justify-center py-16 sm:py-24">
       <div role="alert" className="relative isolate w-full max-w-md overflow-hidden rounded-3xl border bg-card px-6 py-10 text-center shadow-soft sm:px-10">
         <div aria-hidden className="absolute inset-0 -z-10 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]">
-          <div className="bg-shell size-full" />
+          <div className="shell-pattern size-full" />
         </div>
         <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">Dashboard unavailable</p>
         <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight text-balance">

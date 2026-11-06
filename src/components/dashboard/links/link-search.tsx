@@ -1,7 +1,7 @@
 "use client"
 
 import { DEFAULT_PER_PAGE, MAX_SEARCH_LENGTH, type PerPage } from "@/lib/pagination"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { LoaderCircleIcon, SearchIcon, XIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useLinks } from "./links-provider"

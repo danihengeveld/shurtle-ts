@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { createShurtle, type CreateShurtleFormState } from "@/lib/actions"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
 import { createContext, use, useEffect, useState } from "react"
 import { CreateLinkDialog } from "./create-link-dialog"

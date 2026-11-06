@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { createContext, use, useSyncExternalStore } from "react"
 import { formatDate, formatDateTime, formatRelative } from "./format"
 

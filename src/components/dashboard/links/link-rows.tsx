@@ -1,6 +1,6 @@
 import type { Shurtle } from "@/db/schema"
 import { siteInfo } from "@/lib/site"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { ArrowUpRightIcon, MousePointerClickIcon } from "lucide-react"
 import { CopyButton } from "../copy-button"
 import { ExpiryBadge } from "../expiry-badge"

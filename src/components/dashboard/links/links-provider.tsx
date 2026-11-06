@@ -2,7 +2,7 @@
 
 import { deleteShurtle, type DeleteShurtleResult } from "@/lib/actions"
 import type { DashboardQuery, LinkStatus } from "@/lib/pagination"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { useRouter } from "next/navigation"
 import { linksHref } from "./href"
 import { createContext, use, useOptimistic, useTransition } from "react"

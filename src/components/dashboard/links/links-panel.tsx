@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { TabsContent } from "@/components/ui/tabs"
 import { DEFAULT_PER_PAGE, PER_PAGE_OPTIONS, type DashboardQuery, type LinkStatus } from "@/lib/pagination"
 import { siteInfo } from "@/lib/site"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { ArchiveIcon, ArrowRightIcon, LinkIcon, SearchXIcon } from "lucide-react"
 import Link from "next/link"
 import { formatCount } from "../format"
@@ -164,7 +164,7 @@ function EmptyAccount() {
   return (
     <EmptyCard className="sm:py-20">
       <div aria-hidden className="absolute inset-0 -z-10 mask-[radial-gradient(60%_70%_at_50%_45%,black,transparent)]">
-        <div className="bg-shell size-full" />
+        <div className="shell-pattern size-full" />
       </div>
       <div className="mx-auto max-w-md">
         <div

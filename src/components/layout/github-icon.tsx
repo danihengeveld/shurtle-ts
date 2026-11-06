@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 
 /** GitHub's mark (lucide no longer ships brand icons). Decorative by default. */
 export function GitHubIcon({ className, ...props }: React.ComponentProps<"svg">) {

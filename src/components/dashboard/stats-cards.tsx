@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
@@ -30,7 +30,7 @@ function ShellCorner() {
       aria-hidden
       className="absolute inset-y-0 right-0 -z-10 w-3/4 [mask-image:radial-gradient(90%_90%_at_100%_100%,black,transparent_75%)]"
     >
-      <div className="bg-shell size-full bg-brand-ink/25! dark:bg-brand/20!" />
+      <div className="shell-pattern size-full bg-brand-ink/25! dark:bg-brand/20!" />
     </div>
   )
 }

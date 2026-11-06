@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { displayShortUrl } from "@/lib/site"
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
 import { CopyIcon, ExternalLinkIcon, EllipsisIcon, LoaderCircleIcon, Trash2Icon } from "lucide-react"
 import { useRef, useState, useTransition } from "react"
 import { toast } from "sonner"
@@ -114,7 +114,7 @@ export function LinkActions({
             else triggerRef.current?.focus()
           }}
         >
-          <AlertDialogHeader className="gap-3 text-left">
+          <AlertDialogHeader className="place-items-start gap-3 text-left">
             <div className="flex size-10 items-center justify-center rounded-full bg-destructive/10 text-destructive">
               <Trash2Icon aria-hidden className="size-5" />
             </div>
