@@ -1,5 +1,5 @@
 import { relations, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
-import { index, integer, pgSchema, point, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { index, integer, pgSchema, point, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const schema = pgSchema("shurtle");
 
@@ -15,7 +15,10 @@ export const shurtles = schema.table("shurtles", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'date', precision: 0 }).defaultNow().notNull()
 }, (table) => [
 	// Serves the dashboard list (filter by user, newest first) and per-user stats.
-	index("user_id_created_at_idx").on(table.userId, table.createdAt.desc())
+	index("user_id_created_at_idx").on(table.userId, table.createdAt.desc()),
+	// One shurtle per destination per user, enforced even for concurrent creates. URLs are capped at
+	// 2048 ASCII characters (normalized by URL parsing), well within the btree entry size limit.
+	uniqueIndex("user_id_url_idx").on(table.userId, table.url)
 ])
 
 export const shurtlesRelations = relations(shurtles, ({ many }) => ({

@@ -70,18 +70,23 @@ export async function createShurtle(
 
   const { url, slug: customSlug, expiresAt } = parsed.data
 
-  try {
+  const findExistingSlug = async () => {
     const [existing] = await db
       .select({ slug: shurtles.slug })
       .from(shurtles)
       .where(and(eq(shurtles.userId, userId), eq(shurtles.url, url)))
       .limit(1)
+    return existing?.slug
+  }
+  const alreadyShortened = (slug: string) => fail({ url: [`You already shortened this URL as /${slug}.`] })
 
-    if (existing) {
-      return fail({ url: [`You already shortened this URL as /${existing.slug}.`] })
-    }
+  try {
+    // Fast path for the common case; the unique (user_id, url) index below is what guarantees it.
+    const existingSlug = await findExistingSlug()
+    if (existingSlug) return alreadyShortened(existingSlug)
 
-    // Insert-or-skip avoids a read-then-write race on the slug. Generated slugs are retried on
+    // Insert-or-skip: no read-then-write race. Without a target, a clash on either unique key (the
+    // slug, or this user + URL) skips the insert instead of throwing. Generated slugs are retried on
     // the (unlikely) event of a collision; a taken custom slug is reported back to the user.
     const attempts = customSlug ? 1 : MAX_GENERATE_ATTEMPTS
     let createdSlug: string | undefined
@@ -95,10 +100,16 @@ export async function createShurtle(
           expiresAt: expiresAt ? new Date(expiresAt) : null,
           userId,
         })
-        .onConflictDoNothing({ target: shurtles.slug })
+        .onConflictDoNothing()
         .returning({ slug: shurtles.slug })
 
       createdSlug = inserted?.slug
+
+      if (!createdSlug) {
+        // A concurrent request created the same URL first: report it rather than retrying.
+        const racedSlug = await findExistingSlug()
+        if (racedSlug) return alreadyShortened(racedSlug)
+      }
     }
 
     if (!createdSlug) {
