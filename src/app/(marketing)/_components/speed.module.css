@@ -1,0 +1,34 @@
+/*
+ * Speed streaks behind the turtle (hero link card and closing CTA). Same 9s loop as the link card's
+ * animation, so the hero streaks burst as the short link appears. Un-animated, they are simply drawn.
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .streak {
+    transform-origin: right center;
+    animation: speed 9s cubic-bezier(0.16, 1, 0.3, 1) infinite both;
+  }
+  .streak:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .streak:nth-child(3) {
+    animation-delay: 120ms;
+  }
+}
+
+@keyframes speed {
+  0%,
+  8% {
+    transform: scaleX(0.35);
+    opacity: 0.4;
+  }
+  18% {
+    transform: scaleX(1.25);
+    opacity: 1;
+  }
+  34%,
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}

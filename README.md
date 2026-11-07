@@ -19,8 +19,31 @@ An open source, blazingly fast URL shortener built with Next.js 16, React 19 and
 
 - **Redirects happen in the proxy.** `src/proxy.ts` (formerly "middleware") recognises single-segment paths like `/abc123`, rate-limits by IP, looks up the destination and responds with a `307` redirect before any page renders. The visit is recorded in the background with `waitUntil`, so it never slows the redirect down. Unknown slugs render the 404 page (status 404) and offer to claim the slug.
 - **The dashboard streams.** With Cache Components (partial prerendering) the page shell is static, while the user's stats, chart and links stream in behind Suspense boundaries. Per-user data is cached with `"use cache"` and invalidated instantly after you create or delete a link (`updateTag`).
-- **Auth is checked where data is read.** Every Server Component and Server Function that touches user data calls `requireUserId()` (`src/lib/auth.ts`), rather than relying on path matching in the proxy.
+- **Auth is checked where data is read.** Every Server Component and Server Function that touches user data calls `requireUserId()` (`src/server/auth.ts`), rather than relying on path matching in the proxy.
 - **One set of slug rules.** `src/lib/slugs.ts` defines the slug format and reserved paths, and is shared by validation, the proxy and the UI.
+- **Each list is a route.** Active links live at `/dashboard` and expired links at `/dashboard/expired`, each with its own `loading.tsx`. The header, stats, tabs and search sit in the dashboard layout and stay mounted; search, page and page size are query params that keep the current list on screen (dimmed) until the next one is ready.
+
+## 🗂️ Project structure
+
+```
+src/
+  app/
+    (marketing)/            landing page; _components/ holds its sections
+    (short-link)/           pages the proxy rewrites short links to: expired/, slow-down/
+    dashboard/
+      layout.tsx            header, overview, links toolbar
+      (active)/             /dashboard: active links (+ loading.tsx)
+      expired/              /dashboard/expired: expired links (+ loading.tsx)
+      _components/          create/, links/, overview/ and shared dashboard bits
+    _components/            error and 404 views used by the root error/not-found files
+    api/cron/               scheduled jobs (see vercel.json)
+  components/               shared UI: ui/ (shadcn), layout/ (navbar, footer), logo, theme…
+  lib/                      pure, client-safe helpers: slugs, schemas, site, link-list
+  server/                   server-only code: db/, auth, queries, actions, rate limits, logging
+  proxy.ts                  short-link redirects + Clerk
+```
+
+Folders starting with `_` are private (never routes) and folders in `(parentheses)` are route groups (not part of the URL).
 
 ## 🚀 Tech stack
 

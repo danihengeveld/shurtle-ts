@@ -23,6 +23,27 @@ describe("createShurtleSchema", () => {
     ).toBe("https://example.com/page?x=1");
   });
 
+  it("adds https:// to a host with a port", () => {
+    expect(
+      createShurtleSchema.parse({ url: "example.com:8080/page" }).url,
+    ).toBe("https://example.com:8080/page");
+  });
+
+  it("normalizes the URL so equivalent addresses match", () => {
+    expect(
+      createShurtleSchema.parse({ url: "https://Example.COM/a" }).url,
+    ).toBe("https://example.com/a");
+    expect(
+      createShurtleSchema.parse({ url: "https://example.com/ü?q=ä" }).url,
+    ).toBe("https://example.com/%C3%BC?q=%C3%A4");
+  });
+
+  it("checks the length after normalizing", () => {
+    // 1,500 characters typed, but each one becomes 6 once percent-encoded.
+    const url = `https://example.com/${"ü".repeat(1500)}`;
+    expect(createShurtleSchema.safeParse({ url }).success).toBe(false);
+  });
+
   it("rejects non-web schemes, bare words and over-long URLs", () => {
     for (const url of [
       "ftp://example.com",

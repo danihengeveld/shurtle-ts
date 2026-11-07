@@ -1,6 +1,6 @@
 "use client"; // Error boundaries must be Client Components
 
-import { ErrorView, errorDigest } from "@/components/marketing/error-view";
+import { ErrorView, errorDigest } from "./_components/error-view";
 import { siteInfo } from "@/lib/site";
 import Link from "next/link";
 import { useEffect } from "react";

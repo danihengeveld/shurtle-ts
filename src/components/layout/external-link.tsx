@@ -1,5 +1,3 @@
-import { cn } from "cn";
-
 /**
  * Link to another site. Opens in a new tab, and says so to screen readers.
  * Spread onto `<Button asChild>` like a regular anchor.
@@ -13,7 +11,7 @@ export function ExternalLink({
     <a
       target="_blank"
       rel="noopener noreferrer"
-      className={cn(className)}
+      className={className}
       {...props}
     >
       {children}

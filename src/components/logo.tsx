@@ -17,19 +17,8 @@ export const TURTLE_PATH =
 export const SHELL_PATH =
   "M5.8 23.4 C6.9 22.6 7.6 21.4 8.3 20.1 L13.4 11.6 C15.9 7.4 19.2 4.6 24.3 4.6 H28.6 C33.4 4.6 36.3 7 38.6 10.9 L42.6 18.2 C41.9 20.5 40.8 23.4 38.8 23.4 Z";
 
-interface LogoMarkProps extends React.ComponentProps<"svg"> {
-  /** Fill the shell with the lime brand accent. */
-  accent?: boolean;
-  /** Accessible name. Omit when the mark is decorative (e.g. next to the wordmark). */
-  title?: string;
-}
-
-export function LogoMark({
-  accent = true,
-  title,
-  className,
-  ...props
-}: LogoMarkProps) {
+/** The turtle mark with its lime shell. Decorative: pair it with text that names it. */
+export function LogoMark({ className, ...props }: React.ComponentProps<"svg">) {
   return (
     <svg
       viewBox="0 2 64 36"
@@ -39,13 +28,11 @@ export function LogoMark({
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn("h-8 w-auto shrink-0", className)}
-      role={title ? "img" : undefined}
-      aria-hidden={title ? undefined : true}
-      aria-label={title}
+      aria-hidden
       focusable="false"
       {...props}
     >
-      {accent && <path d={SHELL_PATH} className="fill-brand" stroke="none" />}
+      <path d={SHELL_PATH} className="fill-brand" stroke="none" />
       <path d={TURTLE_PATH} />
       <circle cx="54.6" cy="12.8" r="1.55" fill="currentColor" stroke="none" />
     </svg>
@@ -58,7 +45,6 @@ interface LogoProps {
   markClassName?: string;
   /** Classes for the wordmark, e.g. to hide it visually on very narrow screens (keep it for SR). */
   wordmarkClassName?: string;
-  accent?: boolean;
 }
 
 /** Mark + wordmark. The wordmark carries the accessible name; the mark is decorative. */
@@ -66,7 +52,6 @@ export function Logo({
   className,
   markClassName,
   wordmarkClassName,
-  accent = true,
 }: LogoProps) {
   return (
     <span
@@ -75,7 +60,7 @@ export function Logo({
         className,
       )}
     >
-      <LogoMark accent={accent} className={cn("h-7", markClassName)} />
+      <LogoMark className={cn("h-7", markClassName)} />
       <span
         className={cn(
           "font-display text-[1.375rem] leading-none font-bold tracking-[-0.03em]",
