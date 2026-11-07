@@ -1,4 +1,5 @@
 import { RENEWAL_WINDOW_HOURS } from "@/lib/link-lifecycle";
+import { linkDetailsPath } from "@/lib/link-list";
 import { ArrowRightIcon, RotateCcwIcon } from "lucide-react";
 import Link from "next/link";
 import { formatCount } from "../format";
@@ -57,11 +58,13 @@ export function RenewableLinks({
           <LinkListItem
             key={link.id}
             id={link.id}
-            className="flex flex-col gap-2.5 px-4 py-3 transition-opacity duration-200 data-deleting:opacity-40 sm:flex-row sm:items-center sm:gap-4 sm:px-5"
+            href={linkDetailsPath(link.id)}
+            className="flex flex-col gap-2.5 px-4 py-3 transition-[background-color,opacity] duration-200 hover:bg-card data-deleting:opacity-40 sm:flex-row sm:items-center sm:gap-4 sm:px-5 dark:hover:bg-card/70"
           >
             <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-center sm:gap-4">
               <ShortLink
                 slug={link.slug}
+                href={linkDetailsPath(link.id)}
                 className="text-sm sm:w-[min(16rem,40%)] sm:shrink-0 md:text-[13px]"
               />
               <Destination url={link.url} className="min-w-0 max-sm:-mt-0.5" />

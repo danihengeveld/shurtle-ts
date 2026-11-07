@@ -22,7 +22,10 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   // App routes
   "api",
   "dashboard",
+  "demo",
   "expired",
+  // The demo's sample link (/demo shows it as `<host>/launch`): never a real person's link.
+  "launch",
   "not-found",
   "slow-down",
   "pwa-icon",

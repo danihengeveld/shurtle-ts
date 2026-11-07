@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "shurtle-ts",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "homepage": "https://shurtle.app",
   "author": {
     "name": "Dani Hengeveld",
@@ -19,9 +19,9 @@
   },
   "license": "MIT",
   "private": true,
-  "packageManager": "pnpm@11.1.2",
+  "packageManager": "pnpm@12.18.0",
   "engines": {
-    "node": ">=22"
+    "node": ">=26"
   },
   "scripts": {
     "dev": "next dev",
@@ -45,7 +45,9 @@
     "@vercel/speed-insights": "2.1.0",
     "class-variance-authority": "0.7.1",
     "cn": "^0.5.2",
+    "d3-geo": "3.1.2",
     "drizzle-orm": "0.45.4",
+    "i18n-iso-countries": "7.14.0",
     "lucide-react": "1.70.0",
     "nanoid": "6.0.2",
     "next": "16.4.5",
@@ -58,18 +60,26 @@
     "recharts": "3.10.1",
     "server-only": "0.0.1",
     "sonner": "2.0.8",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.5",
-    "@types/node": "24.19.2",
+    "@types/d3-geo": "3.1.1",
+    "@types/geojson": "7946.0.16",
+    "@types/node": "26.6.6",
+    "@types/pg": "8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@types/topojson-client": "3.1.5",
+    "@types/topojson-specification": "1.0.5",
     "babel-plugin-react-compiler": "1.0.0",
     "drizzle-kit": "0.31.11",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.5",
     "eslint-config-prettier": "10.1.8",
+    "pg": "8.23.1",
     "pino-pretty": "^13.2.0",
     "prettier": "3.9.10",
     "prettier-plugin-tailwindcss": "0.8.1",

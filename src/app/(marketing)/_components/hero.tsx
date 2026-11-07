@@ -17,13 +17,22 @@ export function Hero() {
 
       <div className="container-page grid items-center gap-x-12 gap-y-14 pt-12 pb-16 sm:pt-20 sm:pb-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:pt-24 lg:pb-28">
         <div className="max-w-xl motion-safe:animate-fade-up">
-          <p className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
-            <span
+          {/* The analytics, where every visitor looks first: straight into the demo. */}
+          <Link
+            href="/demo"
+            className="group inline-flex max-w-full items-center gap-2.5 rounded-full border bg-card/80 py-1 pr-3.5 pl-1 text-sm shadow-soft backdrop-blur-sm transition-[border-color,box-shadow] outline-none hover:border-foreground/20 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <span className="shrink-0 rounded-full bg-brand px-2.5 py-0.5 text-xs font-semibold text-brand-foreground">
+              Analytics
+            </span>
+            <span className="truncate font-medium">
+              Every click, on the map
+            </span>
+            <ArrowRight
               aria-hidden="true"
-              className="size-2 rotate-45 rounded-[2px] bg-brand-ink"
+              className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5"
             />
-            Open source URL shortener
-          </p>
+          </Link>
 
           <h1
             id="hero-title"
@@ -42,8 +51,8 @@ export function Hero() {
 
           <p className="mt-6 max-w-[34rem] text-lg/relaxed text-pretty text-muted-foreground">
             Shurtle turns sprawling URLs into short links that redirect before a
-            single page renders. Pick your own slug, set an expiry, watch the
-            clicks roll in, and self-host the whole thing if you like.
+            single page renders. Pick your own slug, set an expiry, see where
+            every click comes from, and self-host the whole thing if you like.
           </p>
 
           <div className="mt-9 flex flex-col gap-3 min-[25rem]:flex-row">
@@ -71,17 +80,19 @@ export function Hero() {
           </div>
 
           <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-            {["MIT licensed", "Self-hostable", "Custom slugs & expiry"].map(
-              (item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <span
-                    aria-hidden="true"
-                    className="size-1 rounded-full bg-current opacity-60"
-                  />
-                  {item}
-                </li>
-              ),
-            )}
+            {[
+              "Open source, MIT",
+              "Self-hostable",
+              "Analytics for every link",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="size-1 rounded-full bg-current opacity-60"
+                />
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
 

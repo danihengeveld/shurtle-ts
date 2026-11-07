@@ -19,11 +19,12 @@ export type StatsData = {
   totalHits: number;
 };
 
-const tile = "flex flex-col rounded-2xl border bg-card p-4 shadow-soft sm:p-5";
+export const tile =
+  "flex flex-col rounded-2xl border bg-card p-4 shadow-soft sm:p-5";
 const grid =
   "grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 lg:auto-rows-fr lg:grid-cols-2";
 
-const accentTile =
+export const accentTile =
   "relative isolate overflow-hidden border-brand/45 bg-brand-soft/70 dark:border-brand/20 dark:bg-brand-soft/45";
 
 /** Faint hex "shell" lattice fading in from the corner of the accent tile. */
@@ -38,21 +39,23 @@ function ShellCorner() {
   );
 }
 
-function Tile({
+export function Tile({
   label,
   value,
   footnote,
   icon: Icon,
   accent = false,
+  className,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   footnote: React.ReactNode;
   icon: LucideIcon;
   accent?: boolean;
+  className?: string;
 }) {
   return (
-    <div className={cn(tile, accent && accentTile)}>
+    <div className={cn(tile, accent && accentTile, className)}>
       {accent && <ShellCorner />}
       <dl className="flex flex-1 flex-col">
         <dt className="flex items-start justify-between gap-2 pt-0.5 text-[13px] leading-5 font-medium text-muted-foreground">
@@ -76,17 +79,30 @@ function Tile({
   );
 }
 
-function TrendNote({ trend }: { trend: Trend }) {
+const WEEK_TREND = {
+  none: "No clicks in the last 14 days",
+  previous: "the week before",
+};
+
+/** The change from a previous period, e.g. "↑ 12% vs. the week before". */
+export function TrendNote({
+  trend,
+  text = WEEK_TREND,
+}: {
+  trend: Trend;
+  /** `previous` names the period compared with; `none` is shown when neither had clicks. */
+  text?: { none: string; previous: string };
+}) {
   switch (trend.kind) {
     case "none":
-      return <span>No clicks in the last 14 days</span>;
+      return <span>{text.none}</span>;
     case "new":
-      return <span>Up from none the week before</span>;
+      return <span>Up from none {text.previous}</span>;
     case "flat":
       return (
         <span className="inline-flex items-center gap-1">
           <MinusIcon aria-hidden className="size-3.5" />
-          Same as the week before
+          Same as {text.previous}
         </span>
       );
     default: {
@@ -110,7 +126,7 @@ function TrendNote({ trend }: { trend: Trend }) {
             <span className="sr-only">{up ? "Up" : "Down"} </span>
             {trend.percent > 999 ? ">999" : trend.percent}%
           </span>
-          <span>vs. week before</span>
+          <span>vs. {text.previous}</span>
         </span>
       );
     }

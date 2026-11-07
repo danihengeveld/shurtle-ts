@@ -152,23 +152,55 @@ export function LinksBusyRegion({
   );
 }
 
-/** A table row that dims and becomes inert while its delete is in flight. */
+/**
+ * A plain click anywhere on a row that isn't one of its controls opens `href`. Mouse and touch
+ * only: keyboard and screen reader users get the row's real link (the slug). Clicks inside the
+ * row's portalled menus and dialogs bubble here through React, so only clicks on the row's own
+ * DOM count.
+ */
+function useRowClick(href: string) {
+  const router = useRouter();
+  return (event: React.MouseEvent<HTMLElement>) => {
+    const target = event.target as Element;
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      !event.currentTarget.contains(target) ||
+      target.closest("a, button, input, select, textarea, [role='button']") ||
+      // Selecting text (a URL to copy) isn't a click.
+      Boolean(window.getSelection()?.toString())
+    ) {
+      return;
+    }
+    router.push(href);
+  };
+}
+
+/** A table row that opens `href` on click, and dims and becomes inert while its delete is in flight. */
 export function LinkTableRow({
   id,
+  href,
   className,
   children,
 }: {
   id: string;
+  href: string;
   className?: string;
   children: React.ReactNode;
 }) {
   const { deleting } = useLinks();
+  const onClick = useRowClick(href);
   const isDeleting = deleting.has(id);
   return (
     <tr
       data-deleting={isDeleting || undefined}
       inert={isDeleting}
-      className={className}
+      onClick={onClick}
+      className={cn("cursor-pointer", className)}
     >
       {children}
     </tr>
@@ -177,20 +209,24 @@ export function LinkTableRow({
 
 export function LinkListItem({
   id,
+  href,
   className,
   children,
 }: {
   id: string;
+  href: string;
   className?: string;
   children: React.ReactNode;
 }) {
   const { deleting } = useLinks();
+  const onClick = useRowClick(href);
   const isDeleting = deleting.has(id);
   return (
     <li
       data-deleting={isDeleting || undefined}
       inert={isDeleting}
-      className={className}
+      onClick={onClick}
+      className={cn("cursor-pointer", className)}
     >
       {children}
     </li>

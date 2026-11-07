@@ -57,13 +57,14 @@ export function useCopyShortLink(slug: string) {
 export function CopyButton({
   slug,
   className,
-  size = "icon-sm",
+  size,
   variant = "ghost",
   label = false,
   autoFocus,
 }: {
   slug: string;
   className?: string;
+  /** Default: a small icon button, or a regular button when it has a `label`. */
   size?: React.ComponentProps<typeof Button>["size"];
   variant?: React.ComponentProps<typeof Button>["variant"];
   /** Show a visible "Copy" / "Copied" label next to the icon. */
@@ -77,7 +78,8 @@ export function CopyButton({
     <Button
       type="button"
       variant={variant}
-      size={size}
+      // An icon size is a fixed square: a label would spill out of it.
+      size={size ?? (label ? "default" : "icon-sm")}
       onClick={copy}
       autoFocus={autoFocus}
       aria-label={

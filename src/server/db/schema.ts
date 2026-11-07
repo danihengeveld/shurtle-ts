@@ -1,5 +1,6 @@
 import { sql, type InferSelectModel } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
   pgSchema,
@@ -28,6 +29,7 @@ export const shurtles = schema.table(
       mode: "date",
       precision: 0,
     }),
+    /** Clicks by people: bot visits are recorded in `hits` but not counted here. */
     hits: integer("hits").default(0).notNull(),
     userId: varchar("user_id", { length: 255 }).notNull(),
     lastHitAt: timestamp("last_hit_at", {
@@ -74,6 +76,14 @@ export const shurtles = schema.table(
   ],
 );
 
+/** What kind of device a visit came from; see `toVisit` in src/lib/visit.ts. */
+export const deviceType = schema.enum("device_type", [
+  "mobile",
+  "tablet",
+  "desktop",
+  "other",
+]);
+
 export const shurtleHits = schema.table(
   "hits",
   {
@@ -88,9 +98,20 @@ export const shurtleHits = schema.table(
     region: varchar("region", { length: 255 }),
     city: varchar("city", { length: 255 }),
     coordinates: point("coordinates", { mode: "xy" }),
+    // Visit details (see src/lib/visit.ts). Never the raw user agent, the full referring URL or the
+    // IP address. Hits recorded before these columns existed have no device: the analytics page
+    // shows their source and device as unknown.
+    /** Host of the referring site (`x.com`), or null for a direct visit. */
+    referrer: varchar("referrer", { length: 255 }),
+    device: deviceType("device"),
+    browser: varchar("browser", { length: 64 }),
+    os: varchar("os", { length: 64 }),
+    /** Crawlers and link-preview fetchers: stored, but left out of every count and chart. */
+    isBot: boolean("is_bot").default(false).notNull(),
   },
   (table) => [
-    // Serves the cascade on delete and the per-user daily clicks join (hits by link and time).
+    // Serves the cascade on delete, the per-user daily clicks join and every per-link analytics
+    // query (hits by link and time).
     index("shurtle_id_at_idx").on(table.shurtleId, table.at),
     index("at_idx").on(table.at.desc()),
     index("country_idx").on(table.country),
