@@ -99,18 +99,21 @@ async function resolveShortLink(
     });
   }
 
-  if (link.expired) {
+  if (link.state === "expired") {
     logger.debug({ slug }, "short link expired");
-    // 410 Gone: the link existed and won't come back (the slug stays taken). No hit is recorded.
-    return NextResponse.rewrite(new URL("/expired", request.url), {
-      status: 410,
-      headers,
-    });
+    // 410 Gone: this link won't come back (unless its owner renews it). No hit is recorded. The
+    // page counts down to the moment anyone can claim the slug, or offers it when they already can.
+    const target = new URL("/expired", request.url);
+    target.searchParams.set("slug", slug);
+    if (link.releasesAt) {
+      target.searchParams.set("releasesAt", link.releasesAt.toISOString());
+    }
+    return NextResponse.rewrite(target, { status: 410, headers });
   }
 
   // Debug only: every visit is already recorded in shurtle.hits, so production stays quiet.
   logger.debug({ slug }, "short link resolved");
-  event.waitUntil(recordHit(slug, geolocation(request)));
+  event.waitUntil(recordHit(link.id, geolocation(request)));
 
   // 307 (not 301/308) so browsers don't cache the redirect: every visit is counted and edits apply.
   return NextResponse.redirect(link.url, { status: 307, headers });

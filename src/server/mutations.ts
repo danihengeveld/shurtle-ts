@@ -4,12 +4,12 @@ import type { createShurtleSchema } from "@/lib/schemas";
 import { GENERATED_SLUG_LENGTH, isReservedSlug } from "@/lib/slugs";
 import { db } from "@/server/db";
 import { shurtles } from "@/server/db/schema";
-import { and, eq, isNull, lte, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 import type { z } from "zod";
 import { requireUserId } from "./auth";
 import { logger } from "./logger";
-import { isExpired } from "./queries";
+import { holdsSlug, isExpired, isReleaseDue, isRenewable } from "./queries";
 
 /*
  * Data Access Layer for writes. User-facing mutations resolve the signed-in user themselves and
@@ -31,12 +31,25 @@ function generateSlug() {
 }
 const MAX_GENERATE_ATTEMPTS = 3;
 
+/**
+ * Marks the link holding `slug` released if its renewal window is over, so the slug can be claimed
+ * right away instead of after the next daily cron run.
+ */
+async function releaseSlugIfDue(slug: string) {
+  await db
+    .update(shurtles)
+    .set({ archivedAt: sql`now()` })
+    .where(and(eq(shurtles.slug, slug), isReleaseDue));
+}
+
 export type InsertShurtleResult =
   | { status: "created"; slug: string }
   /** The user already has a live link for this URL. */
   | { status: "url-taken"; slug: string }
   /** The requested custom slug belongs to another link. */
   | { status: "slug-taken" }
+  /** The requested custom slug is the user's own recently expired link: renew that instead. */
+  | { status: "slug-renewable" }
   /** Every generated slug collided: something else is wrong. */
   | { status: "no-free-slug"; attempts: number };
 
@@ -48,10 +61,10 @@ export async function insertShurtle({
 }: z.output<typeof createShurtleSchema>): Promise<InsertShurtleResult> {
   const userId = await requireUserId();
 
-  /** This user's unarchived link for the URL, if any (the scope of the partial unique index). */
+  /** This user's unreleased link for the URL, if any (the scope of the partial unique index). */
   const findLiveLink = async () => {
     const [existing] = await db
-      .select({ slug: shurtles.slug, expired: isExpired })
+      .select({ id: shurtles.id, slug: shurtles.slug, expired: isExpired })
       .from(shurtles)
       .where(
         and(
@@ -68,26 +81,29 @@ export async function insertShurtle({
   const live = await findLiveLink();
   if (live && !live.expired) return { status: "url-taken", slug: live.slug };
   if (live) {
-    // Expired but not archived by the daily cron yet: archive it now so the URL can be reused.
+    // Expired: shortening the URL again replaces that link, so release it (and its slug) now.
     await db
       .update(shurtles)
       .set({ archivedAt: sql`now()` })
-      .where(and(eq(shurtles.slug, live.slug), isNull(shurtles.archivedAt)));
+      .where(and(eq(shurtles.id, live.id), isNull(shurtles.archivedAt)));
     logger.info(
       { userId, slug: live.slug },
-      "archived expired shurtle to reuse its url",
+      "released expired shurtle to reuse its url",
     );
   }
 
-  // Insert-or-skip: no read-then-write race. Without a target, a clash on either unique key (the
-  // slug, or this user + URL) skips the insert instead of throwing. Generated slugs are retried on
-  // the (unlikely) event of a collision; a taken custom slug is reported back to the user.
+  // Insert-or-skip: no read-then-write race. Without a target, a clash on any unique index (the
+  // slug of an unreleased link, or this user + URL) skips the insert instead of throwing. Generated
+  // slugs are retried on the (unlikely) event of a collision; a taken custom slug is reported.
   const attempts = customSlug ? 1 : MAX_GENERATE_ATTEMPTS;
   for (let attempt = 0; attempt < attempts; attempt++) {
+    const slug = customSlug ?? generateSlug();
+    await releaseSlugIfDue(slug);
+
     const [inserted] = await db
       .insert(shurtles)
       .values({
-        slug: customSlug ?? generateSlug(),
+        slug,
         url,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         userId,
@@ -108,36 +124,74 @@ export async function insertShurtle({
     }
   }
 
-  return customSlug
-    ? { status: "slug-taken" }
-    : { status: "no-free-slug", attempts };
+  if (!customSlug) return { status: "no-free-slug", attempts };
+
+  const [holder] = await db
+    .select({ userId: shurtles.userId, renewable: isRenewable })
+    .from(shurtles)
+    .where(and(eq(shurtles.slug, customSlug), isNull(shurtles.archivedAt)))
+    .limit(1);
+  return holder?.userId === userId && holder.renewable
+    ? { status: "slug-renewable" }
+    : { status: "slug-taken" };
 }
 
 /**
  * Deletes one of the signed-in user's links. Returns false when there was nothing to delete (already
  * deleted, or not this user's link). Throws on database errors.
  */
-export async function deleteOwnShurtle(slug: string) {
+export async function deleteOwnShurtle(id: string) {
   const userId = await requireUserId();
   const deleted = await db
     .delete(shurtles)
-    .where(and(eq(shurtles.slug, slug), eq(shurtles.userId, userId)))
-    .returning({ slug: shurtles.slug });
+    .where(and(eq(shurtles.id, id), eq(shurtles.userId, userId)))
+    .returning({ id: shurtles.id });
   return deleted.length > 0;
 }
 
+export type SetExpiryResult =
+  | { status: "updated"; slug: string }
+  /** No such link for this user (deleted, or someone else's). */
+  | { status: "not-found" }
+  /** Its renewal window is over: the slug may already belong to someone else. */
+  | { status: "released" };
+
 /**
- * Marks every expired, unarchived link as archived (kept with its click history, URL freed for
- * reuse) and returns their owners. A system task with no signed-in user: callers must authorize
- * the request themselves (the cron route checks its bearer secret).
+ * Gives one of the signed-in user's links a new expiry (or none): extends a live link, or renews
+ * a renewable one, which keeps its slug and click history. Expects a validated future moment.
  */
-export async function archiveExpiredShurtles() {
-  const archived = await db
+export async function setOwnShurtleExpiry(
+  id: string,
+  expiresAt: Date | null,
+): Promise<SetExpiryResult> {
+  const userId = await requireUserId();
+
+  // `holdsSlug` makes this safe against a concurrent claim: a link whose window is over is either
+  // released already or released by the claim before it inserts, and then this matches nothing.
+  const [updated] = await db
+    .update(shurtles)
+    .set({ expiresAt })
+    .where(and(eq(shurtles.id, id), eq(shurtles.userId, userId), holdsSlug))
+    .returning({ slug: shurtles.slug });
+  if (updated) return { status: "updated", slug: updated.slug };
+
+  const [existing] = await db
+    .select({ id: shurtles.id })
+    .from(shurtles)
+    .where(and(eq(shurtles.id, id), eq(shurtles.userId, userId)));
+  return existing ? { status: "released" } : { status: "not-found" };
+}
+
+/**
+ * Marks every link whose renewal window is over as released (kept with its click history; slug and
+ * URL free for reuse) and returns their owners. A system task with no signed-in user: callers must
+ * authorize the request themselves (the cron route checks its bearer secret).
+ */
+export async function releaseExpiredShurtles() {
+  const released = await db
     .update(shurtles)
     .set({ archivedAt: sql`now()` })
-    .where(
-      and(isNull(shurtles.archivedAt), lte(shurtles.expiresAt, sql`now()`)),
-    )
+    .where(isReleaseDue)
     .returning({ userId: shurtles.userId });
-  return archived.map((row) => row.userId);
+  return released.map((row) => row.userId);
 }

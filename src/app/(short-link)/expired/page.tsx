@@ -1,14 +1,9 @@
-import { LogoMark } from "@/components/logo";
-import { Button } from "@/components/ui/button";
-import { siteInfo } from "@/lib/site";
-import { ArrowRight } from "lucide-react";
+import { SLUG_PATTERN } from "@/lib/slugs";
 import type { Metadata } from "next";
-import Link from "next/link";
-import {
-  StatusPage,
-  StatusText,
-  statusCta,
-} from "../../_components/status-view";
+import { io } from "next/cache";
+import { Suspense } from "react";
+import { StatusPage } from "../../_components/status-view";
+import { ExpiredView } from "./expired-view";
 
 export const metadata: Metadata = {
   title: "Link expired",
@@ -18,64 +13,47 @@ export const metadata: Metadata = {
 
 /**
  * Shown by the proxy (rewrite, HTTP 410) when someone opens a short link that has expired. The
- * browser URL is still the short link. Deliberately generic: it reveals nothing about the link's
- * owner or destination.
+ * browser URL is still the short link; the proxy passes its slug and, while the owner can still
+ * renew it, when the slug is released. It reveals nothing about the link's owner or destination.
  */
-export default function ExpiredPage() {
+export default function ExpiredPage({ searchParams }: PageProps<"/expired">) {
   return (
     <StatusPage>
-      <StatusText
-        eyebrow="410 · Link expired"
-        markerClassName="bg-muted-foreground"
-        title="This link has run its course."
-        actions={
-          <>
-            <Button asChild size="lg" className={statusCta}>
-              <Link href="/dashboard">
-                Make your own short link
-                <ArrowRight />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className={statusCta}>
-              <Link href="/">Back to home</Link>
-            </Button>
-          </>
-        }
+      {/* The generic version is the static shell; the slug-specific one streams in. */}
+      <Suspense
+        fallback={<ExpiredView slug={null} releasesAt={null} serverNow={0} />}
       >
-        Whoever shared it set it to stop working after a while, and that time
-        has passed. If you still need it, ask them for a fresh link.
-      </StatusText>
-
-      <div aria-hidden="true" className="flex justify-center lg:justify-end">
-        <ExpiredTicket />
-      </div>
+        <ExpiredForSlug searchParams={searchParams} />
+      </Suspense>
     </StatusPage>
   );
 }
 
-/** A short link "ticket", punched and stamped expired. */
-function ExpiredTicket() {
+async function ExpiredForSlug({
+  searchParams,
+}: Pick<PageProps<"/expired">, "searchParams">) {
+  const { slug, releasesAt } = await searchParams;
+  // Anyone can open /expired?slug=…: only accept what a stored slug can look like.
+  const validSlug =
+    typeof slug === "string" && slug.length <= 255 && SLUG_PATTERN.test(slug)
+      ? slug
+      : null;
+  const releaseTime =
+    typeof releasesAt === "string" ? Date.parse(releasesAt) : Number.NaN;
+
   return (
-    <div className="relative w-72 max-w-full rotate-[-4deg] sm:w-80">
-      <div className="rounded-3xl border border-dashed bg-card/80 p-6 shadow-soft backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <LogoMark className="h-9 opacity-50 grayscale" />
-          <span className="font-mono text-xs tracking-[0.12em] text-muted-foreground uppercase">
-            Short link
-          </span>
-        </div>
-        <p className="mt-6 truncate font-mono text-lg text-muted-foreground line-through decoration-muted-foreground/50">
-          {siteInfo.baseUrl.host}/
-          <span className="text-foreground/60">••••••</span>
-        </p>
-        <div className="mt-6 flex items-center justify-between border-t border-dashed pt-4 font-mono text-xs text-muted-foreground">
-          <span>valid until</span>
-          <span className="tabular-nums">— — —</span>
-        </div>
-      </div>
-      <span className="absolute -top-4 -right-3 rotate-[14deg] rounded-lg border-2 border-destructive/70 px-3 py-1 font-display text-lg font-bold tracking-[0.08em] text-[color-mix(in_oklab,var(--destructive)_85%,black)] uppercase dark:text-[color-mix(in_oklab,var(--destructive)_80%,white)]">
-        Expired
-      </span>
-    </div>
+    <ExpiredView
+      slug={validSlug}
+      releasesAt={
+        validSlug && Number.isFinite(releaseTime) ? releaseTime : null
+      }
+      serverNow={await requestTime()}
+    />
   );
+}
+
+/** The countdown's starting point: request time, kept out of the static shell. */
+async function requestTime() {
+  await io();
+  return Date.now();
 }

@@ -119,6 +119,25 @@ export function getExpiryStatus(
   return { kind: "later", expiresAt };
 }
 
+/** Compact time left, rounded down: "17h 5m", "42m", "under a minute" (for ≥ 0 ms). */
+export function formatTimeLeft(ms: number) {
+  const minutes = Math.floor(Math.max(0, ms) / 60_000);
+  if (minutes < 1) return "under a minute";
+  const hours = Math.floor(minutes / 60);
+  if (hours === 0) return `${minutes}m`;
+  const rest = minutes % 60;
+  return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
+}
+
+/** A ticking countdown clock, rounded up so it reads 0:00:00 only when time is up: "17:42:09". */
+export function formatClock(ms: number) {
+  const total = Math.ceil(Math.max(0, ms) / 1000);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
 /** Split a destination into an emphasised host and a muted remainder. */
 export function splitUrl(url: string) {
   try {

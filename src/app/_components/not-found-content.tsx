@@ -48,7 +48,7 @@ function GenericNotFound() {
         }
       >
         We couldn&rsquo;t find what you were looking for. If you followed a
-        short link, it may have expired or been deleted.
+        short link, it may have been deleted or mistyped.
       </StatusText>
 
       <div

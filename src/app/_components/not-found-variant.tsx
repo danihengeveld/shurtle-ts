@@ -111,8 +111,8 @@ function ClaimSlug({ slug }: { slug: string }) {
           </>
         }
       >
-        There&rsquo;s no short link here, at least not yet. It may have expired,
-        or nobody has claimed it. Make it yours in a few seconds.
+        There&rsquo;s no short link here, at least not yet. Nobody has claimed
+        it, or its owner deleted it. Make it yours in a few seconds.
       </StatusText>
 
       <div
