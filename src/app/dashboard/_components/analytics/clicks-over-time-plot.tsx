@@ -9,7 +9,8 @@ import {
 import {
   RANGE_LABELS,
   bucketStart,
-  peakOf,
+  busiest,
+  evenTicks,
   type AnalyticsRange,
   type Bucket,
   type ClicksPoint,
@@ -52,16 +53,6 @@ export function describeBucket(key: string, bucket: Bucket) {
   return `${longHourDay.format(start)} · ${formatUtcHour(start)} – ${formatUtcHour(end)}`;
 }
 
-/** At most `max` evenly spread entries of `items`, always including the first and the last. */
-function spread<T>(items: T[], max: number) {
-  if (items.length <= max) return items;
-  const step = (items.length - 1) / (max - 1);
-  return Array.from(
-    { length: max },
-    (_, index) => items[Math.round(index * step)],
-  );
-}
-
 /** Which buckets get an x-axis label, and how each label reads. */
 function axisTicks(
   series: ClicksPoint[],
@@ -71,7 +62,7 @@ function axisTicks(
   const keys = series.map((point) => point.bucket);
   if (bucket === "hour" && range === "24h") {
     return {
-      ticks: spread(keys, 5),
+      ticks: evenTicks(keys, 5, 6),
       label: (key: string) => formatUtcHour(bucketStart(key)),
     };
   }
@@ -79,13 +70,13 @@ function axisTicks(
     // A week of hours: label midnights only.
     const midnights = keys.filter((key) => key.endsWith("T00"));
     return {
-      ticks: spread(midnights.length >= 2 ? midnights : keys, 4),
+      ticks: evenTicks(midnights.length >= 2 ? midnights : keys, 4),
       label: (key: string) => dayTick.format(bucketStart(key)),
     };
   }
   const long = keys.length > 400;
   return {
-    ticks: spread(keys, 5),
+    ticks: evenTicks(keys, 5, 7),
     label: (key: string) =>
       (long ? monthTick : dayTick).format(bucketStart(key)),
   };
@@ -139,32 +130,35 @@ export function ClicksOverTimePlot({
   createdBucket: string | null;
 }) {
   const id = useId();
-  const peak = peakOf(series);
-  const max = peak?.clicks ?? 0;
+  const peak = busiest(series);
+  const max = peak?.top.clicks ?? 0;
   const yMax = niceMax(max);
   const isEmpty = max === 0;
   const total = series.reduce((sum, point) => sum + point.clicks, 0);
-  const first = series[0]?.bucket ?? "";
-  const last = series.at(-1)?.bucket ?? "";
   const { ticks, label } = axisTicks(series, bucket, range);
+  // The outermost labels are anchored inwards, so they never hang over the chart's edges.
+  const first = ticks[0] ?? "";
+  const last = ticks.at(-1) ?? "";
   const unit = bucket === "hour" ? "hour" : "day";
   const period = RANGE_LABELS[range].long.toLowerCase();
   const showCreated =
-    createdBucket !== null && createdBucket > first && createdBucket <= last;
+    createdBucket !== null &&
+    createdBucket > (series[0]?.bucket ?? "") &&
+    createdBucket <= (series.at(-1)?.bucket ?? "");
   // An hour holds a handful of clicks: bars show those counts as they are, where a line through
   // them would zig-zag. Days are smoother, so they get an area.
   const bars = bucket === "hour" && !isEmpty;
 
-  const summary = isEmpty
+  const inPeriod = range === "all" ? "in total" : `in the ${period}`;
+  const summary = !peak
     ? `No clicks ${range === "all" ? "yet" : `in the ${period}`}.`
-    : `${pluralize(total, "click")} ${range === "all" ? "in total" : `in the ${period}`}, peaking at ${pluralize(max, "click")} on ${describeBucket(peak!.bucket, bucket)} (UTC).`;
+    : peak.ties > 1
+      ? `${pluralize(total, "click")} ${inPeriod}, at most ${pluralize(max, "click")} in any ${unit} (${peak.ties} ${unit}s, UTC).`
+      : `${pluralize(total, "click")} ${inPeriod}, peaking at ${pluralize(max, "click")} on ${describeBucket(peak.top.bucket, bucket)} (UTC).`;
 
   return (
     <div className="relative">
       <div
-        role="group"
-        aria-label={`Clicks per ${unit} chart. Use the left and right arrow keys to read each ${unit}.`}
-        aria-describedby={`${id}-summary`}
         // shadcn's container hides the SVG's outline; show the focus ring on the wrapper instead.
         className="relative rounded-md ring-offset-4 ring-offset-card has-[.recharts-surface:focus-visible]:ring-[3px] has-[.recharts-surface:focus-visible]:ring-ring/40"
       >
@@ -178,6 +172,10 @@ export function ClicksOverTimePlot({
             margin={{ top: 8, right: 2, bottom: 0, left: 2 }}
             barCategoryGap={range === "24h" ? "22%" : 1}
             accessibilityLayer
+            // The accessibility layer makes the SVG itself the focus stop: name it there, or screen
+            // readers read out the axis labels instead.
+            title={`Clicks per ${unit}. Use the left and right arrow keys to read each ${unit}.`}
+            desc={summary}
           >
             <defs>
               <linearGradient id={`${id}-fill`} x1="0" x2="0" y1="0" y2="1">
@@ -291,9 +289,6 @@ export function ClicksOverTimePlot({
         )}
       </div>
 
-      <p id={`${id}-summary`} className="sr-only">
-        {summary}
-      </p>
       {/* sr-only goes on a wrapper: a <caption> escapes the clip of an sr-only table in some browsers. */}
       {!isEmpty && (
         <div className="sr-only">

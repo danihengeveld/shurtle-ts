@@ -1,10 +1,6 @@
 import { Hint } from "@/components/hint";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  busiestWeekHour,
-  shadeScale,
-  type WeekHourClicks,
-} from "@/lib/analytics";
+import { busiest, shadeScale, type WeekHourClicks } from "@/lib/analytics";
 import { cn } from "cn";
 import { CalendarClockIcon } from "lucide-react";
 import { formatHour, pluralize } from "../format";
@@ -49,15 +45,16 @@ export async function WeekHours({ data }: { data: Promise<WeekHourClicks[]> }) {
     cells.map((cell) => [`${cell.weekday}/${cell.hour}`, cell.clicks]),
   );
   const shade = shadeScale(clicks.values());
-  const busiest = busiestWeekHour(cells);
+  const peak = busiest(cells);
 
   return (
     <SectionCard title={TITLE} aside={<CardPill>UTC</CardPill>}>
-      {busiest ? (
+      {peak ? (
         <>
           <p className="mt-1 font-display text-lg font-semibold tracking-tight text-pretty">
-            Busiest on {WEEKDAYS[busiest.weekday]}s around{" "}
-            {hourName(busiest.hour)}
+            {peak.ties > 1
+              ? "No clear busiest time yet"
+              : `Busiest on ${WEEKDAYS[peak.top.weekday]}s around ${hourName(peak.top.hour)} UTC`}
           </p>
           <div className="-mx-0.5 mt-5 sm:-mx-1">
             <table className={table}>

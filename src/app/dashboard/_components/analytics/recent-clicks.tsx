@@ -30,6 +30,7 @@ import {
   type RecentClick,
   type RecentClicks as RecentClicksData,
 } from "@/lib/analytics";
+import { cn } from "cn";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -43,7 +44,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { formatCount } from "../format";
-import { AgoTime, RelativeTime } from "../time";
+import { AgoTime } from "../time";
 import { AnalyticsNavLink } from "./analytics-provider";
 import { Flag, placeText } from "./place";
 import {
@@ -87,10 +88,21 @@ function Source({ click }: { click: RecentClick }) {
   return <span className="truncate">{click.referrer}</span>;
 }
 
-function Device({ click }: { click: RecentClick }) {
+function Device({
+  click,
+  className,
+}: {
+  click: RecentClick;
+  className?: string;
+}) {
   if (click.device === null) {
     return (
-      <span className="flex items-center gap-2 text-muted-foreground">
+      <span
+        className={cn(
+          "flex items-center gap-2 text-muted-foreground",
+          className,
+        )}
+      >
         <CircleHelpIcon aria-hidden className="size-4 shrink-0" />
         Unknown
       </span>
@@ -99,7 +111,7 @@ function Device({ click }: { click: RecentClick }) {
   const { icon: Icon, name } = DEVICES[click.device];
   const software = [click.browser, click.os].filter(Boolean).join(" · ");
   return (
-    <span className="flex min-w-0 items-center gap-2">
+    <span className={cn("flex min-w-0 items-center gap-2", className)}>
       <Icon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
       {software ? (
         <>
@@ -159,7 +171,7 @@ function ClicksTable({
             className="hover:bg-muted/40 dark:hover:bg-muted/25"
           >
             <TableCell className={`h-12 px-3 text-muted-foreground ${edge}`}>
-              <RelativeTime date={click.at} />
+              <AgoTime date={click.at} />
             </TableCell>
             <TableCell className={`px-3 ${edge}`}>
               <Place click={click} />
@@ -203,7 +215,8 @@ function ClicksList({ clicks }: { clicks: RecentClick[] }) {
               </span>
             </ItemTitle>
             <ItemDescription className="flex min-w-0 items-center gap-2 text-xs">
-              <Device click={click} />
+              {/* Browser · OS is short and always fits; a long referrer is what gets cut. */}
+              <Device click={click} className="shrink-0" />
               <span
                 aria-hidden
                 className="size-0.5 shrink-0 rounded-full bg-muted-foreground/60"

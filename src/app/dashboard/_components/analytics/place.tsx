@@ -19,20 +19,16 @@ export function Flag({
   className?: string;
 }) {
   const flag = country ? flagEmoji(country) : null;
-  return flag ? (
+  // Same box for both, so rows line up whether they show a flag or the globe.
+  return (
     <span
       aria-hidden
       className={cn(
-        "inline-block w-[1.25em] shrink-0 text-center leading-none",
+        "inline-flex w-[1.25em] shrink-0 justify-center leading-none",
         className,
       )}
     >
-      {flag}
+      {flag ?? <GlobeIcon className="size-[1.1em] text-muted-foreground" />}
     </span>
-  ) : (
-    <GlobeIcon
-      aria-hidden
-      className={cn("size-[1.1em] shrink-0 text-muted-foreground", className)}
-    />
   );
 }

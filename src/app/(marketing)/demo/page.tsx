@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { parseAnalyticsQuery } from "@/lib/analytics";
-import { demoAnalytics } from "@/lib/demo-analytics";
+import { analyticsHref, parseAnalyticsQuery } from "@/lib/analytics";
+import { demoAnalytics, demoSample } from "@/lib/demo-analytics";
 import { ArrowRightIcon, FlaskConicalIcon } from "lucide-react";
 import type { Metadata } from "next";
-import { io } from "next/cache";
+import { cacheLife, io } from "next/cache";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LinkAnalytics } from "../../dashboard/_components/analytics/link-analytics";
 
 export const metadata: Metadata = {
@@ -13,10 +14,19 @@ export const metadata: Metadata = {
     "See what Shurtle shows for every link: clicks over time, a world map, when people click, which sites send them and what they use.",
 };
 
+const DAY_MS = 86_400_000;
+
 /** Sample data relative to the moment of the request (see links-page.tsx for why io()). */
 async function requestTime() {
   await io();
   return Date.now();
+}
+
+/** The day's sample, generated once per UTC day rather than on every request. */
+async function sampleForDay(day: number) {
+  "use cache";
+  cacheLife("days");
+  return demoSample(day * DAY_MS);
 }
 
 /**
@@ -24,9 +34,13 @@ async function requestTime() {
  * components as /dashboard/links/[id]; only the data source differs, and nothing can be changed.
  */
 export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
-  const { range, page } = parseAnalyticsQuery(await searchParams);
+  const { range, page, canonical } = parseAnalyticsQuery(await searchParams);
+  if (!canonical) redirect(analyticsHref("/demo", { range, page }));
   const now = await requestTime();
-  const { link, source } = demoAnalytics(now);
+  const { link, source } = demoAnalytics(
+    now,
+    await sampleForDay(Math.floor(now / DAY_MS)),
+  );
 
   return (
     <div className="container-page py-8 sm:py-10 lg:py-12">
@@ -38,7 +52,7 @@ export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
           <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-card text-brand-ink shadow-soft">
             <FlaskConicalIcon aria-hidden className="size-4.5" />
           </span>
-          <p className="text-sm text-pretty">
+          <p className="text-sm text-balance">
             <span className="font-semibold">A demo with sample data.</span>{" "}
             <span className="text-muted-foreground">
               Every link you shorten gets a page like this, filled with its own

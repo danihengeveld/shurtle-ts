@@ -1,11 +1,11 @@
-import { parseAnalyticsQuery } from "@/lib/analytics";
+import { analyticsHref, parseAnalyticsQuery } from "@/lib/analytics";
 import { linkDetailsPath } from "@/lib/link-list";
 import { displayShortUrl } from "@/lib/site";
 import { getOwnLinkAnalytics } from "@/server/analytics";
 import { getOwnShurtle } from "@/server/queries";
 import type { Metadata } from "next";
 import { io } from "next/cache";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { LinkAnalytics } from "../../_components/analytics/link-analytics";
 
@@ -25,8 +25,10 @@ export async function generateMetadata({
   params,
 }: PageProps<"/dashboard/links/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const link = linkId.safeParse(id).success ? await getOwnShurtle(id) : null;
-  return { title: link ? displayShortUrl(link.slug) : "Link not found" };
+  const own = linkId.safeParse(id).success ? await getOwnShurtle(id) : null;
+  return {
+    title: own ? displayShortUrl(own.shurtle.slug) : "Link not found",
+  };
 }
 
 /**
@@ -43,7 +45,9 @@ export default async function LinkPage({
   const analytics = await getOwnLinkAnalytics(id);
   if (!analytics) notFound();
 
-  const { range, page } = parseAnalyticsQuery(await searchParams);
+  const basePath = linkDetailsPath(id);
+  const { range, page, canonical } = parseAnalyticsQuery(await searchParams);
+  if (!canonical) redirect(analyticsHref(basePath, { range, page }));
   const now = await requestTime();
 
   return (
@@ -54,7 +58,7 @@ export default async function LinkPage({
         range={range}
         page={page}
         now={now}
-        basePath={linkDetailsPath(id)}
+        basePath={basePath}
       />
     </div>
   );

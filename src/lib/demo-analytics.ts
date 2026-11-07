@@ -1,14 +1,14 @@
 /**
  * Sample analytics for the public demo (/demo): a made-up link with a few months of realistic
- * clicks, generated in memory. Nothing here touches the database. The same day always gives the
- * same data (seeded by the UTC date), and everything is relative to "now", so the demo never looks
- * stale.
+ * clicks, generated in memory. Nothing here touches the database. Each UTC day has its own sample
+ * (seeded by the date), relative to that day, so the demo never looks stale; within a day, a click
+ * once shown never changes.
  */
 
 import {
   RECENT_CLICKS_PER_PAGE,
   bucketKey,
-  splitPrevious,
+  toClicksOverTime,
   type AnalyticsLink,
   type AnalyticsSource,
   type AnalyticsWindow,
@@ -23,7 +23,7 @@ const DAY_MS = 86_400_000;
 /** How long ago the demo link was created. */
 const AGE_DAYS = 118;
 
-export const DEMO_LINK_ID = "00000000-0000-4000-8000-00000000d3e0";
+const DEMO_LINK_ID = "00000000-0000-4000-8000-00000000d3e0";
 
 /** Small, fast, seedable PRNG (mulberry32). */
 function random(seed: number) {
@@ -376,13 +376,19 @@ function clicksOnDay(day: number, weekday: number, next: () => number) {
   return Math.round(launch + hackerNews + thread + baseline);
 }
 
-type DemoHit = RecentClick;
+/** A UTC day's sample: the demo link's creation and every click it will have had by the day's end. */
+export type DemoSample = { createdAt: Date; hits: RecentClick[] };
 
-function generate(now: number) {
+/**
+ * Generates the sample for the UTC day `now` falls on. Each click draws all of its random values
+ * whether or not it has happened yet, and the clock only filters afterwards (`demoAnalytics`), so
+ * time passing reveals more clicks without changing the ones already shown. Cache it per day.
+ */
+export function demoSample(now: number): DemoSample {
   const today = Math.floor(now / DAY_MS) * DAY_MS;
   const next = random(today / DAY_MS);
   const createdAt = new Date(today - AGE_DAYS * DAY_MS + 9.5 * HOUR_MS);
-  const hits: DemoHit[] = [];
+  const hits: RecentClick[] = [];
 
   for (let day = 0; day <= AGE_DAYS; day++) {
     const dayStart = today - (AGE_DAYS - day) * DAY_MS;
@@ -396,7 +402,6 @@ function generate(now: number) {
         dayStart +
         (hour - place.offset) * HOUR_MS +
         Math.floor(next() * HOUR_MS);
-      if (at < createdAt.getTime() || at >= now) continue;
       const [city, region] = weighted(
         next,
         place.cities.map(
@@ -408,23 +413,26 @@ function generate(now: number) {
         spike && next() < 0.6
           ? "news.ycombinator.com"
           : weighted(next, REFERRERS);
+      // A few visits come without a city, or without any location.
+      const located = next() >= 0.012;
+      const hasCity = next() >= 0.04;
+      const browser = weighted(next, software.browsers);
+      if (at < createdAt.getTime()) continue;
       hits.push({
         id: `demo-${day}-${index}`,
         at: new Date(at),
-        // A few visits come without a city, or without any location.
-        country: next() < 0.012 ? null : place.country,
-        region,
-        city: next() < 0.04 ? null : city,
+        country: located ? place.country : null,
+        region: located ? region : null,
+        city: located && hasCity ? city : null,
         referrer,
         device: software.device,
-        browser: weighted(next, software.browsers),
+        browser,
         os: software.os,
       });
     }
   }
 
   hits.sort((a, b) => b.at.getTime() - a.at.getTime());
-  for (const hit of hits) if (!hit.country) hit.city = hit.region = null;
   return { createdAt, hits };
 }
 
@@ -434,12 +442,16 @@ function count<K>(items: Iterable<K>) {
   return [...counts].sort((a, b) => b[1] - a[1]);
 }
 
-/** The demo link and its sample analytics, as of `now`. */
-export function demoAnalytics(now: number): {
+/** The demo link and its sample analytics as of `now`, from that day's `demoSample`. */
+export function demoAnalytics(
+  now: number,
+  sample: DemoSample = demoSample(now),
+): {
   link: AnalyticsLink;
   source: AnalyticsSource;
 } {
-  const { createdAt, hits } = generate(now);
+  const { createdAt } = sample;
+  const hits = sample.hits.filter((hit) => hit.at.getTime() < now);
   const between = (from: string, to: string) => {
     const start = Date.parse(from);
     const end = Date.parse(to);
@@ -451,13 +463,16 @@ export function demoAnalytics(now: number): {
     between(window.start, window.end);
 
   const source: AnalyticsSource = {
+    // Same shape as the database source (src/server/analytics.ts), computed in memory.
     async clicksOverTime(window) {
       const counts = count(
-        between(window.previousStart ?? window.start, window.end).map((hit) =>
-          bucketKey(hit.at, window.bucket),
-        ),
+        inWindow(window).map((hit) => bucketKey(hit.at, window.bucket)),
       ).map(([bucket, clicks]): ClicksPoint => ({ bucket, clicks }));
-      return splitPrevious(counts, window);
+      const previousTotal =
+        window.previousStart && window.previousEnd
+          ? between(window.previousStart, window.previousEnd).length
+          : null;
+      return toClicksOverTime(counts, window, previousTotal);
     },
     async lastClick() {
       const [last] = hits;

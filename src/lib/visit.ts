@@ -72,8 +72,12 @@ const ANDROID_APPS: Record<string, string> = {
   "com.microsoft.teams": "teams.microsoft.com",
 };
 
-/** google.nl, google.co.uk… → google.com (likewise Bing, Yahoo, Yandex). */
-const SEARCH_ENGINE = /^(google|bing|yahoo|yandex)\.(?:com?\.)?[a-z]{2,3}$/;
+/**
+ * google.nl, google.co.uk, search.yahoo.com, m.bing.com… → google.com, yahoo.com, bing.com (and
+ * Yandex). Other subdomains stay: news.google.com is Google News, a source of its own.
+ */
+const SEARCH_ENGINE =
+  /^(?:search\.|m\.)?(google|bing|yahoo|yandex)\.(?:com?\.)?[a-z]{2,3}$/;
 
 /**
  * The referring site's host from a `Referer` header, normalized so one site counts as one source:

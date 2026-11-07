@@ -120,7 +120,7 @@ export async function Locations({ data }: { data: Promise<LocationsData> }) {
                 items={countryItems(locations)}
                 total={locations.total}
                 label="Clicks by country"
-                noun="countries"
+                noun={{ one: "country", other: "countries" }}
               />
             </TabsContent>
             <TabsContent value="cities">
@@ -133,7 +133,7 @@ export async function Locations({ data }: { data: Promise<LocationsData> }) {
                   items={cityItems(locations)}
                   total={locations.total}
                   label="Clicks by city"
-                  noun="cities"
+                  noun={{ one: "city", other: "cities" }}
                 />
               )}
             </TabsContent>

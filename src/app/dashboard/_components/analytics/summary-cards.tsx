@@ -1,10 +1,12 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   bucketStart,
-  peakOf,
+  busiest,
   type AnalyticsRange,
   type AnalyticsWindow,
+  type Bucket,
   type ClicksOverTime,
+  type ClicksPoint,
   type LastClick,
 } from "@/lib/analytics";
 import { cn } from "cn";
@@ -49,6 +51,11 @@ const COMPARISON: Record<
 const utc = (options: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat(LOCALE, { timeZone: "UTC", ...options });
 const peakDay = utc({ month: "short", day: "numeric" });
+const peakDayWithYear = utc({
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
 const peakWeekday = utc({ weekday: "long" });
 const peakHourDay = utc({ weekday: "short", month: "short", day: "numeric" });
 
@@ -81,8 +88,6 @@ export async function SummaryCards({
     clicks,
     lastClick,
   ]);
-  const peak = peakOf(series);
-  const hourly = window.bucket === "hour";
   const days = Math.max(1, series.length);
 
   return (
@@ -93,7 +98,8 @@ export async function SummaryCards({
         icon={MousePointerClickIcon}
         value={formatCount(total)}
         footnote={
-          window.range === "all" || previousTotal === null ? (
+          // Null exactly when the range is all time: there's no period before it.
+          previousTotal === null || window.range === "all" ? (
             sinceText(createdAt, now)
           ) : (
             <TrendNote
@@ -120,26 +126,7 @@ export async function SummaryCards({
         />
       )}
 
-      <Tile
-        label={hourly ? "Busiest hour" : "Busiest day"}
-        icon={FlameIcon}
-        value={
-          peak ? (
-            hourly ? (
-              formatUtcHour(bucketStart(peak.bucket))
-            ) : (
-              peakDay.format(bucketStart(peak.bucket))
-            )
-          ) : (
-            <Nothing />
-          )
-        }
-        footnote={
-          peak
-            ? `${(hourly ? peakHourDay : peakWeekday).format(bucketStart(peak.bucket))}${hourly ? " UTC" : ""} · ${pluralize(peak.clicks, "click")}`
-            : "No clicks in this range"
-        }
-      />
+      <BusiestTile series={series} bucket={window.bucket} now={now} />
 
       <Tile
         label="Last click"
@@ -159,6 +146,50 @@ export async function SummaryCards({
         }
       />
     </div>
+  );
+}
+
+/**
+ * The busiest hour or day. When several share the top count (one click each, say), there is no
+ * busiest one, and picking any of them would mislead: it says so instead.
+ */
+function BusiestTile({
+  series,
+  bucket,
+  now,
+}: {
+  series: ClicksPoint[];
+  bucket: Bucket;
+  now: number;
+}) {
+  const peak = busiest(series);
+  const hourly = bucket === "hour";
+  const unit = hourly ? "hour" : "day";
+  const start = peak && bucketStart(peak.top.bucket);
+  const otherYear =
+    start !== null && start.getUTCFullYear() !== new Date(now).getUTCFullYear();
+
+  return (
+    <Tile
+      label={hourly ? "Busiest hour" : "Busiest day"}
+      icon={FlameIcon}
+      value={
+        !peak || peak.ties > 1 || !start ? (
+          <Nothing />
+        ) : hourly ? (
+          formatUtcHour(start)
+        ) : (
+          (otherYear ? peakDayWithYear : peakDay).format(start)
+        )
+      }
+      footnote={
+        !peak || !start
+          ? "No clicks in this range"
+          : peak.ties > 1
+            ? `No clear peak: ${peak.ties} ${unit}s with ${pluralize(peak.top.clicks, "click")}`
+            : `${(hourly ? peakHourDay : peakWeekday).format(start)}${hourly ? " UTC" : ""} · ${pluralize(peak.top.clicks, "click")}`
+      }
+    />
   );
 }
 

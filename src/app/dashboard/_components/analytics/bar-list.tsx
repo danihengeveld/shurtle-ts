@@ -34,8 +34,8 @@ export function BarList({
   total: number;
   /** Accessible name of the list. */
   label: string;
-  /** Plural noun for "Show 12 more countries". */
-  noun: string;
+  /** What the rows are, for "Show 1 more country" / "Show 12 more countries". */
+  noun: { one: string; other: string };
   limit?: number;
   className?: string;
 }) {
@@ -102,7 +102,8 @@ export function BarList({
               className="mt-2 h-8 w-fit px-2.5 text-xs text-muted-foreground hover:text-foreground"
             >
               <span className="group-data-[state=open]/more:hidden">
-                Show {formatCount(rest.length)} more {noun}
+                Show {formatCount(rest.length)} more{" "}
+                {rest.length === 1 ? noun.one : noun.other}
               </span>
               <span className="hidden group-data-[state=open]/more:inline">
                 Show fewer

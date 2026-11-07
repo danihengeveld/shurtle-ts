@@ -6,13 +6,13 @@ import {
   analyticsWindow,
   bucketKey,
   bucketKeys,
-  busiestWeekHour,
   bucketStart,
+  busiest,
+  evenTicks,
   parseAnalyticsQuery,
-  peakOf,
   percentOf,
   shadeScale,
-  splitPrevious,
+  toClicksOverTime,
   zeroFill,
 } from "./analytics";
 
@@ -21,27 +21,43 @@ const CREATED = new Date(Date.UTC(2026, 9, 2, 9, 0, 0)); // Oct 2
 
 describe("parseAnalyticsQuery", () => {
   it("defaults to the last 30 days and the first page", () => {
-    expect(parseAnalyticsQuery({})).toEqual({ range: "30d", page: 1 });
+    expect(parseAnalyticsQuery({})).toEqual({
+      range: "30d",
+      page: 1,
+      canonical: true,
+    });
     expect(DEFAULT_RANGE).toBe("30d");
   });
 
   it("accepts every known range and nothing else", () => {
     for (const range of ["24h", "7d", "30d", "90d", "all"]) {
-      expect(parseAnalyticsQuery({ range }).range).toBe(range);
+      expect(parseAnalyticsQuery({ range })).toMatchObject({
+        range,
+        canonical: true,
+      });
     }
     for (const range of ["1y", "ALL", "", "30", "7D"]) {
-      expect(parseAnalyticsQuery({ range }).range).toBe("30d");
+      expect(parseAnalyticsQuery({ range })).toMatchObject({
+        range: "30d",
+        canonical: false,
+      });
     }
     expect(parseAnalyticsQuery({ range: ["7d", "24h"] }).range).toBe("7d");
   });
 
-  it("clamps the page to a sane positive integer", () => {
-    expect(parseAnalyticsQuery({ page: "3" }).page).toBe(3);
+  it("clamps the page to a sane positive integer, and says when the URL asked for another", () => {
+    expect(parseAnalyticsQuery({ page: "3" })).toMatchObject({
+      page: 3,
+      canonical: true,
+    });
+    for (const page of ["0", "-2", "abc", "1e9", "03"]) {
+      expect(parseAnalyticsQuery({ page }).canonical, page).toBe(false);
+    }
     expect(parseAnalyticsQuery({ page: "0" }).page).toBe(1);
-    expect(parseAnalyticsQuery({ page: "-2" }).page).toBe(1);
-    expect(parseAnalyticsQuery({ page: "abc" }).page).toBe(1);
-    expect(parseAnalyticsQuery({ page: "1e9" }).page).toBe(1);
-    expect(parseAnalyticsQuery({ page: "999999" }).page).toBe(MAX_RECENT_PAGE);
+    expect(parseAnalyticsQuery({ page: "999999" })).toMatchObject({
+      page: MAX_RECENT_PAGE,
+      canonical: false,
+    });
   });
 });
 
@@ -66,8 +82,23 @@ describe("analyticsWindow", () => {
       start: "2026-11-06T15:00:00.000Z",
       end: "2026-11-07T15:00:00.000Z",
       previousStart: "2026-11-05T15:00:00.000Z",
+      // As far into the day before as now is into this one, to the minute.
+      previousEnd: "2026-11-06T14:25:00.000Z",
     });
     expect(bucketKeys(window.start, window.end, "hour")).toHaveLength(24);
+  });
+
+  it("compares a period that has only just begun with the same stretch of the one before", () => {
+    // 00:10 UTC: 29 days and 10 minutes into the last 30 days.
+    const justAfterMidnight = Date.UTC(2026, 10, 7, 0, 10, 45);
+    const month = analyticsWindow("30d", justAfterMidnight, CREATED);
+    const current = justAfterMidnight - Date.parse(month.start);
+    const previous =
+      Date.parse(month.previousEnd!) - Date.parse(month.previousStart!);
+    expect(Math.abs(current - previous)).toBeLessThan(60_000);
+    expect(Date.parse(month.previousEnd!)).toBeLessThanOrEqual(
+      Date.parse(month.start),
+    );
   });
 
   it("covers 7 days in hours and 30 or 90 days in days, including today", () => {
@@ -81,18 +112,14 @@ describe("analyticsWindow", () => {
       start: "2026-10-09T00:00:00.000Z",
       end: "2026-11-08T00:00:00.000Z",
       previousStart: "2026-09-09T00:00:00.000Z",
+      previousEnd: "2026-10-08T14:25:00.000Z",
     });
     const days = bucketKeys(month.start, month.end, "day");
     expect(days).toHaveLength(30);
     expect(days.at(-1)).toBe("2026-11-07");
 
-    expect(
-      bucketKeys(
-        analyticsWindow("90d", NOW, CREATED).start,
-        analyticsWindow("90d", NOW, CREATED).end,
-        "day",
-      ),
-    ).toHaveLength(90);
+    const quarter = analyticsWindow("90d", NOW, CREATED);
+    expect(bucketKeys(quarter.start, quarter.end, "day")).toHaveLength(90);
   });
 
   it("runs all time from the day the link was created, with nothing to compare to", () => {
@@ -103,6 +130,7 @@ describe("analyticsWindow", () => {
       start: "2026-10-02T00:00:00.000Z",
       end: "2026-11-08T00:00:00.000Z",
       previousStart: null,
+      previousEnd: null,
     });
     // A link created today still gets one day.
     const today = analyticsWindow("all", NOW, new Date(NOW - 60_000));
@@ -144,43 +172,74 @@ describe("buckets", () => {
     ]);
   });
 
-  it("splits off the previous period", () => {
-    const window = analyticsWindow("7d", NOW, CREATED);
-    const result = splitPrevious(
+  it("totals the window and keeps the previous period's total", () => {
+    const week = analyticsWindow("7d", NOW, CREATED);
+    const result = toClicksOverTime(
       [
-        { bucket: "2026-10-30T10", clicks: 2 }, // the week before
-        { bucket: "2026-10-31T14", clicks: 3 }, // its last hour
         { bucket: "2026-10-31T15", clicks: 1 }, // this week's first hour
         { bucket: "2026-11-07T14", clicks: 5 }, // this hour
       ],
-      window,
+      week,
+      7,
     );
-    expect(result.previousTotal).toBe(5);
     expect(result.total).toBe(6);
+    expect(result.previousTotal).toBe(7);
     expect(result.series).toHaveLength(168);
     expect(result.series[0]).toEqual({ bucket: "2026-10-31T15", clicks: 1 });
     expect(result.series.at(-1)).toEqual({
       bucket: "2026-11-07T14",
       clicks: 5,
     });
-
-    const all = splitPrevious([], analyticsWindow("all", NOW, CREATED));
-    expect(all.previousTotal).toBeNull();
   });
 });
 
-describe("peakOf", () => {
-  it("is the busiest bucket, the latest on a tie, or null without clicks", () => {
-    expect(peakOf([])).toBeNull();
-    expect(peakOf([{ bucket: "a", clicks: 0 }])).toBeNull();
+describe("busiest", () => {
+  it("is the item with the most clicks, or null without clicks", () => {
+    expect(busiest([])).toBeNull();
+    expect(busiest([{ bucket: "a", clicks: 0 }])).toBeNull();
     expect(
-      peakOf([
+      busiest([
         { bucket: "a", clicks: 3 },
         { bucket: "b", clicks: 7 },
-        { bucket: "c", clicks: 7 },
-        { bucket: "d", clicks: 1 },
+        { bucket: "c", clicks: 1 },
       ]),
-    ).toEqual({ bucket: "c", clicks: 7 });
+    ).toEqual({ top: { bucket: "b", clicks: 7 }, ties: 1 });
+  });
+
+  it("counts ties instead of picking one", () => {
+    expect(
+      busiest([
+        { weekday: 0, hour: 9, clicks: 4 },
+        { weekday: 1, hour: 14, clicks: 12 },
+        { weekday: 4, hour: 20, clicks: 12 },
+      ]),
+    ).toEqual({ top: { weekday: 1, hour: 14, clicks: 12 }, ties: 2 });
+  });
+});
+
+describe("evenTicks", () => {
+  const days = Array.from({ length: 30 }, (_, index) => index);
+
+  it("keeps short lists whole", () => {
+    expect(evenTicks([1, 2, 3], 5)).toEqual([1, 2, 3]);
+  });
+
+  it("counts back from the last item in equal steps", () => {
+    const hours = Array.from({ length: 24 }, (_, index) => index);
+    expect(evenTicks(hours, 5)).toEqual([3, 8, 13, 18, 23]);
+    // Hours of a day read best six apart.
+    expect(evenTicks(hours, 5, 6)).toEqual([5, 11, 17, 23]);
+  });
+
+  it("puts daily labels whole weeks apart", () => {
+    expect(evenTicks(days, 5, 7)).toEqual([1, 8, 15, 22, 29]);
+    const quarter = Array.from({ length: 90 }, (_, index) => index);
+    const ticks = evenTicks(quarter, 5, 7);
+    expect(ticks.at(-1)).toBe(89);
+    expect(ticks.length).toBeLessThanOrEqual(5);
+    const steps = ticks.slice(1).map((tick, index) => tick - ticks[index]);
+    expect(new Set(steps).size).toBe(1);
+    expect(steps[0] % 7).toBe(0);
   });
 });
 
@@ -214,19 +273,5 @@ describe("percentOf", () => {
     expect(percentOf(1, 1000)).toBe(1);
     expect(percentOf(0, 10)).toBe(0);
     expect(percentOf(5, 0)).toBe(0);
-  });
-});
-
-describe("busiestWeekHour", () => {
-  it("is the busiest weekday and hour, the first on a tie, or null without clicks", () => {
-    expect(busiestWeekHour([])).toBeNull();
-    expect(busiestWeekHour([{ weekday: 2, hour: 9, clicks: 0 }])).toBeNull();
-    expect(
-      busiestWeekHour([
-        { weekday: 0, hour: 9, clicks: 4 },
-        { weekday: 1, hour: 14, clicks: 12 },
-        { weekday: 4, hour: 20, clicks: 12 },
-      ]),
-    ).toEqual({ weekday: 1, hour: 14, clicks: 12 });
   });
 });

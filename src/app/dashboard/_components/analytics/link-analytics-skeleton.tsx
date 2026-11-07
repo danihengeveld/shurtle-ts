@@ -37,7 +37,7 @@ export function LinkAnalyticsSkeleton({
       </div>
       <div className={analyticsStack}>
         <SummaryCardsSkeleton />
-        <ClicksOverTimeSkeleton bucket="day" />
+        <ClicksOverTimeSkeleton />
         <LocationsSkeleton />
         <WeekHoursSkeleton />
         <div className={splitGrid}>

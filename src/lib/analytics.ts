@@ -25,6 +25,7 @@ export const RECENT_CLICKS_PER_PAGE = 10;
 /** Bounds the query offset and the number of distinct cache entries. */
 export const MAX_RECENT_PAGE = 1_000;
 
+const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
 const DAY_MS = 86_400_000;
 
@@ -32,15 +33,20 @@ export type Bucket = "hour" | "day";
 
 /**
  * The span a range covers: `[start, end)`, aligned to its buckets, so the last bucket is the current
- * hour or day. Plain ISO strings, so a window can be a cache key.
+ * hour or day. Plain ISO strings, so a window can be a cache key; it changes once a minute.
  */
 export type AnalyticsWindow = {
   range: AnalyticsRange;
   bucket: Bucket;
   start: string;
   end: string;
-  /** The span of the same length right before, for the change in clicks; null for all time. */
+  /**
+   * The period to compare with, `[previousStart, previousEnd)`: as far into the period before as
+   * now is into this one, so a period that has only just begun isn't measured against a whole one.
+   * Null for all time.
+   */
   previousStart: string | null;
+  previousEnd: string | null;
 };
 
 export type LinkAnalyticsSearchParams = {
@@ -52,19 +58,28 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-/** Parse untrusted search params into a range and a page of recent clicks. */
+/**
+ * Parse untrusted search params into a range and a page of recent clicks. `canonical` is false when
+ * the URL asked for something else (an unknown range, page 0, page 5000…): redirect to
+ * `analyticsHref` then, so the address bar always says what the page shows.
+ */
 export function parseAnalyticsQuery(params: LinkAnalyticsSearchParams) {
   const rawRange = first(params.range);
+  const rawPage = first(params.page);
   const range = (ANALYTICS_RANGES as readonly string[]).includes(rawRange ?? "")
     ? (rawRange as AnalyticsRange)
     : DEFAULT_RANGE;
-  const page = Number.parseInt(first(params.page) ?? "", 10);
+  const parsed = Number.parseInt(rawPage ?? "", 10);
+  const page =
+    Number.isSafeInteger(parsed) && parsed > 0
+      ? Math.min(parsed, MAX_RECENT_PAGE)
+      : 1;
   return {
     range,
-    page:
-      Number.isSafeInteger(page) && page > 0
-        ? Math.min(page, MAX_RECENT_PAGE)
-        : 1,
+    page,
+    canonical:
+      (rawRange === undefined || rawRange === range) &&
+      (rawPage === undefined || rawPage === String(page)),
   };
 }
 
@@ -120,6 +135,7 @@ export function analyticsWindow(
       start: new Date(start).toISOString(),
       end: new Date(end).toISOString(),
       previousStart: null,
+      previousEnd: null,
     };
   }
 
@@ -128,12 +144,16 @@ export function analyticsWindow(
   const end =
     (bucket === "hour" ? startOfUtcHour(now) : startOfUtcDay(now)) + size;
   const start = end - count * size;
+  const previousStart = start - count * size;
+  // Whole minutes: the window changes once a minute, like the cached data behind it.
+  const elapsed = Math.floor(now / MINUTE_MS) * MINUTE_MS - start;
   return {
     range,
     bucket,
     start: new Date(start).toISOString(),
     end: new Date(end).toISOString(),
-    previousStart: new Date(start - count * size).toISOString(),
+    previousStart: new Date(previousStart).toISOString(),
+    previousEnd: new Date(previousStart + elapsed).toISOString(),
   };
 }
 
@@ -158,6 +178,22 @@ export function bucketKeys(start: string, end: string, bucket: Bucket) {
   return keys;
 }
 
+/**
+ * At most `max` entries of `items`, an equal step apart, counted back from the last one (today
+ * always gets an axis label). The step is the smallest multiple of `unit` that fits, so daily
+ * labels fall a whole number of weeks apart.
+ */
+export function evenTicks<T>(items: T[], max: number, unit = 1) {
+  if (items.length <= max) return items;
+  let step = unit;
+  while (Math.floor((items.length - 1) / step) + 1 > max) step += unit;
+  const ticks: T[] = [];
+  for (let index = items.length - 1; index >= 0; index -= step) {
+    ticks.unshift(items[index]);
+  }
+  return ticks;
+}
+
 export type ClicksPoint = { bucket: string; clicks: number };
 
 /** Clicks per bucket for the whole window, oldest first, with zeros where nobody clicked. */
@@ -173,15 +209,23 @@ export function zeroFill(
   }));
 }
 
-/** The busiest bucket (the latest one on a tie), or null when nobody clicked. */
-export function peakOf(series: ClicksPoint[]) {
-  let peak: ClicksPoint | null = null;
-  for (const point of series) {
-    if (point.clicks > 0 && (!peak || point.clicks >= peak.clicks)) {
-      peak = point;
+/**
+ * The item with the most clicks (the first on a tie) and how many items share that count, or null
+ * when nobody clicked. With `ties > 1` there is no single busiest one: say so rather than pick.
+ */
+export function busiest<T extends { clicks: number }>(items: Iterable<T>) {
+  let top: T | null = null;
+  let ties = 0;
+  for (const item of items) {
+    if (item.clicks <= 0) continue;
+    if (!top || item.clicks > top.clicks) {
+      top = item;
+      ties = 1;
+    } else if (item.clicks === top.clicks) {
+      ties++;
     }
   }
-  return peak;
+  return top ? { top, ties } : null;
 }
 
 /*
@@ -260,7 +304,8 @@ export type WeekHourClicks = { weekday: number; hour: number; clicks: number };
  */
 export type SourceClicks =
   | { kind: "site"; referrer: string; clicks: number }
-  | { kind: "direct" | "unknown"; clicks: number };
+  /** `other`: everything past the top sources, summed. */
+  | { kind: "direct" | "unknown" | "other"; clicks: number };
 
 export type NamedClicks = { name: string | null; clicks: number };
 
@@ -282,34 +327,17 @@ export type AnalyticsSource = {
   recentClicks(window: AnalyticsWindow, page: number): Promise<RecentClicks>;
 };
 
-/** The busiest weekday and hour, or null without clicks. */
-export function busiestWeekHour(cells: WeekHourClicks[]) {
-  let busiest: WeekHourClicks | null = null;
-  for (const cell of cells) {
-    if (cell.clicks > 0 && (!busiest || cell.clicks > busiest.clicks)) {
-      busiest = cell;
-    }
-  }
-  return busiest;
-}
-
-/** Split a series that starts with the previous period into the window and the previous total. */
-export function splitPrevious(
-  counts: ClicksPoint[],
+/** Clicks per bucket in the window, zero-filled and totalled, with the previous period's total. */
+export function toClicksOverTime(
+  counts: Iterable<ClicksPoint>,
   window: AnalyticsWindow,
+  previousTotal: number | null,
 ): ClicksOverTime {
-  const startKey = bucketKey(new Date(window.start), window.bucket);
-  let previousTotal = 0;
-  const current: ClicksPoint[] = [];
-  for (const point of counts) {
-    if (point.bucket < startKey) previousTotal += point.clicks;
-    else current.push(point);
-  }
-  const series = zeroFill(current, window);
+  const series = zeroFill(counts, window);
   return {
     series,
     total: series.reduce((sum, point) => sum + point.clicks, 0),
-    previousTotal: window.previousStart === null ? null : previousTotal,
+    previousTotal,
   };
 }
 

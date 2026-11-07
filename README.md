@@ -175,6 +175,13 @@ Before opening a pull request, make sure these pass. CI runs them on every pull 
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
+Tests that need a database (`*.db.test.ts`) are skipped unless `TEST_DATABASE_URL` points at a local throwaway Postgres; they drop and recreate the `shurtle` schema there, so never point it at a real database. CI provides one. Locally:
+
+```bash
+docker run --rm -d --name shurtle-test-db -e POSTGRES_PASSWORD=pg -p 55432:5432 postgres:17
+TEST_DATABASE_URL=postgres://postgres:pg@localhost:55432/postgres pnpm test
+```
+
 Code is formatted with Prettier (including Tailwind class order); `pnpm format` takes care of it. Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License

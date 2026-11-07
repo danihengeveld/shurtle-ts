@@ -1,10 +1,16 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SourceClicks } from "@/lib/analytics";
-import { CornerDownRightIcon, GlobeIcon, UnplugIcon } from "lucide-react";
+import {
+  CornerDownRightIcon,
+  EllipsisIcon,
+  GlobeIcon,
+  UnplugIcon,
+} from "lucide-react";
 import { BarList, type BarItem } from "./bar-list";
 import { SectionCard, SectionEmpty, SectionSkeleton } from "./section-card";
 
 const TITLE = "Sources";
+const icon = "size-3.5 shrink-0 text-muted-foreground";
 
 function toItem(source: SourceClicks): BarItem {
   switch (source.kind) {
@@ -14,10 +20,7 @@ function toItem(source: SourceClicks): BarItem {
         clicks: source.clicks,
         label: (
           <>
-            <GlobeIcon
-              aria-hidden
-              className="size-3.5 shrink-0 text-muted-foreground"
-            />
+            <GlobeIcon aria-hidden className={icon} />
             <span className="truncate">{source.referrer}</span>
           </>
         ),
@@ -28,11 +31,20 @@ function toItem(source: SourceClicks): BarItem {
         clicks: source.clicks,
         label: (
           <>
-            <CornerDownRightIcon
-              aria-hidden
-              className="size-3.5 shrink-0 text-muted-foreground"
-            />
+            <CornerDownRightIcon aria-hidden className={icon} />
             <span className="truncate">Direct</span>
+          </>
+        ),
+      };
+    case "other":
+      return {
+        key: "other",
+        clicks: source.clicks,
+        muted: true,
+        label: (
+          <>
+            <EllipsisIcon aria-hidden className={icon} />
+            <span className="truncate">Other sources</span>
           </>
         ),
       };
@@ -47,21 +59,16 @@ function toItem(source: SourceClicks): BarItem {
 }
 
 /** Which sites sent people, with direct visits as one source of their own. */
-export async function Sources({
-  data,
-  total,
-}: {
-  data: Promise<SourceClicks[]>;
-  /** All clicks in the range, for each source's share. */
-  total: Promise<number>;
-}) {
-  const [sources, clicks] = await Promise.all([data, total]);
+export async function Sources({ data }: { data: Promise<SourceClicks[]> }) {
+  const sources = await data;
   const items = sources.map(toItem);
-  // Unknown goes last, whatever its count: it isn't a source.
+  // Other and unknown go last, whatever their counts: they aren't a single source.
   const ordered = [
     ...items.filter((item) => !item.muted),
     ...items.filter((item) => item.muted),
   ];
+  // Shares of these rows' own total: they come from one query, so they always add up.
+  const total = sources.reduce((sum, source) => sum + source.clicks, 0);
 
   return (
     <SectionCard title={TITLE}>
@@ -73,13 +80,13 @@ export async function Sources({
         <>
           <BarList
             items={ordered}
-            total={clicks}
+            total={total}
             label="Clicks by source"
-            noun="sources"
+            noun={{ one: "source", other: "sources" }}
             className="mt-4"
           />
           {sources.some((source) => source.kind === "direct") && (
-            <p className="mt-auto pt-4 text-xs text-pretty text-muted-foreground">
+            <p className="mt-4 text-xs text-pretty text-muted-foreground">
               Direct: no referring site. Typed or pasted, bookmarked, or opened
               from an app or a site that doesn&apos;t say.
             </p>

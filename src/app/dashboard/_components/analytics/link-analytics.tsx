@@ -119,10 +119,7 @@ export function LinkAnalytics({
                 <div className={splitGrid}>
                   <SectionErrorBoundary what="sources" className="min-h-96">
                     <Suspense fallback={<SourcesSkeleton />}>
-                      <Sources
-                        data={source.sources(window)}
-                        total={clicks.then((data) => data.total)}
-                      />
+                      <Sources data={source.sources(window)} />
                     </Suspense>
                   </SectionErrorBoundary>
                   <SectionErrorBoundary what="devices" className="min-h-96">

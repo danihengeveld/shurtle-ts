@@ -25,10 +25,9 @@ export const metadata: Metadata = {
 /**
  * The dashboard's link lists (the route group keeps this layout off a link's own page at
  * /dashboard/links/[id]). Everything that stays put while the list changes: header, overview and
- * the links toolbar. The
- * list itself is `children`: `(active)/page.tsx` at /dashboard and `expired/page.tsx` at
- * /dashboard/expired, each with its own `loading.tsx`. Every data read below is in a Suspense
- * boundary, so the shell prerenders and each part streams in on its own.
+ * the links toolbar. The list itself is `children`: `(active)/page.tsx` at /dashboard and
+ * `expired/page.tsx` at /dashboard/expired, each with its own `loading.tsx`. Every data read below
+ * is in a Suspense boundary, so the shell prerenders and each part streams in on its own.
  *
  * Errors: `error.tsx` here only wraps `children` (the list); the overview sections and the toolbar
  * each have their own boundary, so one failing query doesn't take down the rest of the dashboard.

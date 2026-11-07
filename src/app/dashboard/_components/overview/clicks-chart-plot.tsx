@@ -13,16 +13,17 @@ import { formatCount, formatUtcDay, pluralize } from "../format";
 type Point = { date: string; clicks: number };
 
 /**
- * Round up to a "nice" axis maximum (1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8 × 10ⁿ), with a little
- * headroom but not too much, so a peak of 94 gets 120, not 200. The axis has a
- * midpoint tick, so the result always halves to a whole number of clicks (never "2.5").
+ * Round up to a "nice" axis maximum (1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8 × 10ⁿ, at least 2), with a
+ * little headroom but not too much, so a peak of 94 gets 120, not 200, and single clicks reach
+ * halfway up. The axis has a midpoint tick, so the result always halves to a whole number of
+ * clicks (never "2.5").
  */
 export function niceMax(max: number) {
   if (max <= 0) return 4;
   const target = max * 1.1;
   const magnitude = 10 ** Math.floor(Math.log10(target));
   for (const step of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) {
-    const value = Math.max(step * magnitude, 4);
+    const value = Math.max(step * magnitude, 2);
     if (value >= target && Number.isInteger(value / 2)) return value;
   }
   return 10 * magnitude;
@@ -87,11 +88,7 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
 
   return (
     <div className="relative">
-      {/* Recharts' accessibility layer makes the chart focusable; arrow keys move the tooltip by day. */}
       <div
-        role="group"
-        aria-label="Daily clicks chart. Use the left and right arrow keys to read each day."
-        aria-describedby={`${id}-summary`}
         // shadcn's container hides the SVG's outline; show the focus ring on the wrapper instead.
         className="relative rounded-md ring-offset-4 ring-offset-card has-[.recharts-surface:focus-visible]:ring-[3px] has-[.recharts-surface:focus-visible]:ring-ring/40"
       >
@@ -103,7 +100,11 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
           <AreaChart
             data={data}
             margin={{ top: 8, right: 2, bottom: 0, left: 2 }}
+            // Recharts' accessibility layer makes the SVG itself the focus stop (arrow keys move the
+            // tooltip by day): name it there, or screen readers read out the axis labels instead.
             accessibilityLayer
+            title="Daily clicks. Use the left and right arrow keys to read each day."
+            desc={summary}
           >
             <defs>
               <linearGradient id={`${id}-fill`} x1="0" x2="0" y1="0" y2="1">
@@ -200,9 +201,6 @@ export function ClicksChartPlot({ data }: { data: Point[] }) {
         )}
       </div>
 
-      <p id={`${id}-summary`} className="sr-only">
-        {summary}
-      </p>
       {/* sr-only goes on a wrapper: a <caption> escapes the clip of an sr-only table in some browsers. */}
       <div className="sr-only">
         <table>

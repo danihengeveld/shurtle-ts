@@ -41,11 +41,22 @@ export async function ClicksOverTime({
   );
 }
 
-export function ClicksOverTimeSkeleton({ bucket }: { bucket: Bucket }) {
+export function ClicksOverTimeSkeleton({
+  bucket,
+}: {
+  /** Unknown while the whole page loads (loading.tsx can't read the range): a placeholder then. */
+  bucket?: Bucket;
+}) {
   return (
     <SectionSkeleton
       title={TITLE}
-      aside={<CardPill>{pillText(bucket)}</CardPill>}
+      aside={
+        bucket ? (
+          <CardPill>{pillText(bucket)}</CardPill>
+        ) : (
+          <Skeleton className="h-5 w-20 rounded-full" />
+        )
+      }
     >
       {/* Same height as the plot (chart + 24px x-axis) so nothing shifts when it streams in. */}
       <div className="mt-6 flex h-56 flex-col sm:h-64">

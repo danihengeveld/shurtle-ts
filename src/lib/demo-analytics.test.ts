@@ -5,11 +5,28 @@ import { demoAnalytics } from "./demo-analytics";
 const NOW = Date.UTC(2026, 10, 7, 14, 25, 30);
 
 describe("demoAnalytics", () => {
-  it("is the same all day, so ranges and pages agree with each other", () => {
-    const morning = demoAnalytics(Date.UTC(2026, 10, 7, 1));
-    const later = demoAnalytics(NOW);
-    expect(later.link.createdAt).toEqual(morning.link.createdAt);
-    expect(later.link.hits).toBeGreaterThanOrEqual(morning.link.hits);
+  it("only adds clicks as the day goes on, never changes the ones already shown", async () => {
+    const window = (now: number, createdAt: Date) =>
+      analyticsWindow("all", now, createdAt);
+    const shownAt = async (now: number) => {
+      const { link, source } = demoAnalytics(now);
+      const pages = [];
+      const first = await source.recentClicks(window(now, link.createdAt), 1);
+      for (let page = 1; page <= first.pageCount; page++) {
+        pages.push(
+          ...(await source.recentClicks(window(now, link.createdAt), page))
+            .clicks,
+        );
+      }
+      return { link, clicks: pages };
+    };
+
+    const earlier = await shownAt(Date.UTC(2026, 10, 7, 9, 0, 0));
+    const later = await shownAt(NOW);
+    expect(later.link.createdAt).toEqual(earlier.link.createdAt);
+    expect(later.link.hits).toBeGreaterThan(earlier.link.hits);
+    // Newest first: everything shown at 9:00 is still there, unchanged, after the newer clicks.
+    expect(later.clicks.slice(-earlier.clicks.length)).toEqual(earlier.clicks);
   });
 
   it("adds up the same way in every section", async () => {

@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { niceMax } from "./clicks-chart-plot";
 
 describe("niceMax", () => {
-  it("has a floor of 4 for small or empty series", () => {
+  it("lets single clicks reach halfway up, and gives an empty chart some height", () => {
     expect(niceMax(0)).toBe(4);
-    expect(niceMax(1)).toBe(4);
+    expect(niceMax(1)).toBe(2);
+    expect(niceMax(2)).toBe(4);
   });
 
   it("always leaves headroom and a whole-number midpoint", () => {

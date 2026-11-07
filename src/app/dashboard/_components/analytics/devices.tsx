@@ -184,7 +184,7 @@ export async function Devices({ data }: { data: Promise<DevicesData> }) {
               items={softwareItems(browsers)}
               total={total}
               label="Clicks by browser"
-              noun="browsers"
+              noun={{ one: "browser", other: "browsers" }}
               limit={5}
             />
           </TabsContent>
@@ -193,7 +193,7 @@ export async function Devices({ data }: { data: Promise<DevicesData> }) {
               items={softwareItems(os)}
               total={total}
               label="Clicks by operating system"
-              noun="systems"
+              noun={{ one: "system", other: "systems" }}
               limit={5}
             />
           </TabsContent>

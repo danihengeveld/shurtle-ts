@@ -56,7 +56,7 @@ export function LinkHeader({
   link: AnalyticsLink;
   demo?: boolean;
 }) {
-  const { now, hydrated } = useNow();
+  const { now } = useNow();
   const expiresAt = link.expiresAt === null ? null : new Date(link.expiresAt);
   const { state } = linkLifecycle({ expiresAt, archived: link.archived }, now);
   const live = state === "live";
@@ -116,11 +116,9 @@ export function LinkHeader({
             <div className="flex items-center gap-1">
               <dt>Created</dt>
               <dd className="text-foreground">
+                {/* UTC, like every other date on the page ("times in UTC"). */}
                 <time dateTime={createdAt.toISOString()}>
-                  {formatDate(createdAt, {
-                    timeZone: hydrated ? undefined : "UTC",
-                    withYear: true,
-                  })}
+                  {formatDate(createdAt, { timeZone: "UTC", withYear: true })}
                 </time>
               </dd>
             </div>

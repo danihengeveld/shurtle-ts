@@ -83,9 +83,14 @@ export async function getRenewableShurtles(limit: number) {
   return getRenewableShurtlesByUserId(await requireUserId(), limit);
 }
 
-/** One of the user's links by id, or null when there's no such link or it isn't theirs. */
+/**
+ * One of the user's links by id, with the user's id for further per-user reads, or null when there's
+ * no such link or it isn't theirs.
+ */
 export async function getOwnShurtle(id: string) {
-  return getShurtleByUserId(await requireUserId(), id);
+  const userId = await requireUserId();
+  const shurtle = await getShurtleByUserId(userId, id);
+  return shurtle && { userId, shurtle };
 }
 
 export type ShurtleStats = {
@@ -269,7 +274,10 @@ async function getShurtleByUserId(userId: string, id: string) {
         (moment) => moment.getTime() > Date.now(),
       )
     : [];
-  cacheLife(minutesProfileUntil(changes[0] ?? null));
+  const profile = minutesProfileUntil(changes[0] ?? null);
+  // Its click count moves with every visit, and its page says it updates every minute: don't let
+  // an hour-old count through after the page has sat unopened.
+  cacheLife({ ...profile, expire: Math.min(profile.expire, 120) });
   return link ?? null;
 }
 
@@ -331,7 +339,14 @@ export async function recordHit(shurtleId: string, geo: Geo, visit: Visit) {
 
   try {
     if (visit.isBot) {
-      await db.insert(shurtleHits).values(hit);
+      // Counted nowhere, so it keeps nothing it doesn't need: no place.
+      await db.insert(shurtleHits).values({
+        ...hit,
+        country: null,
+        region: null,
+        city: null,
+        coordinates: null,
+      });
       return;
     }
 

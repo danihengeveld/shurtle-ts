@@ -57,7 +57,13 @@ export function WorldMapFrame({
       ref={frame}
       onPointerMove={track}
       onPointerDown={track}
-      onPointerLeave={() => setHovered(null)}
+      // A finger lifts right after tapping: keep that country shown until the next tap (outside
+      // a country clears it). A mouse leaving the map clears it at once.
+      onPointerLeave={(event) => {
+        if (event.pointerType !== "touch") setHovered(null);
+      }}
+      // Scrolling the page with a finger that started on the map.
+      onPointerCancel={() => setHovered(null)}
       className={cn("relative", className)}
     >
       {children}
