@@ -79,7 +79,8 @@ export function Features() {
           vignette={<ExpiryVignette />}
         >
           Give a link an expiry date and time and it stops resolving right then.
-          Expired links stay in your dashboard, click history and all.
+          Changed your mind? Renew it within 24 hours and it&rsquo;s back, slug
+          and clicks and all.
         </FeatureCard>
         <FeatureCard
           className="lg:col-span-2"

@@ -35,10 +35,10 @@ type LinksContextValue = {
   isNavigating: boolean;
   /** The source of the navigation in flight, if any. */
   pending: NavigationSource | null;
-  /** Slugs with a delete in flight (optimistic). */
+  /** Ids of links with a delete in flight (optimistic). */
   deleting: ReadonlySet<string>;
   /** Must be called inside a transition. */
-  markDeleting: (slug: string) => void;
+  markDeleting: (id: string) => void;
 };
 
 const LinksContext = createContext<LinksContextValue | null>(null);
@@ -49,7 +49,7 @@ export function useLinks() {
   return context;
 }
 
-const NO_SLUGS: ReadonlySet<string> = new Set();
+const NO_IDS: ReadonlySet<string> = new Set();
 
 /** Lives in the dashboard layout, so the search box (layout) and the list (page) share it. */
 export function LinksProvider({ children }: { children: React.ReactNode }) {
@@ -57,8 +57,8 @@ export function LinksProvider({ children }: { children: React.ReactNode }) {
   const [isNavigating, startNavigation] = useTransition();
   const [source, setSource] = useState<NavigationSource>("list");
   const [deleting, markDeleting] = useOptimistic(
-    NO_SLUGS,
-    (current, slug: string) => new Set(current).add(slug),
+    NO_IDS,
+    (current, id: string) => new Set(current).add(id),
   );
   const restoreFocus = useRef(false);
 
@@ -154,16 +154,16 @@ export function LinksBusyRegion({
 
 /** A table row that dims and becomes inert while its delete is in flight. */
 export function LinkTableRow({
-  slug,
+  id,
   className,
   children,
 }: {
-  slug: string;
+  id: string;
   className?: string;
   children: React.ReactNode;
 }) {
   const { deleting } = useLinks();
-  const isDeleting = deleting.has(slug);
+  const isDeleting = deleting.has(id);
   return (
     <tr
       data-deleting={isDeleting || undefined}
@@ -176,16 +176,16 @@ export function LinkTableRow({
 }
 
 export function LinkListItem({
-  slug,
+  id,
   className,
   children,
 }: {
-  slug: string;
+  id: string;
   className?: string;
   children: React.ReactNode;
 }) {
   const { deleting } = useLinks();
-  const isDeleting = deleting.has(slug);
+  const isDeleting = deleting.has(id);
   return (
     <li
       data-deleting={isDeleting || undefined}

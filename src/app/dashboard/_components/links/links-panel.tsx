@@ -14,6 +14,7 @@ import {
   type LinkListQuery,
   type LinkStatus,
 } from "@/lib/link-list";
+import { releaseTime } from "@/lib/link-lifecycle";
 import { siteInfo } from "@/lib/site";
 import { cn } from "cn";
 import {
@@ -26,10 +27,13 @@ import Link from "next/link";
 import { CreateLinkButton } from "../create/create-link-provider";
 import { formatCount } from "../format";
 import { ServerNowProvider } from "../time";
+import { ExpiryEditorProvider } from "./expiry-editor";
 import { LinksList, LinksTable, type LinkRow } from "./link-rows";
 import { LinksPagination } from "./links-pagination";
 import { LinksNavLink } from "./links-provider";
 import { PerPageSelect } from "./per-page-select";
+import { RefreshAt } from "./refresh-at";
+import { RenewableLinks } from "./renewable-links";
 
 export type LinksPage = LinkListQuery & {
   shurtles: LinkRow[];
@@ -37,7 +41,18 @@ export type LinksPage = LinkListQuery & {
   totalPages: number;
   /** Unfiltered totals per status, for the empty states. */
   counts: Record<LinkStatus, number>;
+  /** The "Just expired" group: only on the first page of the active list, without a search. */
+  renewable?: { links: LinkRow[]; total: number };
 };
+
+/** When each shown link next changes state: its expiry, or the end of its renewal window. */
+function stateChanges(links: LinkRow[]) {
+  return links.flatMap(({ expiresAt, archived }) =>
+    expiresAt && !archived
+      ? [expiresAt.getTime(), releaseTime(expiresAt).getTime()]
+      : [],
+  );
+}
 
 /**
  * One page of links: table (≥ md) / stacked list (< md), pagination and empty states.
@@ -60,6 +75,7 @@ export function LinksPanel({
     query,
     status,
     counts,
+    renewable,
   } = data;
   const expired = status === "expired";
   const first = (page - 1) * perPage + 1;
@@ -143,14 +159,26 @@ export function LinksPanel({
 
   return (
     <ServerNowProvider now={now}>
-      <p className="sr-only" role="status">
-        {query
-          ? totalCount === 0
-            ? `No ${kind}links match “${query}”.`
-            : `${formatCount(totalCount)} ${noun} for “${query}”.`
-          : ""}
-      </p>
-      {list}
+      <ExpiryEditorProvider>
+        <RefreshAt
+          moments={stateChanges([...links, ...(renewable?.links ?? [])])}
+        />
+        <p className="sr-only" role="status">
+          {query
+            ? totalCount === 0
+              ? `No ${kind}links match “${query}”.`
+              : `${formatCount(totalCount)} ${noun} for “${query}”.`
+            : ""}
+        </p>
+        {renewable && renewable.links.length > 0 && (
+          <RenewableLinks
+            links={renewable.links}
+            total={renewable.total}
+            expiredHref={linksHref({ status: "expired", perPage })}
+          />
+        )}
+        {list}
+      </ExpiryEditorProvider>
     </ServerNowProvider>
   );
 }
@@ -285,7 +313,8 @@ function NoExpiredLinks() {
         <EmptyHeading>No expired links</EmptyHeading>
         <EmptyDescription className="text-pretty">
           Links you give an expiry date land here once it passes. They stop
-          redirecting, but keep their click history.
+          redirecting but keep their click history, and you have 24 hours to
+          renew one before its slug is free for others.
         </EmptyDescription>
       </EmptyHeader>
     </EmptyCard>

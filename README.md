@@ -8,7 +8,7 @@ An open source, blazingly fast URL shortener built with Next.js 16, React 19 and
 
 - **🔗 Short links** — paste a long URL and get a short, readable link (`shurtle.app/x7Kp2q`). Links without `https://` are fixed up for you.
 - **🎯 Custom slugs** — choose your own slug, or claim a free one straight from the 404 page.
-- **⏳ Expiring links** — optionally expire a link at the end of a chosen day; expired links stop resolving and are cleaned up weekly.
+- **⏳ Expiring links** — optionally expire a link at a chosen moment, and extend it any time. Expired links stop resolving but keep their stats. For 24 hours after expiry the slug stays reserved for its owner, who can renew the link; after that, anyone can claim it (the expired page counts down to that moment).
 - **📈 Click stats** — per-link click counts, last-click time and a 30-day clicks chart on your dashboard.
 - **🔎 Dashboard** — search, paginate, copy and delete your links.
 - **🛡️ Abuse protection** — rate limiting on opening and creating links.
@@ -21,6 +21,7 @@ An open source, blazingly fast URL shortener built with Next.js 16, React 19 and
 - **The dashboard streams.** With Cache Components (partial prerendering) the page shell is static, while the user's stats, chart and links stream in behind Suspense boundaries. Per-user data is cached with `"use cache"` and invalidated instantly after you create or delete a link (`updateTag`).
 - **Auth is checked where data is read.** Every Server Component and Server Function that touches user data calls `requireUserId()` (`src/server/auth.ts`), rather than relying on path matching in the proxy.
 - **One set of slug rules.** `src/lib/slugs.ts` defines the slug format and reserved paths, and is shared by validation, the proxy and the UI.
+- **Links have a lifecycle.** `src/lib/link-lifecycle.ts` defines it: live → renewable (expired, slug reserved for its owner for 24 hours) → released (slug free for anyone). Each link has its own id, and a slug is unique only among unreleased links (a partial unique index), so a released slug can be reused while the old link keeps its click history.
 - **Each list is a route.** Active links live at `/dashboard` and expired links at `/dashboard/expired`, each with its own `loading.tsx`. The header, stats, tabs and search sit in the dashboard layout and stay mounted; search, page and page size are query params that keep the current list on screen (dimmed) until the next one is ready.
 
 ## 🗂️ Project structure
@@ -55,7 +56,7 @@ Folders starting with `_` are private (never routes) and folders in `(parenthese
 | Rate limiting | [Upstash Redis](https://upstash.com/) + `@upstash/ratelimit`                                                                                                                                   |
 | Auth          | [Clerk](https://clerk.com/)                                                                                                                                                                    |
 | Validation    | [Zod 4](https://zod.dev/)                                                                                                                                                                      |
-| Hosting       | [Vercel](https://vercel.com/) (Cron for archiving expired links, Analytics, Speed Insights)                                                                                                    |
+| Hosting       | [Vercel](https://vercel.com/) (Cron for releasing expired links, Analytics, Speed Insights)                                                                                                    |
 
 ### 💰 Free tier notice
 
@@ -100,7 +101,7 @@ The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it m
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
    CLERK_SECRET_KEY="sk_..."
 
-   # Protects the daily archive-expired cron endpoint (any long random string)
+   # Protects the daily cron endpoint that releases expired links (any long random string)
    CRON_SECRET="..."
 
    # Optional: public origin used for short links and metadata.
@@ -120,6 +121,8 @@ The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it m
    ```bash
    pnpm db:push
    ```
+
+   Upgrading an existing database from before link ids? Run `drizzle/manual/0001_link_ids_and_slug_reuse.sql` once first (see the comments in that file).
 
 5. **Start the development server**
 
@@ -142,7 +145,7 @@ The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it m
 
 ### Deploying
 
-Deploy to Vercel with the environment variables above. `vercel.json` schedules `/api/cron/archive-expired` daily to archive expired links (they stop redirecting the moment they expire either way, and are never deleted automatically); Vercel sends `CRON_SECRET` automatically as a bearer token.
+Deploy to Vercel with the environment variables above. `vercel.json` schedules `/api/cron/archive-expired` daily to release links whose 24 hours to renew are over (they stop redirecting the moment they expire, a released slug can be claimed before the cron gets to it, and links are never deleted automatically); Vercel sends `CRON_SECRET` automatically as a bearer token.
 
 ## 🤝 Contributing
 

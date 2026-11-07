@@ -1,14 +1,17 @@
 "use server";
 
 import { createShurtleSchema } from "@/lib/schemas";
-import { SLUG_PATTERN } from "@/lib/slugs";
 import { updateTag } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
 import { requireUserId } from "./auth";
 import { urlHost } from "./log-serializers";
 import { logger } from "./logger";
-import { deleteOwnShurtle, insertShurtle } from "./mutations";
+import {
+  deleteOwnShurtle,
+  insertShurtle,
+  setOwnShurtleExpiry,
+} from "./mutations";
 import { rateLimits } from "./ratelimits";
 import { shurtlesTag, statsTag } from "./tags";
 
@@ -114,6 +117,16 @@ export async function createShurtle(
         return fail({
           slug: ["That slug is already taken. Please choose another one."],
         });
+      case "slug-renewable":
+        logger.debug(
+          { userId, slug: customSlug },
+          "create shurtle rejected: slug held by the user's renewable link",
+        );
+        return fail({
+          slug: [
+            `/${customSlug} is your link that expired recently. Renew it from your links to keep its clicks.`,
+          ],
+        });
       case "no-free-slug":
         // 7 characters from 56 symbols: repeated collisions mean something else is wrong.
         logger.warn(
@@ -154,48 +167,98 @@ export async function createShurtle(
   }
 }
 
-export async function deleteShurtle(
-  slug: string,
-): Promise<DeleteShurtleResult> {
+/** Client-supplied link ids: only accept a UUID. */
+const linkIdSchema = z.uuid();
+
+export async function deleteShurtle(id: string): Promise<DeleteShurtleResult> {
   const userId = await requireUserId();
 
-  // Client-supplied: only accept the shape a stored slug can have. Deliberately looser than
-  // isValidSlug (no reserved words, column-length cap) so links created under older rules can
-  // still be deleted.
-  if (
-    typeof slug !== "string" ||
-    slug.length > 255 ||
-    !SLUG_PATTERN.test(slug)
-  ) {
+  if (!linkIdSchema.safeParse(id).success) {
     // The UI never sends this, so the action was called directly. Log the shape, not the value.
-    logger.warn(
-      {
-        userId,
-        type: typeof slug,
-        length: typeof slug === "string" ? slug.length : null,
-      },
-      "delete shurtle rejected: invalid slug",
-    );
+    logger.warn({ userId, type: typeof id }, "delete shurtle rejected: bad id");
     return { ok: false, error: "Invalid shurtle." };
   }
 
   try {
-    if (!(await deleteOwnShurtle(slug))) {
+    if (!(await deleteOwnShurtle(id))) {
       // Already deleted (e.g. in another tab) or not this user's link.
-      logger.info({ userId, slug }, "delete shurtle found nothing to delete");
+      logger.info({ userId, id }, "delete shurtle found nothing to delete");
       return { ok: false, error: "This shurtle no longer exists." };
     }
 
-    logger.info({ userId, slug }, "shurtle deleted");
+    logger.info({ userId, id }, "shurtle deleted");
     updateTag(shurtlesTag(userId));
     updateTag(statsTag(userId));
     return { ok: true };
   } catch (error) {
-    logger.error({ err: error, userId, slug }, "failed to delete shurtle");
+    logger.error({ err: error, userId, id }, "failed to delete shurtle");
     return {
       ok: false,
       error:
         "Something went wrong while deleting your shurtle. Please try again.",
+    };
+  }
+}
+
+export type SetShurtleExpiryResult =
+  | { ok: true; slug: string; expiresAt: string | null }
+  | { ok: false; error: string };
+
+/**
+ * Gives a link a new expiry: extends a live link, or renews one that expired less than 24 hours
+ * ago (same slug, same click history). `expiresAt` is an ISO timestamp, or "" for never.
+ */
+export async function setShurtleExpiry(
+  id: string,
+  expiresAt: string,
+): Promise<SetShurtleExpiryResult> {
+  const userId = await requireUserId();
+
+  const parsedId = linkIdSchema.safeParse(id);
+  const parsedExpiry = createShurtleSchema.shape.expiresAt.safeParse(expiresAt);
+  if (!parsedId.success) {
+    logger.warn({ userId, type: typeof id }, "set expiry rejected: bad id");
+    return { ok: false, error: "Invalid shurtle." };
+  }
+  if (!parsedExpiry.success) {
+    return {
+      ok: false,
+      error:
+        parsedExpiry.error.issues[0]?.message ?? "Pick a valid expiration.",
+    };
+  }
+
+  const expiry = parsedExpiry.data ?? null;
+  try {
+    const result = await setOwnShurtleExpiry(
+      id,
+      expiry ? new Date(expiry) : null,
+    );
+    switch (result.status) {
+      case "not-found":
+        logger.info({ userId, id }, "set expiry found no such shurtle");
+        return { ok: false, error: "This shurtle no longer exists." };
+      case "released":
+        logger.info({ userId, id }, "set expiry rejected: slug released");
+        return {
+          ok: false,
+          error:
+            "Its 24 hours to renew are over, so the slug is free for anyone to claim again.",
+        };
+    }
+
+    logger.info(
+      { userId, id, slug: result.slug, expiresAt: expiry },
+      "shurtle expiry set",
+    );
+    updateTag(shurtlesTag(userId));
+    updateTag(statsTag(userId));
+    return { ok: true, slug: result.slug, expiresAt: expiry };
+  } catch (error) {
+    logger.error({ err: error, userId, id }, "failed to set shurtle expiry");
+    return {
+      ok: false,
+      error: "Something went wrong while saving. Please try again.",
     };
   }
 }

@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   addLocalDays,
   atLocalTime,
+  formatClock,
   formatCount,
   formatRelative,
+  formatTimeLeft,
   getExpiryStatus,
   getTrend,
   splitUrl,
@@ -45,6 +47,28 @@ describe("getExpiryStatus", () => {
     expect(getExpiryStatus(new Date(NOW), NOW).kind).toBe("expired");
     expect(getExpiryStatus(new Date(NOW + 7 * DAY - 1), NOW).kind).toBe("soon");
     expect(getExpiryStatus(new Date(NOW + 7 * DAY), NOW).kind).toBe("later");
+  });
+});
+
+describe("formatTimeLeft", () => {
+  it("rounds down to hours and minutes", () => {
+    expect(formatTimeLeft(17 * 3_600_000 + 5 * 60_000 + 59_000)).toBe("17h 5m");
+    expect(formatTimeLeft(3 * 3_600_000)).toBe("3h");
+    expect(formatTimeLeft(42 * 60_000 + 30_000)).toBe("42m");
+  });
+
+  it("never shows zero minutes while time remains", () => {
+    expect(formatTimeLeft(59_999)).toBe("under a minute");
+    expect(formatTimeLeft(-5)).toBe("under a minute");
+  });
+});
+
+describe("formatClock", () => {
+  it("counts down in h:mm:ss, rounding up", () => {
+    expect(formatClock(17 * 3_600_000 + 42 * 60_000 + 8_001)).toBe("17:42:09");
+    expect(formatClock(999)).toBe("0:00:01");
+    expect(formatClock(0)).toBe("0:00:00");
+    expect(formatClock(-1000)).toBe("0:00:00");
   });
 });
 

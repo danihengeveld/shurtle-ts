@@ -21,31 +21,44 @@ import { displayShortUrl } from "@/lib/site";
 import { deleteShurtle } from "@/server/actions";
 import { cn } from "cn";
 import { Spinner } from "@/components/ui/spinner";
+import { linkLifecycle } from "@/lib/link-lifecycle";
 import {
+  CalendarClockIcon,
   CopyIcon,
   ExternalLinkIcon,
   EllipsisIcon,
+  RotateCcwIcon,
   Trash2Icon,
 } from "lucide-react";
 import { startTransition, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useCopyShortLink } from "../copy-button";
+import { useNow } from "../time";
+import { useOpenExpiryEditor } from "./expiry-editor";
+import type { LinkRow } from "./link-rows";
 import { useLinks } from "./links-provider";
 
 export function LinkActions({
-  slug,
-  url,
-  expired = false,
+  link,
   className,
 }: {
-  slug: string;
-  url: string;
-  /** Expired links can't be copied (they don't redirect) or changed; only opened or deleted. */
-  expired?: boolean;
+  link: LinkRow;
   className?: string;
 }) {
+  const { id, slug, url } = link;
   const { markDeleting } = useLinks();
   const { copy } = useCopyShortLink(slug);
+  const openExpiryEditor = useOpenExpiryEditor(link);
+  const { now } = useNow();
+  // Expired links can't be copied (they don't redirect); renewable ones can be brought back.
+  const { state } = linkLifecycle(
+    {
+      expiresAt: link.expiresAt === null ? null : new Date(link.expiresAt),
+      archived: link.archived,
+    },
+    now,
+  );
+  const expired = state !== "live";
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, startDelete] = useTransition();
   const deleted = useRef(false);
@@ -53,10 +66,10 @@ export function LinkActions({
 
   function confirmDelete() {
     startDelete(async () => {
-      markDeleting(slug);
+      markDeleting(id);
       let result;
       try {
-        result = await deleteShurtle(slug);
+        result = await deleteShurtle(id);
       } catch {
         result = {
           ok: false,
@@ -101,10 +114,28 @@ export function LinkActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5">
+          {state === "renewable" && (
+            <DropdownMenuItem
+              onSelect={() => openExpiryEditor(triggerRef.current)}
+              className="h-9 rounded-lg"
+            >
+              <RotateCcwIcon aria-hidden />
+              Renew…
+            </DropdownMenuItem>
+          )}
           {!expired && (
             <DropdownMenuItem onSelect={copy} className="h-9 rounded-lg">
               <CopyIcon aria-hidden />
               Copy short link
+            </DropdownMenuItem>
+          )}
+          {!expired && (
+            <DropdownMenuItem
+              onSelect={() => openExpiryEditor(triggerRef.current)}
+              className="h-9 rounded-lg"
+            >
+              <CalendarClockIcon aria-hidden />
+              Change expiry…
             </DropdownMenuItem>
           )}
           <DropdownMenuItem asChild className="h-9 rounded-lg">

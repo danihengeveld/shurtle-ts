@@ -120,12 +120,13 @@ export function ExpiryField({
   errorId: string;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const hintId = `${errorId}-hint`;
   const date = expiryDate(value);
   const today = startOfLocalDay(new Date());
 
   return (
     <FieldSet
-      aria-describedby={error ? `${errorId} expiry-hint` : "expiry-hint"}
+      aria-describedby={error ? `${errorId} ${hintId}` : hintId}
       className="gap-2.5"
     >
       <FieldLegend variant="label" className="mb-2.5">
@@ -233,10 +234,7 @@ export function ExpiryField({
         </div>
       )}
 
-      <FieldDescription
-        id="expiry-hint"
-        className="text-[13px] leading-relaxed"
-      >
+      <FieldDescription id={hintId} className="text-[13px] leading-relaxed">
         {value.preset === "never" ? (
           "The link keeps working until you delete it."
         ) : date ? (

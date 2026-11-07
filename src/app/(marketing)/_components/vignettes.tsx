@@ -6,6 +6,7 @@ import {
   CalendarClock,
   Check,
   Moon,
+  RotateCcw,
   Shuffle,
   Sun,
 } from "lucide-react";
@@ -77,8 +78,9 @@ export function ExpiryVignette() {
         <span className="min-w-0 flex-1 truncate font-mono text-[0.8125rem] text-muted-foreground line-through decoration-muted-foreground/60">
           beta-invite
         </span>
-        <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-          Expired
+        <span className="flex shrink-0 items-center gap-1.5 rounded-md bg-brand-soft px-2 py-1 text-xs font-medium dark:bg-brand-soft/50">
+          <RotateCcw className="size-3.5 text-brand-ink" />
+          Renew · 17h
         </span>
       </div>
       <p className="flex items-center gap-1.5 pl-1 text-xs text-muted-foreground">

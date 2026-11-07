@@ -1,24 +1,30 @@
 import { Hint } from "@/components/hint";
-import type { Shurtle } from "@/server/db/schema";
 import { siteInfo } from "@/lib/site";
 import { cn } from "cn";
 import { ArrowUpRightIcon, MousePointerClickIcon } from "lucide-react";
 import { CopyButton } from "../copy-button";
-import { ExpiryBadge } from "../expiry-badge";
 import { formatCount, splitUrl } from "../format";
 import { RelativeTime } from "../time";
+import { LinkExpiry, RenewButton } from "./expiry-editor";
 import { LinkActions } from "./link-actions";
 import { LinkListItem, LinkTableRow } from "./links-provider";
 
-/** Only what the list renders; keeps the RSC payload small. */
-export type LinkRow = Pick<
-  Shurtle,
-  "slug" | "url" | "hits" | "createdAt" | "lastHitAt" | "expiresAt"
->;
+/** Only what the lists render; keeps the RSC payload small. */
+export type LinkRow = {
+  id: string;
+  slug: string;
+  url: string;
+  hits: number;
+  createdAt: Date;
+  lastHitAt: Date | null;
+  expiresAt: Date | null;
+  /** Released early (see src/lib/link-lifecycle.ts): its slug is no longer reserved. */
+  archived: boolean;
+};
 
 const host = siteInfo.baseUrl.host;
 
-function ShortLink({
+export function ShortLink({
   slug,
   compactHost = false,
   expired = false,
@@ -61,7 +67,13 @@ function ShortLink({
   );
 }
 
-function Destination({ url, className }: { url: string; className?: string }) {
+export function Destination({
+  url,
+  className,
+}: {
+  url: string;
+  className?: string;
+}) {
   const { host: destinationHost, rest } = splitUrl(url);
   return (
     <Hint content={url}>
@@ -126,8 +138,9 @@ export function LinksTable({
           <col className="w-20" />
           <col className="hidden w-28 lg:table-column" />
           <col className="hidden w-28 lg:table-column" />
-          <col className="w-40" />
-          <col className="w-14" />
+          <col className="w-44" />
+          {/* Room for "Renew" next to the menu on expired links. */}
+          <col className={expired ? "w-36" : "w-14"} />
         </colgroup>
         <thead className="border-b bg-muted/45 dark:bg-muted/30">
           <tr>
@@ -157,8 +170,8 @@ export function LinksTable({
         <tbody>
           {links.map((link) => (
             <LinkTableRow
-              key={link.slug}
-              slug={link.slug}
+              key={link.id}
+              id={link.id}
               className="border-b transition-[background-color,opacity] duration-200 last:border-0 hover:bg-muted/40 data-deleting:opacity-40 dark:hover:bg-muted/25"
             >
               <td className={td}>
@@ -194,14 +207,13 @@ export function LinksTable({
                 )}
               </td>
               <td className={td}>
-                <ExpiryBadge expiresAt={link.expiresAt} />
+                <LinkExpiry link={link} />
               </td>
-              <td className={cn(td, "text-right")}>
-                <LinkActions
-                  slug={link.slug}
-                  url={link.url}
-                  expired={expired}
-                />
+              <td className={td}>
+                <div className="flex items-center justify-end gap-1.5">
+                  {expired && <RenewButton link={link} />}
+                  <LinkActions link={link} />
+                </div>
               </td>
             </LinkTableRow>
           ))}
@@ -228,8 +240,8 @@ export function LinksList({
     >
       {links.map((link) => (
         <LinkListItem
-          key={link.slug}
-          slug={link.slug}
+          key={link.id}
+          id={link.id}
           className="py-3 pr-2 pl-4 transition-opacity duration-200 data-deleting:opacity-40"
         >
           <div className="flex items-center gap-1">
@@ -245,12 +257,7 @@ export function LinksList({
                 className="shrink-0"
               />
             )}
-            <LinkActions
-              slug={link.slug}
-              url={link.url}
-              expired={expired}
-              className="size-10 shrink-0"
-            />
+            <LinkActions link={link} className="size-10 shrink-0" />
           </div>
           <div className="pr-2">
             <Destination url={link.url} className="-mt-0.5" />
@@ -267,10 +274,11 @@ export function LinksList({
               <span>
                 Created <RelativeTime date={link.createdAt} />
               </span>
-              {link.expiresAt && (
-                <ExpiryBadge expiresAt={link.expiresAt} compact />
-              )}
+              {link.expiresAt && <LinkExpiry link={link} compact />}
             </div>
+            {expired && (
+              <RenewButton link={link} className="mt-3 h-10 w-full" />
+            )}
           </div>
         </LinkListItem>
       ))}
