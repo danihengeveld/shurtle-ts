@@ -70,13 +70,13 @@ GET shurtle.app/x7Kp2qR
 
 ### Prerequisites
 
-- Node.js 22 or newer (24 LTS recommended)
+- Node.js 26 LTS or newer
 - pnpm: `corepack enable` picks up the version pinned in `package.json`
 - A Postgres database ([Neon](https://neon.tech/), or Vercel's Neon integration)
 - An [Upstash](https://upstash.com/) Redis database
 - A [Clerk](https://clerk.com/) application
 
-A [devcontainer](.devcontainer/devcontainer.json) with Node 24, pnpm and the recommended editor extensions is included if you prefer to work in a container.
+A [devcontainer](.devcontainer/devcontainer.json) with Node 26, pnpm and the recommended editor extensions is included if you prefer to work in a container.
 
 ### Setup
 
