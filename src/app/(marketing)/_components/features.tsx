@@ -1,4 +1,6 @@
 import { cn } from "cn";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { SectionHeading } from "./section-heading";
 import {
   ClicksVignette,
@@ -13,6 +15,8 @@ interface FeatureCardProps {
   title: string;
   children: React.ReactNode;
   vignette: React.ReactNode;
+  /** A link below the description. */
+  action?: React.ReactNode;
   className?: string;
 }
 
@@ -20,6 +24,7 @@ function FeatureCard({
   title,
   children,
   vignette,
+  action,
   className,
 }: FeatureCardProps) {
   return (
@@ -42,6 +47,7 @@ function FeatureCard({
         <p className="mt-2 text-[0.9375rem]/relaxed text-pretty text-muted-foreground">
           {children}
         </p>
+        {action && <div className="mt-4">{action}</div>}
       </div>
     </li>
   );
@@ -94,9 +100,22 @@ export function Features() {
           className="md:col-span-2 lg:col-span-4"
           title="Every click, counted."
           vignette={<ClicksVignette />}
+          action={
+            <Link
+              href="/demo"
+              className="group inline-flex items-center gap-1 rounded-sm text-sm font-medium text-brand-ink underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              See a link&rsquo;s page with sample data
+              <ArrowRight
+                aria-hidden
+                className="size-4 transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5"
+              />
+            </Link>
+          }
         >
-          Each redirect bumps a counter. Your dashboard shows clicks per link,
-          when the last one landed, and a chart of the past 30 days.
+          Every link gets its own page: clicks over time, a world map of where
+          they came from, the busiest hours, which sites send people and what
+          they use. Bots and link previews don&rsquo;t count.
         </FeatureCard>
         <FeatureCard
           className="lg:col-span-3"

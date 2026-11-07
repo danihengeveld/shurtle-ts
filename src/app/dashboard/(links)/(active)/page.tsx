@@ -1,4 +1,4 @@
-import { LinksPage } from "../_components/links/links-page";
+import { LinksPage } from "../../_components/links/links-page";
 
 /*
  * /dashboard: active links. The route group gives this list its own segment (and `loading.tsx`), so

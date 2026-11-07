@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LinksPage } from "../_components/links/links-page";
+import { LinksPage } from "../../_components/links/links-page";
 
 export const metadata: Metadata = {
   title: "Expired links",

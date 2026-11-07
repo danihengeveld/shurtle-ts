@@ -2,6 +2,7 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { geolocation, ipAddress } from "@vercel/functions";
 import {
   NextResponse,
+  userAgent,
   type NextFetchEvent,
   type NextRequest,
 } from "next/server";
@@ -9,6 +10,7 @@ import { logger } from "./server/logger";
 import { rateLimits } from "./server/ratelimits";
 import { recordHit, resolveSlug } from "./server/queries";
 import { isValidSlug } from "./lib/slugs";
+import { toVisit } from "./lib/visit";
 
 /**
  * Clerk makes the session available to Server Components and Server Functions. Authorization is
@@ -113,7 +115,8 @@ async function resolveShortLink(
 
   // Debug only: every visit is already recorded in shurtle.hits, so production stays quiet.
   logger.debug({ slug }, "short link resolved");
-  event.waitUntil(recordHit(link.id, geolocation(request)));
+  const visit = toVisit(userAgent(request), request.headers.get("referer"));
+  event.waitUntil(recordHit(link.id, geolocation(request), visit));
 
   // 307 (not 301/308) so browsers don't cache the redirect: every visit is counted and edits apply.
   return NextResponse.redirect(link.url, { status: 307, headers });
