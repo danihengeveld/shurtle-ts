@@ -9,7 +9,9 @@ import {
 import type { AnalyticsLink } from "@/lib/analytics";
 import { linkLifecycle } from "@/lib/link-lifecycle";
 import { displayShortUrl } from "@/lib/site";
-import { ChartColumnIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowRightIcon, ChartColumnIcon } from "lucide-react";
+import Link from "next/link";
 import { CopyButton } from "../copy-button";
 
 /**
@@ -69,16 +71,22 @@ export function NoClicksYet({
           )}
         </EmptyDescription>
       </EmptyHeader>
-      {live && (
-        <EmptyContent>
+      <EmptyContent className="flex-col justify-center gap-2 min-[25rem]:flex-row">
+        {live && (
           <CopyButton
             slug={link.slug}
             label
             variant="outline"
             className="h-10 sm:h-9"
           />
-        </EmptyContent>
-      )}
+        )}
+        <Button asChild variant="ghost" className="h-10 sm:h-9">
+          <Link href="/demo">
+            See it with sample data
+            <ArrowRightIcon aria-hidden />
+          </Link>
+        </Button>
+      </EmptyContent>
     </Empty>
   );
 }

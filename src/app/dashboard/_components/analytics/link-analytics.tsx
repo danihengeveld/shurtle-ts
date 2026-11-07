@@ -68,7 +68,7 @@ export function LinkAnalytics({
               <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
                 <RangeToggle range={range} />
                 <p className="text-xs text-muted-foreground">
-                  Updated every minute · times in UTC
+                  {demo ? "Sample data" : "Updated every minute"} · times in UTC
                 </p>
               </div>
 

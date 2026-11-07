@@ -22,6 +22,7 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   // App routes
   "api",
   "dashboard",
+  "demo",
   "expired",
   "not-found",
   "slow-down",
