@@ -3,13 +3,17 @@ import { siteInfo } from "@/lib/site";
 import { cn } from "cn";
 import {
   Archive,
+  ArrowUpRight,
   CalendarClock,
   Check,
+  Flame,
   Moon,
   RotateCcw,
   Shuffle,
   Sun,
 } from "lucide-react";
+import { SHADE_BACKGROUNDS } from "../../dashboard/_components/analytics/shade-legend";
+import { worldDots } from "../../dashboard/_components/analytics/world-geometry";
 
 /*
  * Miniature, static UI scenes for the feature bento. All decorative: each card's heading and copy
@@ -116,48 +120,148 @@ export function ProxyVignette() {
   );
 }
 
-/** Illustrative 30-day series; not real data. */
-const CLICKS = [
-  3, 5, 4, 6, 8, 5, 7, 9, 6, 8, 11, 9, 7, 10, 12, 9, 13, 11, 10, 14, 12, 16, 13,
-  15, 18, 14, 17, 20, 16, 22,
-];
-const MAX_CLICKS = Math.max(...CLICKS);
+/** Illustrative clicks per country, as map shades (1 = few … 5 = most); not real data. */
+const SAMPLE_SHADES: Record<string, 1 | 2 | 3 | 4 | 5> = {
+  US: 5,
+  GB: 5,
+  NL: 5,
+  DE: 4,
+  IN: 4,
+  CA: 3,
+  BR: 3,
+  FR: 3,
+  AU: 2,
+  JP: 2,
+  ES: 2,
+  SE: 2,
+  PL: 2,
+  MX: 1,
+  ZA: 1,
+  AR: 1,
+  NG: 1,
+  ID: 1,
+  KE: 1,
+  NZ: 1,
+};
 
-export function ClicksVignette() {
+/** Static class names, so Tailwind sees every one. Index = shade. */
+const DOT_STROKES = [
+  "stroke-foreground/12",
+  "stroke-scale-1",
+  "stroke-scale-2",
+  "stroke-scale-3",
+  "stroke-scale-4",
+  "stroke-scale-5",
+] as const;
+
+/** Map units between dots: dense enough to read as a world, light enough to ship. */
+const DOT_SPACING = 10;
+
+/** One path per shade: each dot is a zero-length line with a round cap. */
+function dotPaths() {
+  const { width, height, dots } = worldDots(DOT_SPACING);
+  const paths = DOT_STROKES.map(() => "");
+  for (const { x, y, code } of dots) {
+    paths[SAMPLE_SHADES[code] ?? 0] += `M${Math.round(x)} ${Math.round(y)}h0`;
+  }
+  return { width, height, paths };
+}
+
+const miniCard =
+  "min-w-0 rounded-xl border bg-card/95 p-3 shadow-lift backdrop-blur-sm";
+
+/** Illustrative hour-of-day pattern for the busiest-time strip; not real data. */
+const HOURS = [1, 1, 0, 0, 1, 2, 3, 4, 3, 3, 4, 5, 4, 3] as const;
+
+/**
+ * A link's page in miniature: clicks on a dotted world map, with the numbers, the busiest time
+ * and the top sources in a row of cards tucked under it (over the empty southern ocean, so no
+ * country is hidden).
+ */
+export function AnalyticsVignette() {
+  const { width, height, paths } = dotPaths();
   return (
-    <div className="w-full max-w-lg">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="font-mono text-[0.8125rem] font-semibold">
-          x7Kp2qR
-        </span>
-        <span className="text-xs text-muted-foreground">
-          Clicks · last 30 days
-        </span>
-      </div>
-      <div className="relative mt-4 flex h-28 items-end gap-[3px] border-b border-foreground/15 pt-8 sm:gap-1">
-        {CLICKS.map((value, i) => {
-          const last = i === CLICKS.length - 1;
-          return (
-            <span
-              key={i}
-              className={cn(
-                "relative flex-1 rounded-t-[3px]",
-                last ? "bg-chart-1" : "bg-chart-1/35 dark:bg-chart-1/30",
-              )}
-              style={{ height: `${(value / MAX_CLICKS) * 100}%` }}
-            >
-              {last && (
-                <span className="absolute right-0 bottom-full mb-2 rounded-md bg-foreground px-2 py-1 text-[0.6875rem] font-medium whitespace-nowrap text-background shadow-soft">
-                  Today · {value}
-                </span>
-              )}
+    <div className="w-full max-w-2xl">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="block h-auto w-full"
+        fill="none"
+        strokeLinecap="round"
+        strokeWidth={DOT_SPACING * 0.74}
+      >
+        {paths.map((d, shade) =>
+          d ? <path key={shade} d={d} className={DOT_STROKES[shade]} /> : null,
+        )}
+      </svg>
+
+      <div className="relative -mt-6 grid grid-cols-2 gap-3 sm:-mt-10 sm:grid-cols-3">
+        <div className={miniCard}>
+          <p className="text-[0.6875rem] font-medium text-muted-foreground">
+            Clicks · 30 days
+          </p>
+          <p className="mt-1 font-display text-2xl leading-none font-semibold tracking-tight tabular-nums">
+            1,284
+          </p>
+          <p className="mt-2 flex items-center gap-1 text-[0.6875rem] text-muted-foreground">
+            <span className="inline-flex items-center gap-0.5 rounded-md bg-success/15 px-1 font-medium text-foreground tabular-nums">
+              <ArrowUpRight className="size-3 text-success" />
+              18%
             </span>
-          );
-        })}
-      </div>
-      <div className="mt-2 flex justify-between font-mono text-[0.625rem] text-muted-foreground">
-        <span>30 days ago</span>
-        <span>today</span>
+            vs. the 30 days before
+          </p>
+        </div>
+
+        <div className={miniCard}>
+          <p className="flex items-center gap-1.5 text-[0.6875rem] font-medium text-muted-foreground">
+            <Flame className="size-3" />
+            Busiest
+          </p>
+          <p className="mt-1 text-sm font-semibold">Thursdays, 4 PM</p>
+          <div className="mt-2 flex gap-0.5">
+            {HOURS.map((shade, index) => (
+              <span
+                key={index}
+                className={cn(
+                  "h-3 flex-1 rounded-[2px]",
+                  SHADE_BACKGROUNDS[shade],
+                )}
+              />
+            ))}
+          </div>
+          <div className="mt-1.5 flex justify-between font-mono text-[0.625rem] text-muted-foreground">
+            <span>9a</span>
+            <span>4p</span>
+            <span>10p</span>
+          </div>
+        </div>
+
+        {/* Two cards fit a phone; the sources join them from sm. */}
+        <div className={cn(miniCard, "max-sm:hidden")}>
+          <p className="text-[0.6875rem] font-medium text-muted-foreground">
+            Top sources
+          </p>
+          <ul className="mt-2 space-y-1">
+            {[
+              ["x.com", 31],
+              ["Direct", 24],
+              ["linkedin.com", 15],
+            ].map(([name, share]) => (
+              <li
+                key={name}
+                className="relative flex h-6 items-center justify-between px-1.5 text-[0.75rem]"
+              >
+                <span
+                  className="absolute inset-y-0 left-0 rounded-md bg-chart-1/14"
+                  style={{ width: `${(Number(share) / 31) * 100}%` }}
+                />
+                <span className="relative">{name}</span>
+                <span className="relative text-muted-foreground tabular-nums">
+                  {share}%
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
+import { Button } from "@/components/ui/button";
 import { cn } from "cn";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { SectionHeading } from "./section-heading";
 import {
-  ClicksVignette,
+  AnalyticsVignette,
   ExpiryVignette,
   ProxyVignette,
   RateLimitVignette,
@@ -15,39 +16,104 @@ interface FeatureCardProps {
   title: string;
   children: React.ReactNode;
   vignette: React.ReactNode;
-  /** A link below the description. */
-  action?: React.ReactNode;
   className?: string;
 }
+
+const card = "overflow-hidden rounded-3xl border bg-card shadow-soft";
+const stage =
+  "relative flex items-center justify-center overflow-hidden bg-muted/45";
+const cardTitle = "font-display font-semibold tracking-[-0.025em]";
+const cardCopy = "text-[0.9375rem]/relaxed text-pretty text-muted-foreground";
 
 function FeatureCard({
   title,
   children,
   vignette,
-  action,
   className,
 }: FeatureCardProps) {
   return (
-    <li
-      className={cn(
-        "flex flex-col overflow-hidden rounded-3xl border bg-card shadow-soft",
-        className,
-      )}
-    >
+    <li className={cn(card, "flex flex-col", className)}>
       <div
         aria-hidden="true"
-        className="relative flex min-h-52 flex-1 items-center justify-center overflow-hidden border-b bg-muted/45 px-5 py-9 sm:px-8"
+        className={cn(stage, "min-h-52 flex-1 border-b px-5 py-9 sm:px-8")}
       >
         {vignette}
       </div>
       <div className="p-6 sm:p-7">
-        <h3 className="font-display text-xl font-semibold tracking-[-0.025em]">
-          {title}
-        </h3>
-        <p className="mt-2 text-[0.9375rem]/relaxed text-pretty text-muted-foreground">
-          {children}
+        <h3 className={cn(cardTitle, "text-xl")}>{title}</h3>
+        <p className={cn(cardCopy, "mt-2")}>{children}</p>
+      </div>
+    </li>
+  );
+}
+
+/** The headline feature: a full-width card, words beside the picture, with a way into the demo. */
+function AnalyticsCard({ className }: { className?: string }) {
+  return (
+    <li
+      className={cn(
+        card,
+        "grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]",
+        className,
+      )}
+    >
+      <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+        <p className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+          <span
+            aria-hidden="true"
+            className="size-2 rotate-45 rounded-[2px] bg-brand-ink"
+          />
+          Link analytics
         </p>
-        {action && <div className="mt-4">{action}</div>}
+        <h3 className={cn(cardTitle, "mt-4 text-2xl text-balance sm:text-3xl")}>
+          Every click, on the map.
+        </h3>
+        <p className={cn(cardCopy, "mt-3")}>
+          Every link gets its own page: clicks over time, a world map of where
+          they came from, the busiest hours, which sites send people and what
+          they use.
+        </p>
+        <ul className="mt-5 space-y-2 text-sm">
+          {[
+            "Bots and link previews don’t count",
+            "No IP addresses or fingerprints stored",
+            "From the last 24 hours to all time",
+          ].map((point) => (
+            <li key={point} className="flex items-start gap-2.5">
+              <Check
+                aria-hidden="true"
+                className="mt-0.5 size-4 shrink-0 text-brand-ink"
+                strokeWidth={2.5}
+              />
+              {point}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-7">
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="group h-11 rounded-xl px-5"
+          >
+            <Link href="/demo">
+              Explore the demo
+              <ArrowRight
+                aria-hidden="true"
+                className="transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5"
+              />
+            </Link>
+          </Button>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        className={cn(
+          stage,
+          "border-t px-5 py-8 max-lg:order-first max-lg:border-t-0 max-lg:border-b sm:px-10 lg:border-t-0 lg:border-l",
+        )}
+      >
+        <AnalyticsVignette />
       </div>
     </li>
   );
@@ -69,6 +135,7 @@ export function Features() {
       </SectionHeading>
 
       <ul className="mt-12 grid gap-4 sm:mt-14 sm:gap-5 md:grid-cols-2 lg:grid-cols-6">
+        <AnalyticsCard className="md:col-span-2 lg:col-span-6" />
         <FeatureCard
           className="md:col-span-2 lg:col-span-4"
           title="Your slug, or ours."
@@ -97,28 +164,7 @@ export function Features() {
           Visits are logged afterwards, so they never slow the hop down.
         </FeatureCard>
         <FeatureCard
-          className="md:col-span-2 lg:col-span-4"
-          title="Every click, counted."
-          vignette={<ClicksVignette />}
-          action={
-            <Link
-              href="/demo"
-              className="group inline-flex items-center gap-1 rounded-sm text-sm font-medium text-brand-ink underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              See a link&rsquo;s page with sample data
-              <ArrowRight
-                aria-hidden
-                className="size-4 transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5"
-              />
-            </Link>
-          }
-        >
-          Every link gets its own page: clicks over time, a world map of where
-          they came from, the busiest hours, which sites send people and what
-          they use. Bots and link previews don&rsquo;t count.
-        </FeatureCard>
-        <FeatureCard
-          className="lg:col-span-3"
+          className="lg:col-span-2"
           title="A bouncer at the door."
           vignette={<RateLimitVignette />}
         >
@@ -126,7 +172,7 @@ export function Features() {
           scripts from hammering your shurtles.
         </FeatureCard>
         <FeatureCard
-          className="lg:col-span-3"
+          className="lg:col-span-2"
           title="Easy on the eyes."
           vignette={<ThemeVignette />}
         >
