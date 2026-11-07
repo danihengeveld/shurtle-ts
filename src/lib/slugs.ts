@@ -25,6 +25,7 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "expired",
   "not-found",
   "slow-down",
+  "pwa-icon",
   // Metadata routes
   "icon",
   "apple-icon",

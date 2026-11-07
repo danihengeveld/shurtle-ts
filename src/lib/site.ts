@@ -1,5 +1,3 @@
-import packageJson from "../../package.json";
-
 /**
  * Public origin used to build absolute URLs (metadata, sitemap, short links).
  * Override with NEXT_PUBLIC_SITE_URL, e.g. for self-hosting or preview deployments.
@@ -17,7 +15,6 @@ export const siteInfo = {
   baseUrl: new URL(resolveBaseUrl()),
   repoUrl: "https://github.com/danihengeveld/shurtle-ts",
   releasesUrl: "https://github.com/danihengeveld/shurtle-ts/releases",
-  version: packageJson.version,
   author: {
     name: "Dani Hengeveld",
     url: "https://dani.hengeveld.dev",

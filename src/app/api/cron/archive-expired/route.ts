@@ -1,8 +1,6 @@
-import { db } from "@/server/db";
-import { shurtles } from "@/server/db/schema";
 import { logger } from "@/server/logger";
+import { archiveExpiredShurtles } from "@/server/mutations";
 import { shurtlesTag, statsTag } from "@/server/tags";
-import { and, isNull, lte, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { timingSafeEqual } from "node:crypto";
 import { connection, type NextRequest } from "next/server";
@@ -31,16 +29,10 @@ export async function GET(request: NextRequest) {
 
   const startedAt = performance.now();
   try {
-    const archived = await db
-      .update(shurtles)
-      .set({ archivedAt: sql`now()` })
-      .where(
-        and(isNull(shurtles.archivedAt), lte(shurtles.expiresAt, sql`now()`)),
-      )
-      .returning({ userId: shurtles.userId });
+    const archived = await archiveExpiredShurtles();
 
     // The dashboard already shows these as expired; refresh cached lists and counts in the background.
-    const userIds = new Set(archived.map((row) => row.userId));
+    const userIds = new Set(archived);
     for (const userId of userIds) {
       revalidateTag(shurtlesTag(userId), "max");
       revalidateTag(statsTag(userId), "max");

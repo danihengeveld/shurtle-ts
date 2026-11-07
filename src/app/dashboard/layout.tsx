@@ -12,6 +12,10 @@ import {
 import { ClicksChartSkeleton } from "./_components/overview/clicks-chart";
 import { ClicksSection, StatsSection } from "./_components/overview/sections";
 import { StatsCardsSkeleton } from "./_components/overview/stats-cards";
+import {
+  LinksToolbarErrorBoundary,
+  SectionErrorBoundary,
+} from "./_components/section-error";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -25,8 +29,8 @@ export const metadata: Metadata = {
  * /dashboard/expired, each with its own `loading.tsx`. Every data read below is in a Suspense
  * boundary, so the shell prerenders and each part streams in on its own.
  *
- * Errors: `error.tsx` here only wraps `children` (the list). A failure in the overview or the
- * toolbar reaches the root `app/error.tsx`, which replaces the whole page.
+ * Errors: `error.tsx` here only wraps `children` (the list); the overview sections and the toolbar
+ * each have their own boundary, so one failing query doesn't take down the rest of the dashboard.
  */
 export default function DashboardLayout({
   children,
@@ -45,21 +49,27 @@ export default function DashboardLayout({
             Overview
           </h2>
           <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-            <Suspense fallback={<StatsCardsSkeleton />}>
-              <StatsSection />
-            </Suspense>
-            <Suspense fallback={<ClicksChartSkeleton />}>
-              <ClicksSection />
-            </Suspense>
+            <SectionErrorBoundary what="your stats" className="min-h-48">
+              <Suspense fallback={<StatsCardsSkeleton />}>
+                <StatsSection />
+              </Suspense>
+            </SectionErrorBoundary>
+            <SectionErrorBoundary what="the clicks chart" className="min-h-48">
+              <Suspense fallback={<ClicksChartSkeleton />}>
+                <ClicksSection />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         </section>
 
         <section aria-labelledby="links-heading" className="mt-12 sm:mt-14">
           <LinksProvider>
             <div id="links" className="scroll-mt-24">
-              <Suspense fallback={<LinksToolbarSkeleton />}>
-                <LinksToolbar />
-              </Suspense>
+              <LinksToolbarErrorBoundary>
+                <Suspense fallback={<LinksToolbarSkeleton />}>
+                  <LinksToolbar />
+                </Suspense>
+              </LinksToolbarErrorBoundary>
               <LinksBusyRegion className="mt-4">{children}</LinksBusyRegion>
             </div>
           </LinksProvider>

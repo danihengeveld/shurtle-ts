@@ -1,23 +1,22 @@
 "use server";
 
-import { db } from "@/server/db";
-import { shurtles } from "@/server/db/schema";
-import { and, eq, isNull, sql } from "drizzle-orm";
-import { customAlphabet } from "nanoid";
+import { createShurtleSchema } from "@/lib/schemas";
+import { SLUG_PATTERN } from "@/lib/slugs";
 import { updateTag } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { requireUserId } from "./auth";
 import { urlHost } from "./log-serializers";
 import { logger } from "./logger";
+import { deleteOwnShurtle, insertShurtle } from "./mutations";
 import { rateLimits } from "./ratelimits";
-import { createShurtleSchema } from "@/lib/schemas";
-import { isExpired } from "./queries";
-import {
-  GENERATED_SLUG_LENGTH,
-  SLUG_PATTERN,
-  isReservedSlug,
-} from "@/lib/slugs";
 import { shurtlesTag, statsTag } from "./tags";
+
+/*
+ * Thin Server Actions: authenticate, validate, rate limit, delegate the write to the Data Access
+ * Layer (mutations.ts, which re-checks the user and scopes every statement to them), then
+ * invalidate the user's cached dashboard data.
+ */
 
 export type CreateShurtleFieldErrors = {
   url?: string[];
@@ -41,20 +40,6 @@ export type CreateShurtleFormState =
     };
 
 export type DeleteShurtleResult = { ok: true } | { ok: false; error: string };
-
-// Unambiguous alphabet (no 0/O, 1/l/I) so generated links are easy to read aloud and retype.
-const randomSlug = customAlphabet(
-  "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
-  GENERATED_SLUG_LENGTH,
-);
-
-/** A random slug that is never a reserved path (the alphabet can spell e.g. `sitemap` or `expired`). */
-function generateSlug() {
-  let slug = randomSlug();
-  while (isReservedSlug(slug)) slug = randomSlug();
-  return slug;
-}
-const MAX_GENERATE_ATTEMPTS = 3;
 
 function formValue(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -90,8 +75,10 @@ export async function createShurtle(
   }
 
   try {
-    const { success: withinLimit } =
+    const { success: withinLimit, pending } =
       await rateLimits.createShurtle.limiter.limit(userId);
+    // Rate limit analytics are sent in the background; keep the function alive until they're done.
+    after(() => pending);
     if (!withinLimit) {
       logger.warn({ userId }, "rate limit exceeded creating shurtle");
       return fail({ form: [rateLimits.createShurtle.limitMessage] });
@@ -107,81 +94,19 @@ export async function createShurtle(
   const { url, slug: customSlug, expiresAt } = parsed.data;
   const host = urlHost(url);
 
-  /** This user's unarchived link for the URL, if any (the scope of the partial unique index). */
-  const findLiveLink = async () => {
-    const [existing] = await db
-      .select({ slug: shurtles.slug, expired: isExpired })
-      .from(shurtles)
-      .where(
-        and(
-          eq(shurtles.userId, userId),
-          eq(shurtles.url, url),
-          isNull(shurtles.archivedAt),
-        ),
-      )
-      .limit(1);
-    return existing;
-  };
-  const alreadyShortened = (slug: string) =>
-    fail({ url: [`You already shortened this URL as /${slug}.`] });
-
   try {
-    // Fast path for the common case; the unique (user_id, url) index below is what guarantees it.
-    const live = await findLiveLink();
-    if (live && !live.expired) {
-      logger.debug(
-        { userId, slug: live.slug },
-        "create shurtle rejected: url already shortened",
-      );
-      return alreadyShortened(live.slug);
-    }
-    if (live) {
-      // Expired but not archived by the daily cron yet: archive it now so the URL can be reused.
-      await db
-        .update(shurtles)
-        .set({ archivedAt: sql`now()` })
-        .where(and(eq(shurtles.slug, live.slug), isNull(shurtles.archivedAt)));
-      logger.info(
-        { userId, slug: live.slug },
-        "archived expired shurtle to reuse its url",
-      );
-    }
+    const result = await insertShurtle(parsed.data);
 
-    // Insert-or-skip: no read-then-write race. Without a target, a clash on either unique key (the
-    // slug, or this user + URL) skips the insert instead of throwing. Generated slugs are retried on
-    // the (unlikely) event of a collision; a taken custom slug is reported back to the user.
-    const attempts = customSlug ? 1 : MAX_GENERATE_ATTEMPTS;
-    let createdSlug: string | undefined;
-
-    for (let attempt = 0; attempt < attempts && !createdSlug; attempt++) {
-      const [inserted] = await db
-        .insert(shurtles)
-        .values({
-          slug: customSlug ?? generateSlug(),
-          url,
-          expiresAt: expiresAt ? new Date(expiresAt) : null,
-          userId,
-        })
-        .onConflictDoNothing()
-        .returning({ slug: shurtles.slug });
-
-      createdSlug = inserted?.slug;
-
-      if (!createdSlug) {
-        // A concurrent request created the same URL first: report it rather than retrying.
-        const raced = await findLiveLink();
-        if (raced) {
-          logger.info(
-            { userId, slug: raced.slug },
-            "concurrent create of the same url caught by unique index",
-          );
-          return alreadyShortened(raced.slug);
-        }
-      }
-    }
-
-    if (!createdSlug) {
-      if (customSlug) {
+    switch (result.status) {
+      case "url-taken":
+        logger.debug(
+          { userId, slug: result.slug },
+          "create shurtle rejected: url already shortened",
+        );
+        return fail({
+          url: [`You already shortened this URL as /${result.slug}.`],
+        });
+      case "slug-taken":
         logger.debug(
           { userId, slug: customSlug },
           "create shurtle rejected: slug taken",
@@ -189,18 +114,21 @@ export async function createShurtle(
         return fail({
           slug: ["That slug is already taken. Please choose another one."],
         });
-      }
-      // 7 characters from 56 symbols: three collisions in a row means something else is wrong.
-      logger.warn({ userId, attempts }, "could not generate a free slug");
-      return fail({
-        form: ["We couldn't generate a free slug. Please try again."],
-      });
+      case "no-free-slug":
+        // 7 characters from 56 symbols: repeated collisions mean something else is wrong.
+        logger.warn(
+          { userId, attempts: result.attempts },
+          "could not generate a free slug",
+        );
+        return fail({
+          form: ["We couldn't generate a free slug. Please try again."],
+        });
     }
 
     logger.info(
       {
         userId,
-        slug: createdSlug,
+        slug: result.slug,
         host,
         customSlug: Boolean(customSlug),
         expiresAt: expiresAt ?? null,
@@ -214,7 +142,7 @@ export async function createShurtle(
 
     return {
       status: "success",
-      data: { slug: createdSlug, url, expiresAt: expiresAt ?? null },
+      data: { slug: result.slug, url, expiresAt: expiresAt ?? null },
     };
   } catch (error) {
     logger.error({ err: error, userId, host }, "failed to create shurtle");
@@ -252,12 +180,7 @@ export async function deleteShurtle(
   }
 
   try {
-    const deleted = await db
-      .delete(shurtles)
-      .where(and(eq(shurtles.slug, slug), eq(shurtles.userId, userId)))
-      .returning({ slug: shurtles.slug });
-
-    if (deleted.length === 0) {
+    if (!(await deleteOwnShurtle(slug))) {
       // Already deleted (e.g. in another tab) or not this user's link.
       logger.info({ userId, slug }, "delete shurtle found nothing to delete");
       return { ok: false, error: "This shurtle no longer exists." };

@@ -118,8 +118,9 @@ async function resolveShortLink(
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Skip Next.js internals, generated images (exact segment, so e.g. `/apple-icons` is still a
+    // slug) and all static files incl. robots.txt / sitemap.xml, unless found in search params
+    "/((?!_next|(?:opengraph-image|apple-icon|pwa-icon)(?![^/?])|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|txt|xml)).*)",
     // Always run for API routes
     "/(api|trpc)(.*)",
   ],

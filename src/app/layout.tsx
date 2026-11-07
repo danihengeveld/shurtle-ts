@@ -24,7 +24,7 @@ const geistMono = Geist_Mono({
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  // Variable font: no `weight`, so one file covers every weight in use (500–800).
 });
 
 export const viewport: Viewport = {
