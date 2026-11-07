@@ -163,7 +163,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain.example/api/cro
 
 ### Upgrading
 
-New installs only need `pnpm db:push`. When upgrading an existing database, check the [release notes](https://github.com/danihengeveld/shurtle-ts/releases) for steps. Manual migrations live in [`drizzle/manual/`](drizzle/manual/) and must run before the new version is deployed. For example, upgrading from a version before 2.2 requires `0001_link_ids_and_slug_reuse.sql`.
+New installs only need `pnpm db:push`. When upgrading an existing database, check the [release notes](https://github.com/danihengeveld/shurtle-ts/releases) for steps. Manual migrations live in [`drizzle/manual/`](drizzle/manual/) and must run before the new version is deployed. For example, upgrading from a version before 2.2 requires `0001_link_ids_and_slug_reuse.sql`. Upgrading to 3.0 only adds columns for click details: run `pnpm db:push` before deploying it.
 
 ## Contributing
 
