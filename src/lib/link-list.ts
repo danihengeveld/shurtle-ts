@@ -4,6 +4,8 @@ export const PER_PAGE_OPTIONS = [10, 20, 50] as const;
 export type PerPage = (typeof PER_PAGE_OPTIONS)[number];
 export const DEFAULT_PER_PAGE: PerPage = 10;
 export const MAX_SEARCH_LENGTH = 100;
+/** Far beyond any real list; bounds the query offset and the number of distinct cache entries. */
+export const MAX_PAGE = 10_000;
 
 /**
  * Which links the list shows; each status is its own route (`/dashboard`, `/dashboard/expired`).
@@ -40,7 +42,7 @@ export function parseLinkListQuery(
 
   return {
     status,
-    page: Number.isSafeInteger(page) && page > 0 ? page : 1,
+    page: Number.isSafeInteger(page) && page > 0 ? Math.min(page, MAX_PAGE) : 1,
     perPage: (PER_PAGE_OPTIONS as readonly number[]).includes(perPage)
       ? (perPage as PerPage)
       : DEFAULT_PER_PAGE,

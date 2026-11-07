@@ -1,10 +1,14 @@
 import { LogoMark } from "@/components/logo";
-import { ShellBackdrop } from "@/components/shell-backdrop";
 import { Button } from "@/components/ui/button";
 import { siteInfo } from "@/lib/site";
 import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  StatusPage,
+  StatusText,
+  statusCta,
+} from "../../_components/status-view";
 
 export const metadata: Metadata = {
   title: "Link expired",
@@ -19,51 +23,33 @@ export const metadata: Metadata = {
  */
 export default function ExpiredPage() {
   return (
-    <section className="relative isolate flex flex-1 items-center overflow-hidden">
-      <ShellBackdrop className="[mask-image:radial-gradient(ellipse_55%_70%_at_75%_50%,black_10%,transparent_75%)] max-lg:[mask-image:radial-gradient(ellipse_100%_50%_at_50%_85%,black_10%,transparent_75%)]" />
-      <div className="container-page grid items-center gap-x-12 gap-y-14 py-16 sm:py-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
-            <span
-              aria-hidden="true"
-              className="size-2 rotate-45 rounded-[2px] bg-muted-foreground"
-            />
-            410 · Link expired
-          </p>
-          <h1 className="mt-5 font-display text-[2.5rem] leading-[1.02] font-bold tracking-[-0.04em] text-balance sm:text-6xl">
-            This link has run its course.
-          </h1>
-          <p className="mt-6 max-w-lg text-lg/relaxed text-pretty text-muted-foreground">
-            Whoever shared it set it to stop working after a while, and that
-            time has passed. If you still need it, ask them for a fresh link.
-          </p>
-          <div className="mt-9 flex flex-col gap-3 min-[25rem]:flex-row">
-            <Button
-              asChild
-              size="lg"
-              className="h-12 rounded-xl px-6 text-base"
-            >
+    <StatusPage>
+      <StatusText
+        eyebrow="410 · Link expired"
+        markerClassName="bg-muted-foreground"
+        title="This link has run its course."
+        actions={
+          <>
+            <Button asChild size="lg" className={statusCta}>
               <Link href="/dashboard">
                 Make your own short link
                 <ArrowRight />
               </Link>
             </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="h-12 rounded-xl px-6 text-base"
-            >
+            <Button asChild size="lg" variant="outline" className={statusCta}>
               <Link href="/">Back to home</Link>
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      >
+        Whoever shared it set it to stop working after a while, and that time
+        has passed. If you still need it, ask them for a fresh link.
+      </StatusText>
 
-        <div aria-hidden="true" className="flex justify-center lg:justify-end">
-          <ExpiredTicket />
-        </div>
+      <div aria-hidden="true" className="flex justify-center lg:justify-end">
+        <ExpiredTicket />
       </div>
-    </section>
+    </StatusPage>
   );
 }
 

@@ -10,7 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useSyncExternalStore } from "react";
 import styles from "./not-found.module.css";
-import { ShellBackdrop } from "@/components/shell-backdrop";
+import { StatusPage, StatusText, statusCta } from "./status-view";
 
 const noopSubscribe = () => () => {};
 
@@ -38,27 +38,26 @@ export function NotFoundContent() {
   );
 
   return (
-    <section
-      className={cn(
-        styles.root,
-        "relative isolate flex flex-1 items-center overflow-hidden",
-      )}
+    <StatusPage
+      className={styles.root}
       data-ready={hydrated ? "" : undefined}
       suppressHydrationWarning
+      backdropClassName="[mask-image:radial-gradient(ellipse_60%_70%_at_75%_50%,black_10%,transparent_75%)] max-lg:[mask-image:radial-gradient(ellipse_100%_50%_at_50%_80%,black_10%,transparent_75%)]"
+      prelude={
+        <script
+          // Server: executable. Client: inert (React warns about rendering live scripts on the client).
+          type={
+            typeof window === "undefined" ? "text/javascript" : "text/plain"
+          }
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: PENDING_SCRIPT }}
+        />
+      }
     >
-      <script
-        // Server: executable. Client: inert (React warns about rendering live scripts on the client).
-        type={typeof window === "undefined" ? "text/javascript" : "text/plain"}
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: PENDING_SCRIPT }}
-      />
-      <ShellBackdrop className="[mask-image:radial-gradient(ellipse_60%_70%_at_75%_50%,black_10%,transparent_75%)] max-lg:[mask-image:radial-gradient(ellipse_100%_50%_at_50%_80%,black_10%,transparent_75%)]" />
-      <div className="container-page grid items-center gap-x-12 gap-y-14 py-16 sm:py-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <Suspense fallback={<GenericNotFound />}>
-          <NotFoundVariant hydrated={hydrated} />
-        </Suspense>
-      </div>
-    </section>
+      <Suspense fallback={<GenericNotFound />}>
+        <NotFoundVariant hydrated={hydrated} />
+      </Suspense>
+    </StatusPage>
   );
 }
 
@@ -81,49 +80,39 @@ function NotFoundVariant({ hydrated }: { hydrated: boolean }) {
   return slug ? <ClaimSlug slug={slug} /> : <GenericNotFound />;
 }
 
-const eyebrow =
-  "flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase";
-const title =
-  "mt-5 font-display text-[2.5rem] leading-[1.02] font-bold tracking-[-0.04em] text-balance sm:text-6xl";
-const lede = "mt-6 max-w-lg text-lg/relaxed text-muted-foreground text-pretty";
-const actions = "mt-9 flex flex-col gap-3 min-[25rem]:flex-row";
-const cta = "h-12 rounded-xl px-6 text-base";
-
-export function ClaimSlug({ slug }: { slug: string }) {
+function ClaimSlug({ slug }: { slug: string }) {
   const host = siteInfo.baseUrl.host;
 
   return (
     <>
-      <div className="min-w-0">
-        <p className={eyebrow}>
-          <span
-            aria-hidden="true"
-            className="size-2 rotate-45 rounded-[2px] bg-brand-ink"
-          />
-          404 · Not claimed yet
-        </p>
-        <h1 className={title}>
-          <span className="rounded-[0.14em] bg-brand [box-decoration-break:clone] px-[0.12em] font-mono text-[0.8em] font-semibold tracking-[-0.03em] break-all text-brand-foreground">
-            /{slug}
-          </span>{" "}
-          is up for grabs.
-        </h1>
-        <p className={lede}>
-          There&rsquo;s no short link here, at least not yet. It may have
-          expired, or nobody has claimed it. Make it yours in a few seconds.
-        </p>
-        <div className={actions}>
-          <Button asChild size="lg" className={cn(cta, "group")}>
-            <Link href={`/dashboard?new=${encodeURIComponent(slug)}`}>
-              Claim this link
-              <ArrowRight className="transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline" className={cta}>
-            <Link href="/">Back to home</Link>
-          </Button>
-        </div>
-      </div>
+      <StatusText
+        eyebrow="404 · Not claimed yet"
+        markerClassName="bg-brand-ink"
+        title={
+          <>
+            <span className="rounded-[0.14em] bg-brand [box-decoration-break:clone] px-[0.12em] font-mono text-[0.8em] font-semibold tracking-[-0.03em] break-all text-brand-foreground">
+              /{slug}
+            </span>{" "}
+            is up for grabs.
+          </>
+        }
+        actions={
+          <>
+            <Button asChild size="lg" className={cn(statusCta, "group")}>
+              <Link href={`/dashboard?new=${encodeURIComponent(slug)}`}>
+                Claim this link
+                <ArrowRight className="transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5" />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className={statusCta}>
+              <Link href="/">Back to home</Link>
+            </Button>
+          </>
+        }
+      >
+        There&rsquo;s no short link here, at least not yet. It may have expired,
+        or nobody has claimed it. Make it yours in a few seconds.
+      </StatusText>
 
       <div
         aria-hidden="true"
@@ -166,34 +155,30 @@ export function ClaimSlug({ slug }: { slug: string }) {
   );
 }
 
-export function GenericNotFound() {
+function GenericNotFound() {
   return (
     <>
-      <div className="min-w-0">
-        <p className={eyebrow}>
-          <span
-            aria-hidden="true"
-            className="size-2 rotate-45 rounded-[2px] bg-brand-ink"
-          />
-          404 · Page not found
-        </p>
-        <h1 className={title}>This page has gone into its shell.</h1>
-        <p className={lede}>
-          We couldn&rsquo;t find what you were looking for. If you followed a
-          short link, it may have expired or been deleted.
-        </p>
-        <div className={actions}>
-          <Button asChild size="lg" className={cta}>
-            <Link href="/">
-              <ArrowLeft />
-              Back to home
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline" className={cta}>
-            <Link href="/dashboard">Open dashboard</Link>
-          </Button>
-        </div>
-      </div>
+      <StatusText
+        eyebrow="404 · Page not found"
+        markerClassName="bg-brand-ink"
+        title="This page has gone into its shell."
+        actions={
+          <>
+            <Button asChild size="lg" className={statusCta}>
+              <Link href="/">
+                <ArrowLeft />
+                Back to home
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className={statusCta}>
+              <Link href="/dashboard">Open dashboard</Link>
+            </Button>
+          </>
+        }
+      >
+        We couldn&rsquo;t find what you were looking for. If you followed a
+        short link, it may have expired or been deleted.
+      </StatusText>
 
       <div
         aria-hidden="true"

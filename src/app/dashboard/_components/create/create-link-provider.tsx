@@ -2,16 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
-import { createShurtle, type CreateShurtleFormState } from "@/server/actions";
+import { shouldIgnoreShortcut } from "@/lib/keyboard";
 import { cn } from "cn";
 import { PlusIcon } from "lucide-react";
 import { createContext, use, useEffect, useState } from "react";
 import { CreateLinkDialog } from "./create-link-dialog";
-
-export type CreateLinkAction = (
-  state: CreateShurtleFormState,
-  formData: FormData,
-) => Promise<CreateShurtleFormState>;
 
 type CreateLinkContextValue = {
   openCreate: (options?: { slug?: string }) => void;
@@ -26,37 +21,20 @@ export function useCreateLink() {
   return context;
 }
 
-function isTypingTarget(target: EventTarget | null) {
-  return (
-    target instanceof HTMLElement &&
-    (target.isContentEditable ||
-      ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
-  );
-}
-
 /**
  * Owns the "create a link" dialog so any button on the page (header, empty state, deep link) can
  * open it. Every opening starts a fresh flow (new form + action state); "Create another" does too.
  */
 export function CreateLinkProvider({
   children,
-  action = createShurtle,
-  defaultOpen = false,
-  defaultSlug,
-  initialState,
 }: {
   children: React.ReactNode;
-  action?: CreateLinkAction;
-  /** Preview / testing only. */
-  defaultOpen?: boolean;
-  defaultSlug?: string;
-  initialState?: CreateShurtleFormState;
 }) {
-  const [flow, setFlow] = useState({
-    open: defaultOpen,
-    id: 0,
-    slug: defaultSlug,
-  });
+  const [flow, setFlow] = useState<{
+    open: boolean;
+    id: number;
+    slug?: string;
+  }>({ open: false, id: 0 });
 
   function openCreate(options?: { slug?: string }) {
     setFlow((current) => ({
@@ -71,17 +49,8 @@ export function CreateLinkProvider({
     function onKeyDown(event: KeyboardEvent) {
       if (
         event.key.toLowerCase() !== "n" ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey ||
-        event.shiftKey
-      )
-        return;
-      if (event.repeat || isTypingTarget(event.target)) return;
-      if (
-        document.querySelector(
-          "[role=dialog], [role=alertdialog], [role=menu], [role=listbox]",
-        )
+        event.shiftKey ||
+        shouldIgnoreShortcut(event)
       )
         return;
       event.preventDefault();
@@ -109,9 +78,7 @@ export function CreateLinkProvider({
             slug: undefined,
           }))
         }
-        action={action}
         initialSlug={flow.slug}
-        initialState={flow.id === 0 ? initialState : undefined}
       />
     </CreateLinkContext>
   );

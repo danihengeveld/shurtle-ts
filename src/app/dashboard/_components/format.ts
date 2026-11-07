@@ -32,7 +32,7 @@ export function pluralize(
 }
 
 /** `"2026-11-03"` (UTC calendar day) → Date at UTC midnight. */
-export function parseUtcDay(day: string) {
+function parseUtcDay(day: string) {
   return new Date(`${day}T00:00:00Z`);
 }
 
@@ -106,7 +106,7 @@ export type ExpiryStatus =
   | { kind: "later"; expiresAt: Date };
 
 /** Links that expire within this window are flagged. */
-export const EXPIRING_SOON_MS = 7 * DAY_MS;
+const EXPIRING_SOON_MS = 7 * DAY_MS;
 
 export function getExpiryStatus(
   expiresAt: Date | null,

@@ -1,9 +1,7 @@
 "use client";
 
-import type { CreateShurtleFormState } from "@/server/actions";
 import { XIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
-import type { CreateLinkAction } from "./create-link-provider";
 import { CreateLinkFlow } from "./create-link-flow";
 
 /**
@@ -15,17 +13,13 @@ export function CreateLinkDialog({
   open,
   onOpenChange,
   onCreateAnother,
-  action,
   initialSlug,
-  initialState,
 }: {
   flowId: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateAnother: () => void;
-  action: CreateLinkAction;
   initialSlug?: string;
-  initialState?: CreateShurtleFormState;
 }) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -44,9 +38,7 @@ export function CreateLinkDialog({
         >
           <CreateLinkFlow
             key={flowId}
-            action={action}
             initialSlug={initialSlug}
-            initialState={initialState}
             onCreateAnother={onCreateAnother}
             onDone={() => onOpenChange(false)}
           />

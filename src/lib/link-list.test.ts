@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PER_PAGE,
+  MAX_PAGE,
   MAX_SEARCH_LENGTH,
   linksHref,
   parseLinkListQuery,
@@ -29,6 +30,7 @@ describe("parseLinkListQuery", () => {
       expect(parse({ page }).page).toBe(1);
     }
     expect(parse({ page: "4" }).page).toBe(4);
+    expect(parse({ page: "123456789" }).page).toBe(MAX_PAGE);
   });
 
   it("only allows known page sizes", () => {

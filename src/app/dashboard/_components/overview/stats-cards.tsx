@@ -15,6 +15,7 @@ import { formatCount, getTrend, pluralize, type Trend } from "../format";
 export type StatsData = {
   totalShurtles: number;
   activeShurtles: number;
+  expiredShurtles: number;
   totalHits: number;
 };
 
@@ -132,7 +133,7 @@ export function StatsCards({
   stats: StatsData;
   daily: { clicks: number }[];
 }) {
-  const expired = stats.totalShurtles - stats.activeShurtles;
+  const expired = stats.expiredShurtles;
   const week = weekOverWeek(daily);
 
   return (

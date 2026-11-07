@@ -24,6 +24,9 @@ export const metadata: Metadata = {
  * list itself is `children`: `(active)/page.tsx` at /dashboard and `expired/page.tsx` at
  * /dashboard/expired, each with its own `loading.tsx`. Every data read below is in a Suspense
  * boundary, so the shell prerenders and each part streams in on its own.
+ *
+ * Errors: `error.tsx` here only wraps `children` (the list). A failure in the overview or the
+ * toolbar reaches the root `app/error.tsx`, which replaces the whole page.
  */
 export default function DashboardLayout({
   children,

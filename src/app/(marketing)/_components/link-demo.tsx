@@ -3,6 +3,7 @@ import { siteInfo } from "@/lib/site";
 import { cn } from "cn";
 import { CalendarClock, Check, Copy, MousePointerClick } from "lucide-react";
 import styles from "./link-demo.module.css";
+import speed from "./speed.module.css";
 
 const LONG_URL = {
   scheme: "https://",
@@ -52,11 +53,7 @@ export function LinkDemo({ className }: { className?: string }) {
             </div>
             <div className="relative overflow-hidden rounded-xl border bg-background px-3.5 py-3">
               <div className={cn(styles.scan, "absolute inset-0")} />
-              <p
-                className={cn(
-                  "relative font-mono text-[0.75rem]/relaxed break-all sm:text-[0.8125rem]/relaxed",
-                )}
-              >
+              <p className="relative font-mono text-[0.75rem]/relaxed break-all sm:text-[0.8125rem]/relaxed">
                 <span className="text-muted-foreground">{LONG_URL.scheme}</span>
                 <span className="text-foreground">{LONG_URL.host}</span>
                 <span className="text-muted-foreground">{LONG_URL.path}</span>
@@ -72,19 +69,19 @@ export function LinkDemo({ className }: { className?: string }) {
               <div className="flex flex-col items-end gap-[3px]">
                 <span
                   className={cn(
-                    styles.speed,
+                    speed.streak,
                     "h-0.5 w-3 rounded-full bg-brand-ink/70",
                   )}
                 />
                 <span
                   className={cn(
-                    styles.speed,
+                    speed.streak,
                     "h-0.5 w-5 rounded-full bg-brand-ink",
                   )}
                 />
                 <span
                   className={cn(
-                    styles.speed,
+                    speed.streak,
                     "h-0.5 w-2.5 rounded-full bg-brand-ink/70",
                   )}
                 />

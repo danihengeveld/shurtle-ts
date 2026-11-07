@@ -2,7 +2,7 @@
 
 import { Hint } from "@/components/hint";
 import { Button } from "@/components/ui/button";
-import type { CreateShurtleFormState } from "@/server/actions";
+import { createShurtle, type CreateShurtleFormState } from "@/server/actions";
 import { displayShortUrl, shortUrl, siteInfo } from "@/lib/site";
 import { CheckIcon, ExternalLinkIcon, PlusIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
@@ -10,24 +10,19 @@ import { useActionState } from "react";
 import { CopyButton } from "../copy-button";
 import { formatExpiry, splitUrl } from "../format";
 import { CreateLinkForm } from "./create-link-form";
-import type { CreateLinkAction } from "./create-link-provider";
 
 const IDLE: CreateShurtleFormState = { status: "idle" };
 
 export function CreateLinkFlow({
-  action,
   initialSlug,
-  initialState = IDLE,
   onCreateAnother,
   onDone,
 }: {
-  action: CreateLinkAction;
   initialSlug?: string;
-  initialState?: CreateShurtleFormState;
   onCreateAnother: () => void;
   onDone: () => void;
 }) {
-  const [state, formAction, isPending] = useActionState(action, initialState);
+  const [state, formAction, isPending] = useActionState(createShurtle, IDLE);
 
   if (state.status === "success") {
     return (

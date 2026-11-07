@@ -62,8 +62,11 @@ export function LinksPagination({
         {content}
       </LinksNavLink>
     ) : (
+      // A link with no target: announced as a disabled link, and not focusable.
       <span
+        role="link"
         aria-disabled="true"
+        aria-label={`${label} page`}
         className={cn(className, "pointer-events-none opacity-45")}
       >
         {content}
@@ -89,18 +92,26 @@ export function LinksPagination({
             </li>
           ) : (
             <li key={item}>
-              <LinksNavLink
-                href={href(item)}
-                aria-current={item === page ? "page" : undefined}
-                aria-label={`Page ${item}`}
-                className={cn(
-                  pageButton,
-                  item === page &&
-                    "pointer-events-none border bg-card font-semibold text-foreground shadow-xs",
-                )}
-              >
-                {item}
-              </LinksNavLink>
+              {item === page ? (
+                <span
+                  aria-current="page"
+                  aria-label={`Page ${item}`}
+                  className={cn(
+                    pageButton,
+                    "border bg-card font-semibold text-foreground shadow-xs hover:bg-card",
+                  )}
+                >
+                  {item}
+                </span>
+              ) : (
+                <LinksNavLink
+                  href={href(item)}
+                  aria-label={`Page ${item}`}
+                  className={pageButton}
+                >
+                  {item}
+                </LinksNavLink>
+              )}
             </li>
           ),
         )}

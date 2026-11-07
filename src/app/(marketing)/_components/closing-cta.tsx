@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "cn";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import styles from "./link-demo.module.css";
+import speed from "./speed.module.css";
 
 const STREAKS = [
   { width: "w-16 sm:w-24", offset: "ml-6" },
@@ -67,7 +67,7 @@ export function ClosingCta() {
               <span
                 key={i}
                 className={cn(
-                  styles.speed,
+                  speed.streak,
                   "h-1.5 rounded-full bg-brand-ink sm:h-2",
                   streak.width,
                   streak.offset,

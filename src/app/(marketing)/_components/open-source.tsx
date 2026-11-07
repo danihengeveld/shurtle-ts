@@ -17,6 +17,7 @@ const STACK = [
 
 export function OpenSource() {
   const repo = siteInfo.repoUrl.replace(/^https:\/\//, "");
+  const repoDir = repo.split("/").at(-1);
 
   return (
     <section
@@ -85,8 +86,8 @@ export function OpenSource() {
                 <code>
                   <span className="text-brand select-none">$ </span>git clone
                   https://{repo}.git{"\n"}
-                  <span className="text-brand select-none">$ </span>cd
-                  shurtle-ts && pnpm install{"\n"}
+                  <span className="text-brand select-none">$ </span>cd {repoDir}{" "}
+                  && pnpm install{"\n"}
                   <span className="opacity-70">
                     # add Postgres, Upstash and Clerk keys to .env.local
                   </span>

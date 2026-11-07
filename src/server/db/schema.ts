@@ -1,9 +1,4 @@
-import {
-  relations,
-  sql,
-  type InferInsertModel,
-  type InferSelectModel,
-} from "drizzle-orm";
+import { sql, type InferSelectModel } from "drizzle-orm";
 import {
   index,
   integer,
@@ -65,10 +60,6 @@ export const shurtles = schema.table(
   ],
 );
 
-export const shurtlesRelations = relations(shurtles, ({ many }) => ({
-  hits: many(shurtleHits),
-}));
-
 export const shurtleHits = schema.table(
   "hits",
   {
@@ -85,22 +76,11 @@ export const shurtleHits = schema.table(
     coordinates: point("coordinates", { mode: "xy" }),
   },
   (table) => [
-    // Serves the cascade on delete and the per-shurtle daily clicks range scan.
+    // Serves the cascade on delete and the per-user daily clicks join (hits by slug and time).
     index("slug_at_idx").on(table.slug, table.at),
     index("at_idx").on(table.at.desc()),
     index("country_idx").on(table.country),
   ],
 );
 
-export const shurtleHitsRelations = relations(shurtleHits, ({ one }) => ({
-  shurtle: one(shurtles, {
-    fields: [shurtleHits.slug],
-    references: [shurtles.slug],
-  }),
-}));
-
 export type Shurtle = InferSelectModel<typeof shurtles>;
-export type ShurtleInsert = InferInsertModel<typeof shurtles>;
-
-export type ShurtleHit = InferSelectModel<typeof shurtleHits>;
-export type ShurtleHitInsert = InferInsertModel<typeof shurtleHits>;

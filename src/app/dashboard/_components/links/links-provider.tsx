@@ -3,13 +3,26 @@
 import { cn } from "cn";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createContext, use, useOptimistic, useTransition } from "react";
+import {
+  createContext,
+  use,
+  useEffect,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+
+/** What started a list navigation, so each control can show its own pending state. */
+type NavigationSource = "search" | "list";
 
 type NavigateOptions = {
   /** `replace` (default) for refinements like search; `push` for pages the user may want to go back to. */
   history?: "replace" | "push";
   /** Scroll to the top, or to the hash target when the href has one. Default: false. */
   scroll?: boolean;
+  /** Default: `list`. */
+  source?: NavigationSource;
 };
 
 type LinksContextValue = {
@@ -20,6 +33,8 @@ type LinksContextValue = {
    */
   navigate: (href: string, options?: NavigateOptions) => void;
   isNavigating: boolean;
+  /** The source of the navigation in flight, if any. */
+  pending: NavigationSource | null;
   /** Slugs with a delete in flight (optimistic). */
   deleting: ReadonlySet<string>;
   /** Must be called inside a transition. */
@@ -40,22 +55,50 @@ const NO_SLUGS: ReadonlySet<string> = new Set();
 export function LinksProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isNavigating, startNavigation] = useTransition();
+  const [source, setSource] = useState<NavigationSource>("list");
   const [deleting, markDeleting] = useOptimistic(
     NO_SLUGS,
     (current, slug: string) => new Set(current).add(slug),
   );
+  const restoreFocus = useRef(false);
 
   function navigate(
     href: string,
-    { history = "replace", scroll = false }: NavigateOptions = {},
+    {
+      history = "replace",
+      scroll = false,
+      source = "list",
+    }: NavigateOptions = {},
   ) {
+    setSource(source);
+    // The control that started this (a pagination link, "Clear search"…) may not exist on the next
+    // page; remember to put focus somewhere sensible if it disappears.
+    restoreFocus.current =
+      document.getElementById("links")?.contains(document.activeElement) ??
+      false;
     startNavigation(() => {
       router[history](href, { scroll });
     });
   }
 
+  useEffect(() => {
+    if (isNavigating || !restoreFocus.current) return;
+    restoreFocus.current = false;
+    if (!document.activeElement || document.activeElement === document.body) {
+      document.getElementById("links-heading")?.focus({ preventScroll: true });
+    }
+  }, [isNavigating]);
+
   return (
-    <LinksContext value={{ navigate, isNavigating, deleting, markDeleting }}>
+    <LinksContext
+      value={{
+        navigate,
+        isNavigating,
+        pending: isNavigating ? source : null,
+        deleting,
+        markDeleting,
+      }}
+    >
       {children}
     </LinksContext>
   );

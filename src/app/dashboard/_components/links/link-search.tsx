@@ -18,19 +18,12 @@ import {
 } from "@/lib/link-list";
 import { cn } from "cn";
 import { SearchIcon, XIcon } from "lucide-react";
+import { shouldIgnoreShortcut } from "@/lib/keyboard";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useLinks } from "./links-provider";
 
 const DEBOUNCE_MS = 300;
-
-function isEditable(target: EventTarget | null) {
-  return (
-    target instanceof HTMLElement &&
-    (target.isContentEditable ||
-      ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
-  );
-}
 
 /**
  * Server-side search via `?q=`. Typing updates the URL (debounced) inside a transition, so the
@@ -46,12 +39,15 @@ export function LinkSearch({ className }: { className?: string }) {
     status,
     Object.fromEntries(searchParams),
   );
-  const { navigate, isNavigating } = useLinks();
+  const { navigate, pending } = useLinks();
   const [value, setValue] = useState(query);
   const [syncedQuery, setSyncedQuery] = useState(query);
   const [requestedQuery, setRequestedQuery] = useState(query);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounce = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // The debounced call must use the status and page size at the time it fires, not when the user
+  // typed: switching tabs mid-debounce would otherwise navigate back to the old tab.
+  const latestSearch = useRef<(next: string) => void>(undefined);
 
   // The URL changed from elsewhere (e.g. "Clear search", back button): reflect it in the input,
   // but never clobber what the user is typing for a request that is still on its way.
@@ -68,18 +64,7 @@ export function LinkSearch({ className }: { className?: string }) {
   // "/" focuses the search, like on GitHub or Linear.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (
-        event.key !== "/" ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey ||
-        isEditable(event.target)
-      )
-        return;
-      if (
-        document.querySelector("[role=dialog], [role=alertdialog], [role=menu]")
-      )
-        return;
+      if (event.key !== "/" || shouldIgnoreShortcut(event)) return;
       event.preventDefault();
       inputRef.current?.focus();
       inputRef.current?.select();
@@ -93,13 +78,22 @@ export function LinkSearch({ className }: { className?: string }) {
     const trimmed = next.trim().slice(0, MAX_SEARCH_LENGTH);
     if (trimmed === requestedQuery) return;
     setRequestedQuery(trimmed);
-    navigate(linksHref({ status, query: trimmed, perPage }));
+    navigate(linksHref({ status, query: trimmed, perPage }), {
+      source: "search",
+    });
   }
+
+  useEffect(() => {
+    latestSearch.current = search;
+  });
 
   function onChange(next: string) {
     setValue(next);
     clearTimeout(debounce.current);
-    debounce.current = setTimeout(() => search(next), DEBOUNCE_MS);
+    debounce.current = setTimeout(
+      () => latestSearch.current?.(next),
+      DEBOUNCE_MS,
+    );
   }
 
   function clear() {
@@ -108,7 +102,8 @@ export function LinkSearch({ className }: { className?: string }) {
     inputRef.current?.focus();
   }
 
-  const showSpinner = isNavigating && requestedQuery === value.trim();
+  // Only for searches: pagination and page-size changes dim the list but aren't "Searching…".
+  const showSpinner = pending === "search" && requestedQuery === value.trim();
 
   return (
     <form
@@ -171,7 +166,7 @@ export function LinkSearch({ className }: { className?: string }) {
           ) : (
             <Kbd
               aria-hidden
-              className="hidden group-focus-within:hidden md:inline-flex"
+              className="hidden md:inline-flex md:group-focus-within:hidden"
             >
               /
             </Kbd>

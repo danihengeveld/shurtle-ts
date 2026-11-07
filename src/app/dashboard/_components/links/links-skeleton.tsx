@@ -18,7 +18,10 @@ export function LinksToolbarSkeleton() {
 /** Mirrors <LinksPanel> (table / list, footer): the status routes' `loading.tsx`. */
 export function LinksListSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading links">
+    <div aria-busy="true">
+      <p role="status" className="sr-only">
+        Loading links…
+      </p>
       <div>
         <div className="hidden overflow-hidden rounded-2xl border bg-card shadow-soft md:block">
           <div className="flex h-10 items-center gap-6 border-b bg-muted/45 px-5 dark:bg-muted/30">

@@ -12,7 +12,11 @@ import { logger } from "./logger";
 import { rateLimits } from "./ratelimits";
 import { createShurtleSchema } from "@/lib/schemas";
 import { isExpired } from "./queries";
-import { GENERATED_SLUG_LENGTH, SLUG_PATTERN } from "@/lib/slugs";
+import {
+  GENERATED_SLUG_LENGTH,
+  SLUG_PATTERN,
+  isReservedSlug,
+} from "@/lib/slugs";
 import { shurtlesTag, statsTag } from "./tags";
 
 export type CreateShurtleFieldErrors = {
@@ -39,10 +43,17 @@ export type CreateShurtleFormState =
 export type DeleteShurtleResult = { ok: true } | { ok: false; error: string };
 
 // Unambiguous alphabet (no 0/O, 1/l/I) so generated links are easy to read aloud and retype.
-const generateSlug = customAlphabet(
+const randomSlug = customAlphabet(
   "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
   GENERATED_SLUG_LENGTH,
 );
+
+/** A random slug that is never a reserved path (the alphabet can spell e.g. `sitemap` or `expired`). */
+function generateSlug() {
+  let slug = randomSlug();
+  while (isReservedSlug(slug)) slug = randomSlug();
+  return slug;
+}
 const MAX_GENERATE_ATTEMPTS = 3;
 
 function formValue(formData: FormData, key: string) {

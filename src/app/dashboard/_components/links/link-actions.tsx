@@ -27,7 +27,7 @@ import {
   EllipsisIcon,
   Trash2Icon,
 } from "lucide-react";
-import { useRef, useState, useTransition } from "react";
+import { startTransition, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useCopyShortLink } from "../copy-button";
 import { useLinks } from "./links-provider";
@@ -66,7 +66,9 @@ export function LinkActions({
       }
 
       deleted.current = result.ok;
-      setConfirmOpen(false);
+      // Updates after an `await` leave the transition unless re-wrapped; keep the dialog open until
+      // the refreshed list (without this row) commits, so focus doesn't jump ahead of it.
+      startTransition(() => setConfirmOpen(false));
       if (result.ok) {
         toast.success("Link deleted", {
           description: expired

@@ -26,14 +26,19 @@ function emptyToUndefined(value: unknown) {
   return typeof value === "string" && value.trim() === "" ? undefined : value;
 }
 
-/** Accept `example.com/page` by assuming https when no scheme is given. */
+/**
+ * Accept `example.com/page` (and `example.com:8080/page`) by assuming https when no `scheme://` is
+ * given. Inputs like `mailto:x` still fail the URL check below.
+ */
 function withDefaultScheme(value: unknown) {
   if (typeof value !== "string") return value;
   const trimmed = value.trim();
-  return trimmed && !/^[a-z][a-z\d+\-.]*:/i.test(trimmed)
+  return trimmed && !/^[a-z][a-z\d+\-.]*:\/\//i.test(trimmed)
     ? `https://${trimmed}`
     : trimmed;
 }
+
+const urlTooLong = `URLs can be at most ${URL_MAX_LENGTH} characters long.`;
 
 export const createShurtleSchema = z.object({
   url: z.preprocess(
@@ -41,17 +46,20 @@ export const createShurtleSchema = z.object({
     z
       .string({ error: "Enter a URL to shorten." })
       .min(1, "Enter a URL to shorten.")
-      .max(
-        URL_MAX_LENGTH,
-        `URLs can be at most ${URL_MAX_LENGTH} characters long.`,
-      )
+      // Cheap bound before parsing; checked again after normalizing (percent-encoding grows it).
+      .max(URL_MAX_LENGTH, urlTooLong)
       .pipe(
+        // `normalize` stores one canonical form (lowercase host, percent-encoded ASCII path), so the
+        // "already shortened" check matches `Example.com` and `example.com`, and the stored URL is
+        // ASCII as the unique index on (user_id, url) assumes.
         z.url({
           protocol: /^https?$/,
           hostname: z.regexes.domain,
+          normalize: true,
           error: "Enter a valid web address, like https://example.com.",
         }),
       )
+      .pipe(z.string().max(URL_MAX_LENGTH, urlTooLong))
       .refine(
         (value) => !isBlockedHost(value),
         "Links can't point to Shurtle itself or to localhost.",
@@ -87,5 +95,3 @@ export const createShurtleSchema = z.object({
       .optional(),
   ),
 });
-
-export type CreateShurtleInput = z.infer<typeof createShurtleSchema>;

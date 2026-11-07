@@ -98,28 +98,3 @@ export function RelativeTime({
     </Hint>
   );
 }
-
-/** "Nov 6" (or "Nov 6, 2027" outside the current year) in the viewer's time zone once hydrated. */
-export function LocalDate({
-  date,
-  className,
-}: {
-  date: Date | string;
-  className?: string;
-}) {
-  const { now, hydrated } = useNow();
-  const value = toDate(date);
-  const timeZone = hydrated ? undefined : "UTC";
-  const withYear = new Date(now).getUTCFullYear() !== value.getUTCFullYear();
-
-  return (
-    <Hint content={hydrated ? formatDateTime(value) : undefined}>
-      <time
-        dateTime={value.toISOString()}
-        className={cn("whitespace-nowrap", className)}
-      >
-        {formatDate(value, { timeZone, withYear })}
-      </time>
-    </Hint>
-  );
-}

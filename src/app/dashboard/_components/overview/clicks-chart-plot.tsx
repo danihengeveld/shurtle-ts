@@ -12,13 +12,17 @@ import { formatCount, formatUtcDay, pluralize } from "../format";
 
 type Point = { date: string; clicks: number };
 
-/** Round up to a "nice" axis maximum (1, 2, 2.5, 5 × 10ⁿ), with a little headroom. */
+/**
+ * Round up to a "nice" axis maximum (1, 2, 2.5, 4, 5, 6, 8 × 10ⁿ), with a little headroom. The axis
+ * has a midpoint tick, so the result always halves to a whole number of clicks (never "2.5").
+ */
 export function niceMax(max: number) {
   if (max <= 0) return 4;
   const target = max * 1.1;
   const magnitude = 10 ** Math.floor(Math.log10(target));
-  for (const step of [1, 2, 2.5, 5, 10]) {
-    if (step * magnitude >= target) return Math.max(step * magnitude, 4);
+  for (const step of [1, 2, 2.5, 4, 5, 6, 8, 10]) {
+    const value = Math.max(step * magnitude, 4);
+    if (value >= target && Number.isInteger(value / 2)) return value;
   }
   return 10 * magnitude;
 }

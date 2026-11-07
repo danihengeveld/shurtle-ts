@@ -50,7 +50,6 @@
   --color-brand-soft: var(--brand-soft);
 
   --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -58,13 +57,6 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 14px);
-
-  --shadow-soft:
-    0 1px 2px oklch(0.2 0.02 160 / 0.04),
-    0 4px 16px -4px oklch(0.2 0.02 160 / 0.08);
-  --shadow-lift:
-    0 1px 2px oklch(0.2 0.02 160 / 0.05),
-    0 12px 40px -12px oklch(0.2 0.02 160 / 0.18);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -93,8 +85,25 @@
   }
 }
 
+/*
+ * `shadow-soft` / `shadow-lift` point at per-theme `--elevation-*` values. Tailwind expands literal
+ * shadow tokens into the utility (to support `shadow-<color>`), even outside `@theme inline`, which
+ * would bake in the light values and make the `.dark` overrides dead.
+ */
+@theme inline {
+  --shadow-soft: var(--elevation-soft);
+  --shadow-lift: var(--elevation-lift);
+}
+
 :root {
   --radius: 0.75rem;
+
+  --elevation-soft:
+    0 1px 2px oklch(0.2 0.02 160 / 0.04),
+    0 4px 16px -4px oklch(0.2 0.02 160 / 0.08);
+  --elevation-lift:
+    0 1px 2px oklch(0.2 0.02 160 / 0.05),
+    0 12px 40px -12px oklch(0.2 0.02 160 / 0.18);
 
   --background: oklch(0.986 0.005 106);
   --foreground: oklch(0.205 0.022 162);
@@ -123,7 +132,6 @@
   --brand-soft: oklch(0.95 0.08 125);
 
   --chart-1: oklch(0.47 0.13 140);
-  --chart-2: oklch(0.9 0.2 127);
 }
 
 .dark {
@@ -148,17 +156,15 @@
   --input: oklch(1 0 0 / 0.14);
   --ring: oklch(0.82 0.18 128);
 
-  --brand: oklch(0.9 0.2 127);
   --brand-foreground: oklch(0.21 0.045 145);
   --brand-ink: oklch(0.88 0.19 127);
   --brand-soft: oklch(0.3 0.06 135);
 
   --chart-1: oklch(0.88 0.19 127);
-  --chart-2: oklch(0.6 0.12 140);
 
-  --shadow-soft:
+  --elevation-soft:
     0 1px 2px oklch(0 0 0 / 0.3), 0 4px 16px -4px oklch(0 0 0 / 0.35);
-  --shadow-lift:
+  --elevation-lift:
     0 1px 2px oklch(0 0 0 / 0.3), 0 16px 48px -12px oklch(0 0 0 / 0.55);
 }
 
@@ -179,9 +185,9 @@
 }
 
 /*
- * Brand motif: a faint hexagonal "shell" lattice. Coloured via `background-color`
- * (defaults to the border colour) and shaped by an SVG mask, so it themes automatically.
- * Pair with a `mask-radial-*` / gradient overlay to fade it out at the edges.
+ * Brand motif: a faint hexagonal "shell" lattice. Coloured via `background-color` (the border
+ * colour unless a `bg-*` class sets another) and shaped by an SVG mask, so it themes automatically.
+ * Fade it out at the edges with a mask on a wrapper, e.g. `[mask-image:radial-gradient(…)]`.
  * Deliberately not named `bg-*`: class mergers (`cn`) would read it as a background colour and drop
  * it when a `bg-*` colour class follows.
  */
