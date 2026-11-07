@@ -95,7 +95,8 @@ export async function Locations({ data }: { data: Promise<LocationsData> }) {
         <WorldMap
           countries={locations.countries}
           total={locations.total}
-          className="mt-6 sm:mt-8"
+          // Centred in the card when the list beside it is taller.
+          className="my-auto pt-6 sm:pt-8"
         />
       </SectionCard>
 

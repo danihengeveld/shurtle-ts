@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   addLocalDays,
   atLocalTime,
+  formatAgo,
   formatClock,
   formatCount,
+  formatHour,
   formatRelative,
   formatTimeLeft,
   getExpiryStatus,
@@ -14,6 +16,28 @@ import {
 
 const NOW = Date.UTC(2026, 10, 7, 12, 0, 0);
 const DAY = 86_400_000;
+
+describe("formatHour", () => {
+  it("names hours with plain spaces, the same on every ICU version", () => {
+    expect(formatHour(0)).toBe("12 AM");
+    expect(formatHour(9)).toBe("9 AM");
+    expect(formatHour(12)).toBe("12 PM");
+    expect(formatHour(23)).toBe("11 PM");
+  });
+});
+
+describe("formatAgo", () => {
+  it("is compact and falls back to the date after a month", () => {
+    expect(formatAgo(new Date(NOW - 20_000), NOW)).toBe("just now");
+    expect(formatAgo(new Date(NOW - 5 * 60_000), NOW)).toBe("5m ago");
+    expect(formatAgo(new Date(NOW - 3 * 3_600_000), NOW)).toBe("3h ago");
+    expect(formatAgo(new Date(NOW - 4 * DAY), NOW)).toBe("4d ago");
+    expect(formatAgo(new Date(NOW - 40 * DAY), NOW, "UTC")).toBe("Sep 28");
+    expect(formatAgo(new Date(Date.UTC(2025, 5, 1)), NOW, "UTC")).toBe(
+      "Jun 1, 2025",
+    );
+  });
+});
 
 describe("formatCount", () => {
   it("groups below 100k and goes compact from there", () => {

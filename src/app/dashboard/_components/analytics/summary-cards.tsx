@@ -19,6 +19,7 @@ import {
   LOCALE,
   formatCount,
   formatDate,
+  formatUtcHour,
   getTrend,
   pluralize,
 } from "../format";
@@ -26,7 +27,7 @@ import { Tile, TrendNote, accentTile, tile } from "../overview/stats-cards";
 import { AgoTime } from "../time";
 import { Flag, placeText } from "./place";
 
-const grid = "grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4";
+const grid = "grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4";
 
 /** What a range's change is compared with, and what to say when neither period had clicks. */
 const COMPARISON: Record<
@@ -49,7 +50,6 @@ const utc = (options: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat(LOCALE, { timeZone: "UTC", ...options });
 const peakDay = utc({ month: "short", day: "numeric" });
 const peakWeekday = utc({ weekday: "long" });
-const peakHour = utc({ hour: "numeric" });
 const peakHourDay = utc({ weekday: "short", month: "short", day: "numeric" });
 
 const decimal = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
@@ -125,7 +125,11 @@ export async function SummaryCards({
         icon={FlameIcon}
         value={
           peak ? (
-            (hourly ? peakHour : peakDay).format(bucketStart(peak.bucket))
+            hourly ? (
+              formatUtcHour(bucketStart(peak.bucket))
+            ) : (
+              peakDay.format(bucketStart(peak.bucket))
+            )
           ) : (
             <Nothing />
           )

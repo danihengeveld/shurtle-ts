@@ -7,7 +7,7 @@ import {
 } from "@/lib/analytics";
 import { cn } from "cn";
 import { CalendarClockIcon } from "lucide-react";
-import { pluralize } from "../format";
+import { formatHour, pluralize } from "../format";
 import {
   CardPill,
   SectionCard,
@@ -28,11 +28,7 @@ const WEEKDAYS = [
 ];
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
-/** "12 AM", "2 PM": the hour a cell starts. */
-function hourName(hour: number) {
-  const suffix = hour < 12 ? "AM" : "PM";
-  return `${hour % 12 === 0 ? 12 : hour % 12} ${suffix}`;
-}
+const hourName = formatHour;
 
 /** Axis labels every 6 hours: "12a", "6a", "12p", "6p". */
 function hourTick(hour: number) {

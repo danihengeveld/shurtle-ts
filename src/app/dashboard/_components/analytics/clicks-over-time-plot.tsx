@@ -17,13 +17,14 @@ import {
 import { useId } from "react";
 import {
   Area,
-  AreaChart,
+  Bar,
+  ComposedChart,
   CartesianGrid,
   ReferenceLine,
   XAxis,
   YAxis,
 } from "recharts";
-import { LOCALE, formatCount, pluralize } from "../format";
+import { LOCALE, formatCount, formatUtcHour, pluralize } from "../format";
 import { niceMax } from "../overview/clicks-chart-plot";
 
 const chartConfig = {
@@ -35,7 +36,6 @@ const utc = (options: Intl.DateTimeFormatOptions) =>
 
 const dayTick = utc({ month: "short", day: "numeric" });
 const monthTick = utc({ month: "short", year: "numeric" });
-const hourTick = utc({ hour: "numeric" });
 const longDay = utc({
   weekday: "short",
   month: "short",
@@ -43,14 +43,13 @@ const longDay = utc({
   year: "numeric",
 });
 const longHourDay = utc({ weekday: "short", month: "short", day: "numeric" });
-const hourRange = utc({ hour: "numeric" });
 
-/** "Thu, Nov 6, 2026" for a day; "Thu, Nov 6 · 2 – 3 PM" for an hour. */
+/** "Thu, Nov 6, 2026" for a day; "Thu, Nov 6 · 2 PM – 3 PM" for an hour. */
 export function describeBucket(key: string, bucket: Bucket) {
   const start = bucketStart(key);
   if (bucket === "day") return longDay.format(start);
   const end = new Date(start.getTime() + 3_600_000);
-  return `${longHourDay.format(start)} · ${hourRange.formatRange(start, end)}`;
+  return `${longHourDay.format(start)} · ${formatUtcHour(start)} – ${formatUtcHour(end)}`;
 }
 
 /** At most `max` evenly spread entries of `items`, always including the first and the last. */
@@ -73,7 +72,7 @@ function axisTicks(
   if (bucket === "hour" && range === "24h") {
     return {
       ticks: spread(keys, 5),
-      label: (key: string) => hourTick.format(bucketStart(key)),
+      label: (key: string) => formatUtcHour(bucketStart(key)),
     };
   }
   if (bucket === "hour") {
@@ -152,6 +151,9 @@ export function ClicksOverTimePlot({
   const period = RANGE_LABELS[range].long.toLowerCase();
   const showCreated =
     createdBucket !== null && createdBucket > first && createdBucket <= last;
+  // An hour holds a handful of clicks: bars show those counts as they are, where a line through
+  // them would zig-zag. Days are smoother, so they get an area.
+  const bars = bucket === "hour" && !isEmpty;
 
   const summary = isEmpty
     ? `No clicks ${range === "all" ? "yet" : `in the ${period}`}.`
@@ -171,9 +173,10 @@ export function ClicksOverTimePlot({
           initialDimension={{ width: 960, height: 256 }}
           className="aspect-auto h-56 w-full sm:h-64 [&_.recharts-surface]:overflow-visible"
         >
-          <AreaChart
+          <ComposedChart
             data={series}
             margin={{ top: 8, right: 2, bottom: 0, left: 2 }}
+            barCategoryGap={range === "24h" ? "22%" : 1}
             accessibilityLayer
           >
             <defs>
@@ -226,7 +229,11 @@ export function ClicksOverTimePlot({
             )}
             {!isEmpty && (
               <ChartTooltip
-                cursor={{ strokeOpacity: 0.6 }}
+                cursor={
+                  bars
+                    ? { fill: "var(--muted-foreground)", fillOpacity: 0.12 }
+                    : { strokeOpacity: 0.6 }
+                }
                 content={
                   <ChartTooltipContent
                     hideIndicator
@@ -245,21 +252,31 @@ export function ClicksOverTimePlot({
                 }
               />
             )}
-            <Area
-              dataKey="clicks"
-              // Hours are spiky: straight segments don't invent curves between them.
-              type={bucket === "hour" ? "linear" : "monotone"}
-              stroke="var(--color-clicks)"
-              strokeWidth={2}
-              strokeLinejoin="round"
-              strokeDasharray={isEmpty ? "4 4" : undefined}
-              strokeOpacity={isEmpty ? 0.4 : 1}
-              fill={isEmpty ? "transparent" : `url(#${id}-fill)`}
-              isAnimationActive={false}
-              dot={false}
-              activeDot={{ r: 5, strokeWidth: 3, className: "stroke-card" }}
-            />
-          </AreaChart>
+            {bars ? (
+              <Bar
+                dataKey="clicks"
+                fill="var(--color-clicks)"
+                radius={range === "24h" ? [3, 3, 0, 0] : [1.5, 1.5, 0, 0]}
+                isAnimationActive={false}
+                activeBar={{ fillOpacity: 0.8 }}
+              />
+            ) : (
+              <Area
+                dataKey="clicks"
+                // Monotone never overshoots: peaks and zeros stay exactly where they are.
+                type="monotone"
+                stroke="var(--color-clicks)"
+                strokeWidth={2}
+                strokeLinejoin="round"
+                strokeDasharray={isEmpty ? "4 4" : undefined}
+                strokeOpacity={isEmpty ? 0.4 : 1}
+                fill={isEmpty ? "transparent" : `url(#${id}-fill)`}
+                isAnimationActive={false}
+                dot={false}
+                activeDot={{ r: 5, strokeWidth: 3, className: "stroke-card" }}
+              />
+            )}
+          </ComposedChart>
         </ChartContainer>
 
         {isEmpty && (

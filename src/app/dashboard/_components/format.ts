@@ -47,6 +47,20 @@ export function formatUtcDay(
 }
 
 /**
+ * "12 AM", "2 PM": an hour of the day. Built by hand, not with Intl: ICU versions disagree on the
+ * space before AM/PM (a narrow no-break space or a plain one), so the server's and the browser's
+ * output can differ and break hydration.
+ */
+export function formatHour(hour: number) {
+  return `${hour % 12 === 0 ? 12 : hour % 12} ${hour < 12 ? "AM" : "PM"}`;
+}
+
+/** The UTC hour of `date`, like `formatHour`. */
+export function formatUtcHour(date: Date) {
+  return formatHour(date.getUTCHours());
+}
+
+/**
  * Short absolute date. Pass `timeZone: "UTC"` for deterministic SSR output; omit it to use the
  * viewer's time zone (client only, after hydration).
  */

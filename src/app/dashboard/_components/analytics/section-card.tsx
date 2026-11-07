@@ -82,7 +82,7 @@ export function SectionCard({
       <Header title={title} aside={aside} heading />
       <CardContent
         className={cn(
-          !bleed && inset,
+          bleed ? "px-0" : inset,
           "flex flex-1 flex-col",
           contentClassName,
         )}
@@ -142,7 +142,9 @@ export function SectionSkeleton({
   return (
     <Card aria-hidden className={cn(card, bleed && "pb-0!", className)}>
       <Header title={title} aside={aside} heading={false} />
-      <CardContent className={cn(!bleed && inset, "flex flex-1 flex-col")}>
+      <CardContent
+        className={cn(bleed ? "px-0" : inset, "flex flex-1 flex-col")}
+      >
         {children}
       </CardContent>
     </Card>

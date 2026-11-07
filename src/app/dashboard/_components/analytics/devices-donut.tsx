@@ -31,7 +31,8 @@ export function DevicesDonut({
         initialDimension={{ width: 160, height: 160 }}
         className="aspect-square size-full"
       >
-        <PieChart>
+        {/* Not focusable: the legend beside it is the accessible version. */}
+        <PieChart accessibilityLayer={false}>
           <Pie
             data={slices.map((slice) => ({
               ...slice,
@@ -48,6 +49,7 @@ export function DevicesDonut({
             startAngle={90}
             endAngle={-270}
             isAnimationActive={false}
+            rootTabIndex={-1}
           />
         </PieChart>
       </ChartContainer>
