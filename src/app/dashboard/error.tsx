@@ -22,7 +22,8 @@ export default function DashboardError({
   }, [error]);
 
   return (
-    <div className="container-page flex flex-1 items-center justify-center py-16 sm:py-24">
+    // Renders in place of the list (below the links toolbar), so it is a card rather than a page.
+    <div className="flex justify-center">
       <div
         role="alert"
         className="relative isolate w-full max-w-md overflow-hidden rounded-3xl border bg-card px-6 py-10 text-center shadow-soft sm:px-10"
@@ -34,11 +35,11 @@ export default function DashboardError({
           <div className="size-full shell-pattern" />
         </div>
         <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
-          Dashboard unavailable
+          Links unavailable
         </p>
-        <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight text-balance">
+        <h3 className="mt-3 font-display text-2xl font-semibold tracking-tight text-balance">
           We couldn&apos;t load your links
-        </h1>
+        </h3>
         <p className="mt-2 text-sm text-pretty text-muted-foreground">
           Something went wrong on our side. This is usually temporary, so please
           try again.

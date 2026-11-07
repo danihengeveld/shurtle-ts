@@ -5,9 +5,9 @@ import {
   type NextFetchEvent,
   type NextRequest,
 } from "next/server";
-import { logger } from "./lib/logger";
-import { rateLimits } from "./lib/ratelimits";
-import { recordHit, resolveSlug } from "./lib/shurtles";
+import { logger } from "./server/logger";
+import { rateLimits } from "./server/ratelimits";
+import { recordHit, resolveSlug } from "./server/queries";
 import { isValidSlug } from "./lib/slugs";
 
 /**

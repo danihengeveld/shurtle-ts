@@ -18,7 +18,7 @@ const C = {
   line: "#1d2721",
 };
 
-const fontDir = join(process.cwd(), "src/components/marketing/og-fonts");
+const fontDir = join(process.cwd(), "src/app/_og-fonts");
 const [display, mono] = await Promise.all([
   readFile(join(fontDir, "BricolageGrotesque-Bold.ttf")),
   readFile(join(fontDir, "GeistMono-Regular.ttf")),

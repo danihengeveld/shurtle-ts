@@ -1,7 +1,7 @@
 "use client"; // Error boundaries must be Client Components
 
 import { Logo } from "@/components/logo";
-import { ErrorView, errorDigest } from "@/components/marketing/error-view";
+import { ErrorView, errorDigest } from "./_components/error-view";
 import { siteInfo } from "@/lib/site";
 import { useEffect, useSyncExternalStore } from "react";
 import "./globals.css";

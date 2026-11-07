@@ -1,7 +1,7 @@
-import { db } from "@/db";
-import { shurtles } from "@/db/schema";
-import { logger } from "@/lib/logger";
-import { shurtlesTag, statsTag } from "@/lib/tags";
+import { db } from "@/server/db";
+import { shurtles } from "@/server/db/schema";
+import { logger } from "@/server/logger";
+import { shurtlesTag, statsTag } from "@/server/tags";
 import { and, isNull, lte, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { timingSafeEqual } from "node:crypto";
