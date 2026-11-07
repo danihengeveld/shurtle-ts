@@ -99,6 +99,22 @@ export function formatRelative(date: Date, now: number) {
   return relativeFormat.format(Math.round(diff / 60_000), "minute");
 }
 
+/**
+ * Compact time since, for tight spaces: "just now", "3m ago", "5h ago", "4d ago", then the date
+ * ("Oct 14", with the year once it's another year). Pass `timeZone: "UTC"` for SSR output.
+ */
+export function formatAgo(date: Date, now: number, timeZone?: string) {
+  const diff = Math.max(0, now - date.getTime());
+  if (diff < 60_000) return "just now";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < DAY_MS) return `${Math.floor(diff / 3_600_000)}h ago`;
+  if (diff < 30 * DAY_MS) return `${Math.floor(diff / DAY_MS)}d ago`;
+  return formatDate(date, {
+    timeZone,
+    withYear: new Date(now).getUTCFullYear() !== date.getUTCFullYear(),
+  });
+}
+
 export type ExpiryStatus =
   | { kind: "never" }
   | { kind: "expired"; expiresAt: Date }

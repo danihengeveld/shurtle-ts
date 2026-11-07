@@ -50,6 +50,16 @@
   --color-brand-soft: var(--brand-soft);
 
   --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+
+  --color-scale-0: var(--scale-0);
+  --color-scale-1: var(--scale-1);
+  --color-scale-2: var(--scale-2);
+  --color-scale-3: var(--scale-3);
+  --color-scale-4: var(--scale-4);
+  --color-scale-5: var(--scale-5);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -131,7 +141,22 @@
   --brand-ink: oklch(0.47 0.13 140);
   --brand-soft: oklch(0.95 0.08 125);
 
+  /*
+   * Data colours. chart-N tell categories apart (chart-1 first, for the main series). scale-N is
+   * a sequential ramp for counts (map, heatmap): 0 is "none", then light to dark, so more clicks
+   * always read as more ink, with the darkest step at 3:1 against the card.
+   */
   --chart-1: oklch(0.47 0.13 140);
+  --chart-2: oklch(0.62 0.1 190);
+  --chart-3: oklch(0.8 0.16 118);
+  --chart-4: oklch(0.7 0.025 150);
+
+  --scale-0: oklch(0.94 0.01 110);
+  --scale-1: oklch(0.91 0.07 124);
+  --scale-2: oklch(0.83 0.13 127);
+  --scale-3: oklch(0.71 0.15 132);
+  --scale-4: oklch(0.58 0.14 138);
+  --scale-5: oklch(0.45 0.12 142);
 }
 
 .dark {
@@ -161,6 +186,17 @@
   --brand-soft: oklch(0.3 0.06 135);
 
   --chart-1: oklch(0.88 0.19 127);
+  --chart-2: oklch(0.74 0.11 190);
+  --chart-3: oklch(0.6 0.13 145);
+  --chart-4: oklch(0.55 0.02 150);
+
+  /* Dim to bright: in the dark, more clicks glow brighter. */
+  --scale-0: oklch(0.255 0.014 160);
+  --scale-1: oklch(0.33 0.06 142);
+  --scale-2: oklch(0.45 0.1 138);
+  --scale-3: oklch(0.6 0.14 134);
+  --scale-4: oklch(0.75 0.17 130);
+  --scale-5: oklch(0.88 0.19 127);
 
   --elevation-soft:
     0 1px 2px oklch(0 0 0 / 0.3), 0 4px 16px -4px oklch(0 0 0 / 0.35);

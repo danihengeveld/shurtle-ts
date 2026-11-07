@@ -13,7 +13,7 @@ import {
   setOwnShurtleExpiry,
 } from "./mutations";
 import { rateLimits } from "./ratelimits";
-import { shurtlesTag, statsTag } from "./tags";
+import { analyticsTag, shurtlesTag, statsTag } from "./tags";
 
 /*
  * Thin Server Actions: authenticate, validate, rate limit, delegate the write to the Data Access
@@ -189,6 +189,7 @@ export async function deleteShurtle(id: string): Promise<DeleteShurtleResult> {
     logger.info({ userId, id }, "shurtle deleted");
     updateTag(shurtlesTag(userId));
     updateTag(statsTag(userId));
+    updateTag(analyticsTag(id));
     return { ok: true };
   } catch (error) {
     logger.error({ err: error, userId, id }, "failed to delete shurtle");

@@ -3,7 +3,12 @@
 import { Hint } from "@/components/hint";
 import { cn } from "cn";
 import { createContext, use, useSyncExternalStore } from "react";
-import { formatDate, formatDateTime, formatRelative } from "./format";
+import {
+  formatAgo,
+  formatDate,
+  formatDateTime,
+  formatRelative,
+} from "./format";
 
 /*
  * Hydration-safe time rendering.
@@ -71,6 +76,32 @@ export function useNow() {
 
 function toDate(value: Date | string) {
   return typeof value === "string" ? new Date(value) : value;
+}
+
+/** "3m ago", "4d ago" (see `formatAgo`), with the exact local date & time on hover. */
+export function AgoTime({
+  date,
+  className,
+}: {
+  date: Date | string;
+  className?: string;
+}) {
+  const { now, hydrated } = useNow();
+  const value = toDate(date);
+  const label = now
+    ? formatAgo(value, now, hydrated ? undefined : "UTC")
+    : formatDate(value, { timeZone: "UTC", withYear: true });
+
+  return (
+    <Hint content={hydrated ? formatDateTime(value) : undefined}>
+      <time
+        dateTime={value.toISOString()}
+        className={cn("whitespace-nowrap", className)}
+      >
+        {label}
+      </time>
+    </Hint>
+  );
 }
 
 /** "3 days ago", with the exact local date & time on hover. */

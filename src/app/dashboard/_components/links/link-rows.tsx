@@ -1,7 +1,9 @@
 import { Hint } from "@/components/hint";
 import { siteInfo } from "@/lib/site";
+import { linkDetailsPath } from "@/lib/link-list";
 import { cn } from "cn";
 import { ArrowUpRightIcon, MousePointerClickIcon } from "lucide-react";
+import Link from "next/link";
 import { CopyButton } from "../copy-button";
 import { formatCount, splitUrl } from "../format";
 import { RelativeTime } from "../time";
@@ -26,43 +28,59 @@ const host = siteInfo.baseUrl.host;
 
 export function ShortLink({
   slug,
+  href,
   compactHost = false,
   expired = false,
   className,
 }: {
   slug: string;
+  /** Makes it a link, e.g. to the link's details page. */
+  href?: string;
   compactHost?: boolean;
   /** Expired links are muted: they no longer redirect. */
   expired?: boolean;
   className?: string;
 }) {
-  return (
-    <Hint content={`${host}/${slug}`}>
+  const base = cn(
+    "min-w-0 truncate font-mono text-[13px] leading-6",
+    className,
+  );
+  const content = (
+    <>
+      {/* In the table, the repeated host only shows when there's room; the slug matters most. */}
+      <span
+        className={cn("text-muted-foreground", compactHost && "max-xl:sr-only")}
+      >
+        {host}
+      </span>
+      <span className="text-muted-foreground">/</span>
       <span
         className={cn(
-          "min-w-0 truncate font-mono text-[13px] leading-6",
-          className,
+          "font-medium decoration-current/30 underline-offset-4",
+          expired ? "text-muted-foreground" : "text-foreground",
         )}
       >
-        {/* In the table, the repeated host only shows when there's room; the slug matters most. */}
-        <span
-          className={cn(
-            "text-muted-foreground",
-            compactHost && "max-xl:sr-only",
-          )}
-        >
-          {host}
-        </span>
-        <span className="text-muted-foreground">/</span>
-        <span
-          className={cn(
-            "font-medium",
-            expired ? "text-muted-foreground" : "text-foreground",
-          )}
-        >
-          {slug}
-        </span>
+        {slug}
       </span>
+    </>
+  );
+
+  return (
+    <Hint content={`${host}/${slug}`}>
+      {href ? (
+        <Link
+          href={href}
+          className={cn(
+            base,
+            "rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 [&:hover>span:last-of-type]:underline",
+          )}
+        >
+          {content}
+          <span className="sr-only">, details and clicks</span>
+        </Link>
+      ) : (
+        <span className={base}>{content}</span>
+      )}
     </Hint>
   );
 }
@@ -172,11 +190,17 @@ export function LinksTable({
             <LinkTableRow
               key={link.id}
               id={link.id}
+              href={linkDetailsPath(link.id)}
               className="border-b transition-[background-color,opacity] duration-200 last:border-0 hover:bg-muted/40 data-deleting:opacity-40 dark:hover:bg-muted/25"
             >
               <td className={td}>
                 <div className="flex min-w-0 items-center gap-0.5">
-                  <ShortLink slug={link.slug} compactHost expired={expired} />
+                  <ShortLink
+                    slug={link.slug}
+                    href={linkDetailsPath(link.id)}
+                    compactHost
+                    expired={expired}
+                  />
                   {/* A dead link isn't worth sharing: no copy for expired links. */}
                   {!expired && (
                     <CopyButton slug={link.slug} className="shrink-0" />
@@ -242,11 +266,13 @@ export function LinksList({
         <LinkListItem
           key={link.id}
           id={link.id}
-          className="py-3 pr-2 pl-4 transition-opacity duration-200 data-deleting:opacity-40"
+          href={linkDetailsPath(link.id)}
+          className="py-3 pr-2 pl-4 transition-[background-color,opacity] duration-200 active:bg-muted/40 data-deleting:opacity-40 dark:active:bg-muted/25"
         >
           <div className="flex items-center gap-1">
             <ShortLink
               slug={link.slug}
+              href={linkDetailsPath(link.id)}
               expired={expired}
               className="flex-1 text-sm"
             />

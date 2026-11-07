@@ -54,6 +54,11 @@ export function linksPath(status: LinkStatus) {
   return status === "expired" ? "/dashboard/expired" : "/dashboard";
 }
 
+/** A link's own page: its details and click analytics. */
+export function linkDetailsPath(id: string) {
+  return `/dashboard/links/${encodeURIComponent(id)}`;
+}
+
 /** Status from a pathname (`/dashboard/expired` → expired, anything else → active). */
 export function statusFromPath(pathname: string): LinkStatus {
   return pathname.replace(/\/$/, "").endsWith("/expired")

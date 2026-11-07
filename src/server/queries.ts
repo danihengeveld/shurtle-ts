@@ -83,6 +83,11 @@ export async function getRenewableShurtles(limit: number) {
   return getRenewableShurtlesByUserId(await requireUserId(), limit);
 }
 
+/** One of the user's links by id, or null when there's no such link or it isn't theirs. */
+export async function getOwnShurtle(id: string) {
+  return getShurtleByUserId(await requireUserId(), id);
+}
+
 export type ShurtleStats = {
   totalShurtles: number;
   /** Shurtles that have not expired. */
@@ -246,6 +251,26 @@ async function getRenewableShurtlesByUserId(userId: string, limit: number) {
 
   cacheLife(minutesProfileUntil(upcoming?.nextChange ?? null));
   return rows;
+}
+
+async function getShurtleByUserId(userId: string, id: string) {
+  "use cache";
+  // Same tag as the lists: creating, deleting, renewing or changing the expiry of a link updates it.
+  cacheTag(shurtlesTag(userId));
+
+  const [link] = await db
+    .select(listColumns)
+    .from(shurtles)
+    .where(and(eq(shurtles.id, id), eq(shurtles.userId, userId)));
+
+  // Its state (live, renewable, released) changes at expiry and again when the window closes.
+  const changes = link?.expiresAt
+    ? [link.expiresAt, releaseTime(link.expiresAt)].filter(
+        (moment) => moment.getTime() > Date.now(),
+      )
+    : [];
+  cacheLife(minutesProfileUntil(changes[0] ?? null));
+  return link ?? null;
 }
 
 const resolveSlugPrepared = db
