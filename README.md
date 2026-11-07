@@ -1,163 +1,180 @@
-# 🐢 Shurtle
+<div align="center">
 
-An open source, blazingly fast URL shortener built with Next.js 16, React 19 and modern web technologies. Shurtle makes it easy to create, manage and track short links with a polished, accessible interface.
+<img src=".github/assets/banner.png" alt="Shurtle: the turtle that outruns the hare" width="100%" />
 
-**Live:** [shurtle.app](https://shurtle.app)
+# Shurtle
 
-## ✨ Features
+**An open source URL shortener that redirects before a single page renders.**
 
-- **🔗 Short links** — paste a long URL and get a short, readable link (`shurtle.app/x7Kp2q`). Links without `https://` are fixed up for you.
-- **🎯 Custom slugs** — choose your own slug, or claim a free one straight from the 404 page.
-- **⏳ Expiring links** — optionally expire a link at a chosen moment, and extend it any time. Expired links stop resolving but keep their stats. For 24 hours after expiry the slug stays reserved for its owner, who can renew the link; after that, anyone can claim it (the expired page counts down to that moment).
-- **📈 Click stats** — per-link click counts, last-click time and a 30-day clicks chart on your dashboard.
-- **🔎 Dashboard** — search, paginate, copy and delete your links.
-- **🛡️ Abuse protection** — rate limiting on opening and creating links.
-- **🌙 Dark mode** — light, dark and system themes.
-- **🔐 Authentication** — sign-in powered by Clerk.
+[![CI](https://github.com/danihengeveld/shurtle-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/danihengeveld/shurtle-ts/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/danihengeveld/shurtle-ts?label=release)](https://github.com/danihengeveld/shurtle-ts/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 🧠 How it works
+[**shurtle.app**](https://shurtle.app) · [Releases](https://github.com/danihengeveld/shurtle-ts/releases) · [Report a bug](https://github.com/danihengeveld/shurtle-ts/issues/new)
 
-- **Redirects happen in the proxy.** `src/proxy.ts` (formerly "middleware") recognises single-segment paths like `/abc123`, rate-limits by IP, looks up the destination and responds with a `307` redirect before any page renders. The visit is recorded in the background with `waitUntil`, so it never slows the redirect down. Unknown slugs render the 404 page (status 404) and offer to claim the slug.
-- **The dashboard streams.** With Cache Components (partial prerendering) the page shell is static, while the user's stats, chart and links stream in behind Suspense boundaries. Per-user data is cached with `"use cache"` and invalidated instantly after you create or delete a link (`updateTag`).
-- **Auth is checked where data is read.** Every Server Component and Server Function that touches user data calls `requireUserId()` (`src/server/auth.ts`), rather than relying on path matching in the proxy.
-- **One set of slug rules.** `src/lib/slugs.ts` defines the slug format and reserved paths, and is shared by validation, the proxy and the UI.
-- **Links have a lifecycle.** `src/lib/link-lifecycle.ts` defines it: live → renewable (expired, slug reserved for its owner for 24 hours) → released (slug free for anyone). Each link has its own id, and a slug is unique only among unreleased links (a partial unique index), so a released slug can be reused while the old link keeps its click history.
-- **Each list is a route.** Active links live at `/dashboard` and expired links at `/dashboard/expired`, each with its own `loading.tsx`. The header, stats, tabs and search sit in the dashboard layout and stay mounted; search, page and page size are query params that keep the current list on screen (dimmed) until the next one is ready.
+</div>
 
-## 🗂️ Project structure
+---
+
+Shurtle turns long URLs into short, readable links (`shurtle.app/x7Kp2qR`) and shows you who clicks them. It's built on Next.js 16 with the App Router, and resolves short links in the proxy layer, so a redirect never waits on rendering.
+
+## Features
+
+- **Short links, your way.** Paste a URL and get a short link, or pick your own slug. URLs without `https://` are fixed up, and equivalent URLs are recognised as the same link.
+- **Click stats.** Per-link clicks and last-click time, totals with a week-over-week trend, and a 30-day clicks chart.
+- **Links with a shelf life.** Expire a link at a chosen date and time, and change it whenever you like. Expired links stop redirecting but keep their stats.
+- **A second chance.** For 24 hours after a link expires, its slug stays reserved for you: renew it and it's back with every click. After that, anyone can claim the slug, and the expired page counts down to that moment.
+- **Claim a free slug.** Visiting an unused short link offers to create it on the spot.
+- **A dashboard that keeps up.** Server-side search, pagination, one-click copy, keyboard shortcuts (<kbd>N</kbd> new link, <kbd>/</kbd> search), and lists that update themselves when a link expires.
+- **Abuse protection.** Rate limits on opening links (per IP) and creating them (per user), plus a friendly "slow down" page.
+- **Polished and accessible.** Light and dark themes, a phone-friendly layout with bottom-sheet dialogs, and keyboard and screen-reader support throughout.
+
+## How it works
 
 ```
-src/
-  app/
-    (marketing)/            landing page; _components/ holds its sections
-    (short-link)/           pages the proxy rewrites short links to: expired/, slow-down/
-    dashboard/
-      layout.tsx            header, overview, links toolbar
-      (active)/             /dashboard: active links (+ loading.tsx)
-      expired/              /dashboard/expired: expired links (+ loading.tsx)
-      _components/          create/, links/, overview/ and shared dashboard bits
-    _components/            error and 404 views used by the root error/not-found files
-    api/cron/               scheduled jobs (see vercel.json)
-  components/               shared UI: ui/ (shadcn), layout/ (navbar, footer), logo, theme…
-  lib/                      pure, client-safe helpers: slugs, schemas, site, link-list
-  server/                   server-only code: db/, auth, queries, actions, rate limits, logging
-  proxy.ts                  short-link redirects + Clerk
+GET shurtle.app/x7Kp2qR
+  └─ proxy.ts ─ rate limit (Upstash) ─ look up slug (Postgres)
+       ├─ live      → 307 redirect, click recorded in the background
+       ├─ expired   → 410 page with a countdown to the slug's release
+       └─ unknown   → 404 page that offers to claim the slug
 ```
 
-Folders starting with `_` are private (never routes) and folders in `(parentheses)` are route groups (not part of the URL).
+- **Redirects happen in the proxy.** [`src/proxy.ts`](src/proxy.ts) recognises single-segment paths, rate-limits by IP, resolves the slug and redirects before any page renders. The click is recorded with `waitUntil`, so it never slows the redirect down.
+- **Links have a lifecycle.** [`src/lib/link-lifecycle.ts`](src/lib/link-lifecycle.ts) defines it, from live to renewable to released:
+  - **Live:** the link redirects.
+  - **Renewable:** expired, with the slug reserved for its owner for 24 hours.
+  - **Released:** the slug is free for anyone.
 
-## 🚀 Tech stack
+  Each link has its own id, and a slug is unique only among unreleased links (a partial unique index). A released slug can therefore be reused while the old link keeps its history. Release is decided by the clock; a daily cron only tidies up afterwards.
 
-| Area          | Tech                                                                                                                                                                                           |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework     | [Next.js 16](https://nextjs.org/) (App Router, Cache Components, React Compiler, Turbopack)                                                                                                    |
-| UI            | [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) on [Radix UI](https://www.radix-ui.com/), [Lucide](https://lucide.dev/) icons |
-| Data          | [Neon Postgres](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/)                                                                                                              |
-| Rate limiting | [Upstash Redis](https://upstash.com/) + `@upstash/ratelimit`                                                                                                                                   |
-| Auth          | [Clerk](https://clerk.com/)                                                                                                                                                                    |
-| Validation    | [Zod 4](https://zod.dev/)                                                                                                                                                                      |
-| Hosting       | [Vercel](https://vercel.com/) (Cron for releasing expired links, Analytics, Speed Insights)                                                                                                    |
+- **The dashboard streams.** With Cache Components the page shell is prerendered, and the stats, chart and links stream in behind Suspense boundaries. Per-user data is cached with `"use cache"`, invalidated the moment you change a link, and expires on its own at the user's next expiry. A failing section shows its own "Try again" instead of taking the page down.
+- **Auth lives in the data layer.** Every read and write resolves the signed-in user itself ([`src/server/queries.ts`](src/server/queries.ts), [`src/server/mutations.ts`](src/server/mutations.ts)), rather than relying on route matching. Server Actions stay thin: validate, rate-limit, delegate, invalidate.
 
-### 💰 Free tier notice
+## Tech stack
 
-The live demo runs on the free tiers of Vercel, Neon, Upstash and Clerk, so it may have usage limits or occasional downtime.
+| Area          | Technology                                                                                                                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework     | [Next.js 16](https://nextjs.org/) (App Router, Cache Components, React Compiler, Turbopack)                                                                                              |
+| UI            | [React 19](https://react.dev/), [Tailwind CSS 4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) on [Radix](https://www.radix-ui.com/), [Recharts](https://recharts.org/) |
+| Database      | [Neon Postgres](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/)                                                                                                        |
+| Auth          | [Clerk](https://clerk.com/)                                                                                                                                                              |
+| Rate limiting | [Upstash Redis](https://upstash.com/) with `@upstash/ratelimit`                                                                                                                          |
+| Validation    | [Zod 4](https://zod.dev/)                                                                                                                                                                |
+| Logging       | [pino](https://getpino.io/), with no IP addresses, emails or full URLs in logs                                                                                                           |
+| Hosting       | [Vercel](https://vercel.com/) (Cron, Analytics, Speed Insights)                                                                                                                          |
+| Tooling       | TypeScript, ESLint, Prettier, [Vitest](https://vitest.dev/), GitHub Actions, CodeQL, Dependabot                                                                                          |
 
-## 🏃 Running locally
+## Getting started
 
 ### Prerequisites
 
 - Node.js 22 or newer (24 LTS recommended)
-- pnpm (`corepack enable` picks up the version pinned in `package.json`)
-- A Postgres database ([Neon](https://neon.tech/) or via the Vercel dashboard)
+- pnpm: `corepack enable` picks up the version pinned in `package.json`
+- A Postgres database ([Neon](https://neon.tech/), or Vercel's Neon integration)
 - An [Upstash](https://upstash.com/) Redis database
 - A [Clerk](https://clerk.com/) application
 
+A [devcontainer](.devcontainer/devcontainer.json) with Node 24, pnpm and the recommended editor extensions is included if you prefer to work in a container.
+
 ### Setup
 
-1. **Clone the repository**
+```bash
+git clone https://github.com/danihengeveld/shurtle-ts.git
+cd shurtle-ts
+pnpm install
+```
 
-   ```bash
-   git clone https://github.com/danihengeveld/shurtle-ts.git
-   cd shurtle-ts
-   ```
+Create `.env.local` in the project root:
 
-2. **Install dependencies**
+```env
+POSTGRES_URL="postgres://..."
+KV_REST_API_URL="https://...upstash.io"
+KV_REST_API_TOKEN="..."
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
+CLERK_SECRET_KEY="sk_..."
+CRON_SECRET="any-long-random-string"
+```
 
-   ```bash
-   pnpm install
-   ```
+Then create the schema and start the dev server:
 
-3. **Configure environment variables** in a `.env.local` file in the project root:
+```bash
+pnpm db:push
+pnpm dev
+```
 
-   ```env
-   # Database (Neon Postgres)
-   POSTGRES_URL="postgres://..."
+Open [http://localhost:3000](http://localhost:3000).
 
-   # Rate limiting (Upstash Redis)
-   KV_REST_API_URL="https://...upstash.io"
-   KV_REST_API_TOKEN="..."
+### Environment variables
 
-   # Authentication (Clerk)
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
-   CLERK_SECRET_KEY="sk_..."
-
-   # Protects the daily cron endpoint that releases expired links (any long random string)
-   CRON_SECRET="..."
-
-   # Optional: public origin used for short links and metadata.
-   # Defaults to http://localhost:3000 in development and https://shurtle.app otherwise.
-   # NEXT_PUBLIC_SITE_URL="https://your-domain.example"
-
-   # Optional: log every SQL query in development (at debug level)
-   # DEBUG_SQL="1"
-
-   # Optional: server log level (trace, debug, info, warn, error). Defaults to debug in
-   # development and info in production, where logs are JSON lines (pino).
-   # LOG_LEVEL="info"
-   ```
-
-4. **Create the database schema**
-
-   ```bash
-   pnpm db:push
-   ```
-
-   Upgrading an existing database from before link ids? Run `drizzle/manual/0001_link_ids_and_slug_reuse.sql` once first (see the comments in that file).
-
-5. **Start the development server**
-
-   ```bash
-   pnpm dev
-   ```
-
-   Then open [http://localhost:3000](http://localhost:3000).
+| Variable                            | Required   | Description                                                                                                                         |
+| ----------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_URL`                      | Yes        | Postgres connection string.                                                                                                         |
+| `KV_REST_API_URL`                   | Yes        | Upstash Redis REST URL, for rate limiting.                                                                                          |
+| `KV_REST_API_TOKEN`                 | Yes        | Upstash Redis REST token.                                                                                                           |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes        | Clerk publishable key.                                                                                                              |
+| `CLERK_SECRET_KEY`                  | Yes        | Clerk secret key.                                                                                                                   |
+| `CRON_SECRET`                       | Production | Bearer token for the daily cron endpoint. The endpoint refuses to run without it.                                                   |
+| `NEXT_PUBLIC_SITE_URL`              | No         | Public origin for short links and metadata. Defaults to `http://localhost:3000` in development and `https://shurtle.app` otherwise. |
+| `LOG_LEVEL`                         | No         | `trace`, `debug`, `info`, `warn` or `error`. Defaults to `debug` in development and `info` in production.                           |
+| `DEBUG_SQL`                         | No         | Set to `1` to log every SQL query in development.                                                                                   |
 
 ### Scripts
 
-| Command                     | Description                                         |
-| --------------------------- | --------------------------------------------------- |
-| `pnpm dev`                  | Start the dev server (Turbopack)                    |
-| `pnpm build` / `pnpm start` | Production build / serve it                         |
-| `pnpm lint`                 | ESLint (Next.js core web vitals + TypeScript rules) |
-| `pnpm typecheck`            | TypeScript type check                               |
-| `pnpm db:push`              | Push the Drizzle schema to the database             |
-| `pnpm db:studio`            | Open Drizzle Studio                                 |
+| Command                        | Description                              |
+| ------------------------------ | ---------------------------------------- |
+| `pnpm dev`                     | Start the dev server (Turbopack)         |
+| `pnpm build` / `pnpm start`    | Build for production / serve the build   |
+| `pnpm lint`                    | ESLint                                   |
+| `pnpm typecheck`               | Generate route types and type-check      |
+| `pnpm test`                    | Run the unit tests (Vitest)              |
+| `pnpm format` / `format:check` | Format with Prettier / check formatting  |
+| `pnpm db:push`                 | Apply the Drizzle schema to the database |
+| `pnpm db:studio`               | Open Drizzle Studio                      |
 
-### Deploying
+## Project structure
 
-Deploy to Vercel with the environment variables above. `vercel.json` schedules `/api/cron/archive-expired` daily to release links whose 24 hours to renew are over (they stop redirecting the moment they expire, a released slug can be claimed before the cron gets to it, and links are never deleted automatically); Vercel sends `CRON_SECRET` automatically as a bearer token.
+```
+src/
+├─ app/
+│  ├─ (marketing)/        landing page
+│  ├─ (short-link)/       pages the proxy rewrites short links to: expired/, slow-down/
+│  ├─ dashboard/          layout (header, stats, toolbar), (active)/ and expired/ lists
+│  ├─ api/cron/           daily job that releases expired slugs
+│  └─ …                   metadata routes (icons, manifest, OG image, robots, sitemap)
+├─ components/            shared UI: ui/ (shadcn), layout/, logo, theme
+├─ lib/                   client-safe logic: slugs, link lifecycle, schemas, list queries
+├─ server/                server-only: db/, auth, queries, mutations, actions, rate limits
+└─ proxy.ts               short-link resolution, then Clerk for everything else
+```
 
-## 🤝 Contributing
+Folders starting with `_` are private (never routes) and folders in `(parentheses)` are route groups (not part of the URL).
 
-Contributions are welcome! Please open an issue first to discuss larger changes. CI runs lint, type checking and a production build on every pull request.
+## Deploying
 
-## 📝 License
+Shurtle is built for [Vercel](https://vercel.com/): import the repository, add the environment variables above and deploy. [`vercel.json`](vercel.json) schedules `/api/cron/archive-expired` daily; Vercel sends `CRON_SECRET` as a bearer token automatically.
 
-Open source under the [MIT License](LICENSE).
+It also runs anywhere Next.js does (`pnpm build && pnpm start`). Analytics and Speed Insights only load on Vercel, and you'll need to call the cron endpoint yourself, for example once a day:
 
-## 👤 Author
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain.example/api/cron/archive-expired
+```
 
-**Dani Hengeveld**
+### Upgrading
 
-- Website: [dani.hengeveld.dev](https://dani.hengeveld.dev)
-- GitHub: [@danihengeveld](https://github.com/danihengeveld)
+New installs only need `pnpm db:push`. When upgrading an existing database, check the [release notes](https://github.com/danihengeveld/shurtle-ts/releases) for steps. Manual migrations live in [`drizzle/manual/`](drizzle/manual/) and must run before the new version is deployed. For example, upgrading from a version before 2.2 requires `0001_link_ids_and_slug_reuse.sql`.
+
+## Contributing
+
+Contributions are welcome. For anything larger than a small fix, please [open an issue](https://github.com/danihengeveld/shurtle-ts/issues) first so we can agree on the approach.
+
+Before opening a pull request, make sure these pass. CI runs them on every pull request.
+
+```bash
+pnpm lint && pnpm typecheck && pnpm test && pnpm build
+```
+
+Code is formatted with Prettier (including Tailwind class order); `pnpm format` takes care of it. Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+[MIT](LICENSE) © [Dani Hengeveld](https://dani.hengeveld.dev)
