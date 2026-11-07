@@ -2,9 +2,10 @@
  * The 404 page is prerendered once, but the proxy shows it for any unknown slug while keeping the
  * browser URL. An inline script marks the root as `data-pending` (before first paint) when the URL
  * looks like a claimable slug, so the generic fallback never flashes before hydration swaps in the
- * slug variant. If hydration never happens, the content reveals itself anyway.
+ * slug variant. Hydration renders a `[data-ready]` marker inside the root (NotFoundVariant), which
+ * reveals it; if hydration never happens, the content reveals itself anyway.
  */
-.root[data-pending]:not([data-ready]) {
+.root[data-pending]:not(:has([data-ready])) {
   opacity: 0;
   animation: reveal 0.2s ease 1.5s forwards;
 }

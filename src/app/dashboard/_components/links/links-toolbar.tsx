@@ -1,4 +1,3 @@
-import { requireUserId } from "@/server/auth";
 import { getStats } from "@/server/queries";
 import { LinkSearch } from "./link-search";
 import { LinksHeading } from "./links-heading";
@@ -10,9 +9,8 @@ import { StatusTabs } from "./status-tabs";
  * list shows the "create your first link" state instead. Render inside <Suspense>.
  */
 export async function LinksToolbar() {
-  const userId = await requireUserId();
   // Cached and shared with the stats section.
-  const stats = await getStats(userId);
+  const stats = await getStats();
 
   if (stats.totalShurtles === 0) return <LinksHeading />;
 

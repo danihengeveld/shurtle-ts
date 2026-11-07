@@ -110,28 +110,21 @@ export function LinksProvider({ children }: { children: React.ReactNode }) {
  */
 export function LinksNavLink({
   href,
-  onClick,
+  onNavigate,
   ...props
 }: Omit<React.ComponentProps<typeof Link>, "href"> & { href: string }) {
   const { navigate } = useLinks();
   return (
     <Link
+      {...props}
       href={href}
-      onClick={(event) => {
-        onClick?.(event);
-        if (
-          event.defaultPrevented ||
-          event.button !== 0 ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey
-        )
-          return;
+      // Only runs for client-side navigations: modified clicks (new tab/window), downloads and
+      // other targets keep their native behaviour.
+      onNavigate={(event) => {
+        onNavigate?.(event);
         event.preventDefault();
         navigate(href, { history: "push", scroll: href.includes("#") });
       }}
-      {...props}
     />
   );
 }

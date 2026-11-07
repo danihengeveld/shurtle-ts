@@ -5,6 +5,7 @@ import { shurtleHits, shurtles } from "@/server/db/schema";
 import type { Geo } from "@vercel/functions";
 import { and, desc, eq, gte, ilike, not, or, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
+import { requireUserId } from "./auth";
 import { logger } from "./logger";
 import type { LinkListQuery } from "@/lib/link-list";
 import { shurtlesTag, statsTag } from "./tags";
@@ -26,15 +27,35 @@ const nextExpiry =
  * The built-in "minutes" profile (stale 5 min, revalidate 1 min, expire 1 h), cut short so the entry
  * expires when the user's next link does. Without this, a link that expires naturally (nothing to
  * call `updateTag`) would stay under Active, with stale counts, until the cache ran out.
+ * Only computes the profile: pass it to `cacheLife` in the cached function itself.
  */
-function cacheLifeUntil(next: Date | null) {
-  if (!next) return cacheLife("minutes");
-  const seconds = Math.max(1, Math.ceil((next.getTime() - Date.now()) / 1000));
-  cacheLife({
+function minutesProfileUntil(next: Date | null) {
+  const seconds = next
+    ? Math.max(1, Math.ceil((next.getTime() - Date.now()) / 1000))
+    : Infinity;
+  return {
     stale: Math.min(300, seconds),
     revalidate: Math.min(60, seconds),
     expire: Math.min(3600, seconds),
-  });
+  };
+}
+
+/*
+ * Per-user reads. The exported getters resolve the signed-in user themselves; the cached
+ * `…ByUserId` functions stay private, so no caller can pass someone else's id.
+ */
+
+export async function getStats() {
+  return getStatsByUserId(await requireUserId());
+}
+
+/** Clicks per UTC day for the last `days` days (oldest first, zero-filled, includes today). */
+export async function getDailyClicks(days = 30) {
+  return getDailyClicksByUserId(await requireUserId(), days);
+}
+
+export async function getShurtlesPaginated(query: LinkListQuery) {
+  return getShurtlesPaginatedByUserId(await requireUserId(), query);
 }
 
 export type ShurtleStats = {
@@ -51,7 +72,7 @@ export type DailyClicks = {
   clicks: number;
 };
 
-export async function getStats(userId: string): Promise<ShurtleStats> {
+async function getStatsByUserId(userId: string): Promise<ShurtleStats> {
   "use cache";
   cacheTag(statsTag(userId));
 
@@ -66,7 +87,7 @@ export async function getStats(userId: string): Promise<ShurtleStats> {
     .from(shurtles)
     .where(eq(shurtles.userId, userId));
 
-  cacheLifeUntil(row?.nextExpiry ?? null);
+  cacheLife(minutesProfileUntil(row?.nextExpiry ?? null));
   return {
     totalShurtles: row?.totalShurtles ?? 0,
     activeShurtles: row?.activeShurtles ?? 0,
@@ -75,10 +96,9 @@ export async function getStats(userId: string): Promise<ShurtleStats> {
   };
 }
 
-/** Clicks per UTC day for the last `days` days (oldest first, zero-filled, includes today). */
-export async function getDailyClicks(
+async function getDailyClicksByUserId(
   userId: string,
-  days = 30,
+  days: number,
 ): Promise<DailyClicks[]> {
   "use cache";
   cacheTag(statsTag(userId));
@@ -109,7 +129,7 @@ function escapeLike(value: string) {
   return value.replace(/[\\%_]/g, "\\$&");
 }
 
-export async function getShurtlesPaginated(
+async function getShurtlesPaginatedByUserId(
   userId: string,
   { page, perPage, query, status }: LinkListQuery,
 ) {
@@ -142,7 +162,7 @@ export async function getShurtlesPaginated(
     db.select({ nextExpiry }).from(shurtles).where(eq(shurtles.userId, userId)),
   ]);
 
-  cacheLifeUntil(upcoming?.nextExpiry ?? null);
+  cacheLife(minutesProfileUntil(upcoming?.nextExpiry ?? null));
   return {
     shurtles: rows,
     totalCount,

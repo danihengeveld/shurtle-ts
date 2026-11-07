@@ -5,6 +5,9 @@ import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { ExternalLink } from "./external-link";
 import { GitHubIcon } from "./github-icon";
+// Imported here, a Server Component, rather than in `siteInfo`: client components use `siteInfo`,
+// and a JSON import isn't tree-shaken, so the whole package.json would ship to the browser.
+import packageJson from "../../../package.json";
 
 /** The year changes rarely; cache it so the footer stays part of the static shell. */
 async function CurrentYear() {
@@ -97,7 +100,7 @@ export function Footer() {
               aria-hidden="true"
               className="size-1.5 rounded-full bg-brand-ink"
             />
-            <span className="sr-only">Version </span>v{siteInfo.version}
+            <span className="sr-only">Version </span>v{packageJson.version}
           </ExternalLink>
         </div>
       </div>

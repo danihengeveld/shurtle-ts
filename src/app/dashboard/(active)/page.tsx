@@ -1,5 +1,3 @@
-import { linksHref, parseLinkListQuery } from "@/lib/link-list";
-import { redirect } from "next/navigation";
 import { LinksPage } from "../_components/links/links-page";
 
 /*
@@ -9,10 +7,5 @@ import { LinksPage } from "../_components/links/links-page";
 export default async function ActiveLinksPage({
   searchParams,
 }: PageProps<"/dashboard">) {
-  const params = await searchParams;
-  // Before the expired list had its own route it was `/dashboard?status=expired`; keep old links working.
-  if (params.status === "expired") {
-    redirect(linksHref(parseLinkListQuery("expired", params)));
-  }
-  return <LinksPage status="active" searchParams={params} />;
+  return <LinksPage status="active" searchParams={await searchParams} />;
 }

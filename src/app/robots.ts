@@ -6,8 +6,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Short links redirect elsewhere; only the marketing page is worth indexing.
-      disallow: ["/dashboard", "/api/"],
+      // Pages that shouldn't be indexed (dashboard, status pages) say so with `robots: noindex`
+      // metadata instead: a crawler blocked here would never fetch the page to see it.
+      disallow: ["/api/"],
     },
     sitemap: new URL("/sitemap.xml", siteInfo.baseUrl).toString(),
   };

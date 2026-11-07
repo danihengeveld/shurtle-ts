@@ -1,7 +1,7 @@
 "use client";
 
 import { isValidSlug } from "@/lib/slugs";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useEffectEvent } from "react";
 import { useCreateLink } from "./create-link-provider";
 
@@ -13,7 +13,6 @@ import { useCreateLink } from "./create-link-provider";
 export function CreateLinkDeepLink() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
   const { openCreate } = useCreateLink();
   const requested = searchParams.get("new");
 
@@ -24,9 +23,13 @@ export function CreateLinkDeepLink() {
     const remaining = new URLSearchParams(searchParams.toString());
     remaining.delete("new");
     const query = remaining.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
+    // The native History API updates the URL (and useSearchParams) without a navigation, so the
+    // page isn't re-rendered on the server just to drop a parameter.
+    window.history.replaceState(
+      null,
+      "",
+      query ? `${pathname}?${query}` : pathname,
+    );
   });
 
   useEffect(() => {
