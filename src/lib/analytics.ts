@@ -251,12 +251,47 @@ export type RecentClicks = {
   pageCount: number;
 };
 
+/** Clicks per weekday (0 = Monday … 6 = Sunday) and hour of the day (0–23), UTC. Sparse. */
+export type WeekHourClicks = { weekday: number; hour: number; clicks: number };
+
+/**
+ * Where clicks came from: a referring site, direct (no referrer: typed, bookmarked, from an app or
+ * a site that sends none), or unknown (recorded before sources were).
+ */
+export type SourceClicks =
+  | { kind: "site"; referrer: string; clicks: number }
+  | { kind: "direct" | "unknown"; clicks: number };
+
+export type NamedClicks = { name: string | null; clicks: number };
+
+export type Devices = {
+  /** `device: null` for visits recorded before devices were. */
+  devices: { device: DeviceType | null; clicks: number }[];
+  browsers: NamedClicks[];
+  os: NamedClicks[];
+  total: number;
+};
+
 export type AnalyticsSource = {
   clicksOverTime(window: AnalyticsWindow): Promise<ClicksOverTime>;
   lastClick(): Promise<LastClick>;
   locations(window: AnalyticsWindow): Promise<Locations>;
+  weekHours(window: AnalyticsWindow): Promise<WeekHourClicks[]>;
+  sources(window: AnalyticsWindow): Promise<SourceClicks[]>;
+  devices(window: AnalyticsWindow): Promise<Devices>;
   recentClicks(window: AnalyticsWindow, page: number): Promise<RecentClicks>;
 };
+
+/** The busiest weekday and hour, or null without clicks. */
+export function busiestWeekHour(cells: WeekHourClicks[]) {
+  let busiest: WeekHourClicks | null = null;
+  for (const cell of cells) {
+    if (cell.clicks > 0 && (!busiest || cell.clicks > busiest.clicks)) {
+      busiest = cell;
+    }
+  }
+  return busiest;
+}
 
 /** Split a series that starts with the previous period into the window and the previous total. */
 export function splitPrevious(

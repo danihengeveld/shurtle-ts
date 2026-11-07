@@ -19,6 +19,12 @@ import type { LucideIcon } from "lucide-react";
 const card = "min-w-0 gap-0 rounded-2xl py-4 shadow-soft sm:py-5 lg:py-6";
 const inset = "px-4 sm:px-5 lg:px-6";
 
+/** shadcn's Tabs inside a card: like the dashboard's Active / Expired tabs, a step smaller. */
+export const tabsList = "h-8 rounded-lg p-0.5 dark:bg-input/40";
+// text-muted-foreground: shadcn's default inactive colour (foreground/60) misses AA contrast on paper.
+export const tabsTrigger =
+  "h-7 flex-none rounded-md px-2.5 text-xs text-muted-foreground data-[state=active]:shadow-[0_1px_2px_oklch(0_0_0/0.08),0_0_0_1px_var(--border)]";
+
 /** The small "Hourly · UTC" style label in a card's corner. */
 export function CardPill({ children }: { children: React.ReactNode }) {
   return (

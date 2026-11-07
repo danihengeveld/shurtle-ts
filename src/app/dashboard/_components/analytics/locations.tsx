@@ -12,17 +12,13 @@ import {
   SectionCard,
   SectionEmpty,
   SectionSkeleton,
+  tabsList,
+  tabsTrigger,
 } from "./section-card";
 import { WorldMap } from "./world-map";
 import { worldGeometry } from "./world-geometry";
 
 const grid = "grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]";
-
-/** Sized like the dashboard's Active / Expired tabs, a step smaller. */
-const tabsList = "h-8 rounded-lg p-0.5 dark:bg-input/40";
-// text-muted-foreground: shadcn's default inactive colour (foreground/60) misses AA contrast on paper.
-const tabsTrigger =
-  "h-7 flex-none rounded-md px-2.5 text-xs text-muted-foreground data-[state=active]:shadow-[0_1px_2px_oklch(0_0_0/0.08),0_0_0_1px_var(--border)]";
 
 function countryItems({ countries }: LocationsData): BarItem[] {
   const items = countries.map((row): BarItem =>

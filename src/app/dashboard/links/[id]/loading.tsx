@@ -1,9 +1,15 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClicksOverTimeSkeleton } from "../../_components/analytics/clicks-over-time";
-import { analyticsStack } from "../../_components/analytics/link-analytics";
+import { DevicesSkeleton } from "../../_components/analytics/devices";
+import {
+  analyticsStack,
+  splitGrid,
+} from "../../_components/analytics/link-analytics";
 import { LocationsSkeleton } from "../../_components/analytics/locations";
 import { RecentClicksSkeleton } from "../../_components/analytics/recent-clicks";
+import { SourcesSkeleton } from "../../_components/analytics/sources";
 import { SummaryCardsSkeleton } from "../../_components/analytics/summary-cards";
+import { WeekHoursSkeleton } from "../../_components/analytics/week-hours";
 
 /** The page's shape while the link loads: header, range toggle and every section. */
 export default function Loading() {
@@ -29,6 +35,11 @@ export default function Loading() {
         <SummaryCardsSkeleton />
         <ClicksOverTimeSkeleton bucket="day" />
         <LocationsSkeleton />
+        <WeekHoursSkeleton />
+        <div className={splitGrid}>
+          <SourcesSkeleton />
+          <DevicesSkeleton />
+        </div>
         <RecentClicksSkeleton />
       </div>
       <p className="sr-only" role="status">

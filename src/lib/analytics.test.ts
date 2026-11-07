@@ -6,6 +6,7 @@ import {
   analyticsWindow,
   bucketKey,
   bucketKeys,
+  busiestWeekHour,
   bucketStart,
   parseAnalyticsQuery,
   peakOf,
@@ -158,7 +159,10 @@ describe("buckets", () => {
     expect(result.total).toBe(6);
     expect(result.series).toHaveLength(168);
     expect(result.series[0]).toEqual({ bucket: "2026-10-31T15", clicks: 1 });
-    expect(result.series.at(-1)).toEqual({ bucket: "2026-11-07T14", clicks: 5 });
+    expect(result.series.at(-1)).toEqual({
+      bucket: "2026-11-07T14",
+      clicks: 5,
+    });
 
     const all = splitPrevious([], analyticsWindow("all", NOW, CREATED));
     expect(all.previousTotal).toBeNull();
@@ -210,5 +214,19 @@ describe("percentOf", () => {
     expect(percentOf(1, 1000)).toBe(1);
     expect(percentOf(0, 10)).toBe(0);
     expect(percentOf(5, 0)).toBe(0);
+  });
+});
+
+describe("busiestWeekHour", () => {
+  it("is the busiest weekday and hour, the first on a tie, or null without clicks", () => {
+    expect(busiestWeekHour([])).toBeNull();
+    expect(busiestWeekHour([{ weekday: 2, hour: 9, clicks: 0 }])).toBeNull();
+    expect(
+      busiestWeekHour([
+        { weekday: 0, hour: 9, clicks: 4 },
+        { weekday: 1, hour: 14, clicks: 12 },
+        { weekday: 4, hour: 20, clicks: 12 },
+      ]),
+    ).toEqual({ weekday: 1, hour: 14, clicks: 12 });
   });
 });

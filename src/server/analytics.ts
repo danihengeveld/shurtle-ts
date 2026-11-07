@@ -7,9 +7,12 @@ import {
   type AnalyticsSource,
   type AnalyticsWindow,
   type ClicksOverTime,
+  type Devices,
   type LastClick,
   type Locations,
   type RecentClicks,
+  type SourceClicks,
+  type WeekHourClicks,
 } from "@/lib/analytics";
 import { db } from "@/server/db";
 import { shurtleHits, shurtles } from "@/server/db/schema";
@@ -45,6 +48,9 @@ export async function getOwnLinkAnalytics(
       clicksOverTime: (window) => clicksOverTime(userId, id, window),
       lastClick: () => lastClick(userId, id),
       locations: (window) => locations(userId, id, window),
+      weekHours: (window) => weekHours(userId, id, window),
+      sources: (window) => sources(userId, id, window),
+      devices: (window) => devices(userId, id, window),
       recentClicks: (window, page) => recentClicks(userId, id, window, page),
     },
   };
@@ -154,6 +160,97 @@ async function locations(
     countries,
     cities,
     total: countries.reduce((sum, row) => sum + row.clicks, 0),
+  };
+}
+
+async function weekHours(
+  userId: string,
+  linkId: string,
+  window: AnalyticsWindow,
+): Promise<WeekHourClicks[]> {
+  "use cache";
+  cacheAnalytics(linkId);
+
+  const utc = sql`(${shurtleHits.at} at time zone 'UTC')`;
+  // ISO weekday: Monday is 1, so Monday becomes 0.
+  const weekday = sql<number>`(extract(isodow from ${utc}) - 1)::int`;
+  const hour = sql<number>`extract(hour from ${utc})::int`;
+  return db
+    .select({ weekday, hour, clicks: sql<number>`count(*)::int` })
+    .from(shurtleHits)
+    .where(humanHits(userId, linkId, window.start, window.end))
+    .groupBy(weekday, hour);
+}
+
+/** How many referring sites the sources list shows; the rest are summed into the last row. */
+const TOP_SOURCES = 50;
+
+async function sources(
+  userId: string,
+  linkId: string,
+  window: AnalyticsWindow,
+): Promise<SourceClicks[]> {
+  "use cache";
+  cacheAnalytics(linkId);
+
+  // A visit without a device predates sources: unknown, not direct.
+  const kind = sql<
+    SourceClicks["kind"]
+  >`case when ${shurtleHits.device} is null then 'unknown' when ${shurtleHits.referrer} is null then 'direct' else 'site' end`;
+  const clicks = sql<number>`count(*)::int`;
+  const rows = await db
+    .select({ kind, referrer: shurtleHits.referrer, clicks })
+    .from(shurtleHits)
+    .where(humanHits(userId, linkId, window.start, window.end))
+    .groupBy(kind, shurtleHits.referrer)
+    .orderBy(desc(clicks), shurtleHits.referrer)
+    .limit(TOP_SOURCES);
+
+  return rows.map((row) =>
+    row.kind === "site" && row.referrer
+      ? { kind: "site", referrer: row.referrer, clicks: row.clicks }
+      : { kind: row.kind === "site" ? "direct" : row.kind, clicks: row.clicks },
+  );
+}
+
+/** How many browsers and operating systems are listed. */
+const TOP_SOFTWARE = 20;
+
+async function devices(
+  userId: string,
+  linkId: string,
+  window: AnalyticsWindow,
+): Promise<Devices> {
+  "use cache";
+  cacheAnalytics(linkId);
+
+  const where = humanHits(userId, linkId, window.start, window.end);
+  const clicks = sql<number>`count(*)::int`;
+  const top = (column: typeof shurtleHits.browser | typeof shurtleHits.os) =>
+    db
+      .select({ name: column, clicks })
+      .from(shurtleHits)
+      .where(where)
+      .groupBy(column)
+      .orderBy(desc(clicks), column)
+      .limit(TOP_SOFTWARE);
+
+  const [deviceRows, browsers, os] = await Promise.all([
+    db
+      .select({ device: shurtleHits.device, clicks })
+      .from(shurtleHits)
+      .where(where)
+      .groupBy(shurtleHits.device)
+      .orderBy(desc(clicks)),
+    top(shurtleHits.browser),
+    top(shurtleHits.os),
+  ]);
+
+  return {
+    devices: deviceRows,
+    browsers,
+    os,
+    total: deviceRows.reduce((sum, row) => sum + row.clicks, 0),
   };
 }
 

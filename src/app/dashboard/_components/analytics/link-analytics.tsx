@@ -15,10 +15,15 @@ import { Locations, LocationsSkeleton } from "./locations";
 import { NoClicksYet } from "./no-clicks-yet";
 import { RangeToggle } from "./range-toggle";
 import { RecentClicks, RecentClicksSkeleton } from "./recent-clicks";
+import { Devices, DevicesSkeleton } from "./devices";
+import { Sources, SourcesSkeleton } from "./sources";
 import { SummaryCards, SummaryCardsSkeleton } from "./summary-cards";
+import { WeekHours, WeekHoursSkeleton } from "./week-hours";
 
 /** Everything below the header, shared by the page and its loading state. */
 export const analyticsStack = "mt-4 flex flex-col gap-3 sm:gap-4";
+/** Sources and devices, side by side from lg. */
+export const splitGrid = "grid gap-3 sm:gap-4 lg:grid-cols-2";
 
 /**
  * A link's page: its header, then how it's used in the chosen range. Each section loads in its own
@@ -101,6 +106,31 @@ export function LinkAnalytics({
                     <Locations data={source.locations(window)} />
                   </Suspense>
                 </SectionErrorBoundary>
+
+                <SectionErrorBoundary
+                  what="when people click"
+                  className="min-h-72"
+                >
+                  <Suspense fallback={<WeekHoursSkeleton />}>
+                    <WeekHours data={source.weekHours(window)} />
+                  </Suspense>
+                </SectionErrorBoundary>
+
+                <div className={splitGrid}>
+                  <SectionErrorBoundary what="sources" className="min-h-96">
+                    <Suspense fallback={<SourcesSkeleton />}>
+                      <Sources
+                        data={source.sources(window)}
+                        total={clicks.then((data) => data.total)}
+                      />
+                    </Suspense>
+                  </SectionErrorBoundary>
+                  <SectionErrorBoundary what="devices" className="min-h-96">
+                    <Suspense fallback={<DevicesSkeleton />}>
+                      <Devices data={source.devices(window)} />
+                    </Suspense>
+                  </SectionErrorBoundary>
+                </div>
 
                 <SectionErrorBoundary what="recent clicks" className="min-h-96">
                   <Suspense fallback={<RecentClicksSkeleton />}>
