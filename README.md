@@ -41,7 +41,7 @@ GET shurtle.app/x7Kp2qR
 ```
 
 - **Redirects happen in the proxy.** [`src/proxy.ts`](src/proxy.ts) recognises single-segment paths, rate-limits by IP, resolves the slug and redirects before any page renders. The click is recorded with `waitUntil`, so it never slows the redirect down.
-- **Clicks are recorded with care.** Each visit stores its time and place, the referring site's host, and the device type, browser and OS ([`src/lib/visit.ts`](src/lib/visit.ts)). It never stores an IP address, the raw user agent or the full referring URL. Bots and link previews are stored with a flag and left out of every count.
+- **Clicks are recorded with care.** Each visit stores its time, its country, region and city (never coordinates), the referring site's host, and the device type, browser and OS ([`src/lib/visit.ts`](src/lib/visit.ts)). It never stores an IP address, the raw user agent or the full referring URL. Bots and link previews are stored with a flag and left out of every count.
 - **Links have a lifecycle.** [`src/lib/link-lifecycle.ts`](src/lib/link-lifecycle.ts) defines it, from live to renewable to released:
   - **Live:** the link redirects.
   - **Renewable:** expired, with the slug reserved for its owner for 24 hours.
@@ -164,6 +164,8 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain.example/api/cro
 ### Upgrading
 
 New installs only need `pnpm db:push`. When upgrading an existing database, check the [release notes](https://github.com/danihengeveld/shurtle-ts/releases) for steps. Manual migrations live in [`drizzle/manual/`](drizzle/manual/) and must run before the new version is deployed. For example, upgrading from a version before 2.2 requires `0001_link_ids_and_slug_reuse.sql`. Upgrading to 3.0 only adds columns for click details: run `pnpm db:push` before deploying it.
+
+Upgrading past 3.1 drops the unused coordinates column from click history, and runs the other way round: deploy first, then run `pnpm db:push`. Dropping the column while an older version is still live makes its click inserts fail, since it still writes coordinates.
 
 ## Contributing
 

@@ -313,27 +313,17 @@ export async function resolveSlug(slug: string): Promise<ResolvedSlug | null> {
   };
 }
 
-function parseCoordinate(value: string | undefined) {
-  const parsed = value === undefined ? Number.NaN : Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 /**
  * Record a visit to a link. Runs in the background after the redirect is sent; never throws.
  * A bot's visit is stored with its flag, but doesn't count as a click on the link.
+ * The place kept is country, region and city only, never the coordinates Vercel also provides.
  */
 export async function recordHit(shurtleId: string, geo: Geo, visit: Visit) {
-  const longitude = parseCoordinate(geo.longitude);
-  const latitude = parseCoordinate(geo.latitude);
   const hit = {
     shurtleId,
     country: geo.country,
     region: geo.countryRegion,
     city: geo.city,
-    coordinates:
-      longitude !== null && latitude !== null
-        ? { x: longitude, y: latitude }
-        : null,
     ...visit,
   };
 
@@ -345,7 +335,6 @@ export async function recordHit(shurtleId: string, geo: Geo, visit: Visit) {
         country: null,
         region: null,
         city: null,
-        coordinates: null,
       });
       return;
     }
