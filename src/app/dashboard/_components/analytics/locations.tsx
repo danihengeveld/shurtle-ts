@@ -1,4 +1,3 @@
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Locations as LocationsData } from "@/lib/analytics";
@@ -15,10 +14,8 @@ import {
   tabsList,
   tabsTrigger,
 } from "./section-card";
-import { WorldMap } from "./world-map";
-import { worldGeometry } from "./world-geometry";
 
-const grid = "grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]";
+const TITLE = "Locations";
 
 function countryItems({ countries }: LocationsData): BarItem[] {
   const items = countries.map((row): BarItem =>
@@ -74,103 +71,75 @@ function cityItems({ cities }: LocationsData): BarItem[] {
   }));
 }
 
-/** World map with the countries and cities clicks came from. */
+/** The countries and cities clicks came from, ranked. */
 export async function Locations({ data }: { data: Promise<LocationsData> }) {
   const locations = await data;
   const countryCount = locations.countries.filter((row) => row.country).length;
   const empty = locations.total === 0;
 
   return (
-    <div className={grid}>
-      <SectionCard
-        title="Clicks by country"
-        aside={
-          !empty && (
-            <CardPill>
-              {pluralize(countryCount, "country", "countries")}
-            </CardPill>
-          )
-        }
-      >
-        <WorldMap
-          countries={locations.countries}
-          total={locations.total}
-          // Centred in the card when the list beside it is taller.
-          className="my-auto pt-6 sm:pt-8"
-        />
-      </SectionCard>
-
-      <SectionCard title="Top locations">
-        {empty ? (
-          <SectionEmpty icon={MapPinOffIcon} title="No places yet">
-            Clicks in this range will show where they came from.
-          </SectionEmpty>
-        ) : (
-          <Tabs defaultValue="countries" className="mt-3 gap-4">
-            <TabsList aria-label="Locations" className={tabsList}>
-              <TabsTrigger value="countries" className={tabsTrigger}>
-                Countries
-              </TabsTrigger>
-              <TabsTrigger value="cities" className={tabsTrigger}>
-                Cities
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="countries">
+    <SectionCard
+      title={TITLE}
+      aside={
+        !empty && (
+          <CardPill>{pluralize(countryCount, "country", "countries")}</CardPill>
+        )
+      }
+    >
+      {empty ? (
+        <SectionEmpty icon={MapPinOffIcon} title="No places yet">
+          Clicks in this range will show where they came from.
+        </SectionEmpty>
+      ) : (
+        <Tabs defaultValue="countries" className="mt-3 gap-4">
+          <TabsList aria-label="Locations" className={tabsList}>
+            <TabsTrigger value="countries" className={tabsTrigger}>
+              Countries
+            </TabsTrigger>
+            <TabsTrigger value="cities" className={tabsTrigger}>
+              Cities
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="countries">
+            <BarList
+              items={countryItems(locations)}
+              total={locations.total}
+              label="Clicks by country"
+              noun={{ one: "country", other: "countries" }}
+            />
+          </TabsContent>
+          <TabsContent value="cities">
+            {locations.cities.length === 0 ? (
+              <SectionEmpty icon={MapPinOffIcon} title="No cities">
+                None of these clicks came with a city.
+              </SectionEmpty>
+            ) : (
               <BarList
-                items={countryItems(locations)}
+                items={cityItems(locations)}
                 total={locations.total}
-                label="Clicks by country"
-                noun={{ one: "country", other: "countries" }}
+                label="Clicks by city"
+                noun={{ one: "city", other: "cities" }}
               />
-            </TabsContent>
-            <TabsContent value="cities">
-              {locations.cities.length === 0 ? (
-                <SectionEmpty icon={MapPinOffIcon} title="No cities">
-                  None of these clicks came with a city.
-                </SectionEmpty>
-              ) : (
-                <BarList
-                  items={cityItems(locations)}
-                  total={locations.total}
-                  label="Clicks by city"
-                  noun={{ one: "city", other: "cities" }}
-                />
-              )}
-            </TabsContent>
-          </Tabs>
-        )}
-      </SectionCard>
-    </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
+    </SectionCard>
   );
 }
 
 export function LocationsSkeleton() {
-  const { width, height } = worldGeometry();
   return (
-    <div className={grid}>
-      <SectionSkeleton title="Clicks by country">
-        <div className="mt-6 sm:mt-8">
-          {/* The map's own aspect ratio, so nothing shifts when it arrives. */}
-          <AspectRatio ratio={width / height}>
-            <Skeleton className="size-full rounded-xl opacity-60" />
-          </AspectRatio>
-          <div className="mt-3 h-[17px]" />
-        </div>
-      </SectionSkeleton>
-      <SectionSkeleton title="Top locations">
-        <Skeleton className="mt-3 h-8 w-36 rounded-lg" />
-        <div className="mt-4 space-y-0.5">
-          {[100, 72, 54, 40, 31, 22, 15, 10].map((width) => (
-            <div key={width} className="flex h-9 items-center gap-3 px-2.5">
-              <Skeleton
-                className="h-3.5"
-                style={{ width: `${width * 0.6}%` }}
-              />
-              <Skeleton className="ml-auto h-3.5 w-8" />
-            </div>
-          ))}
-        </div>
-      </SectionSkeleton>
-    </div>
+    <SectionSkeleton title={TITLE}>
+      <Skeleton className="mt-3 h-8 w-36 rounded-lg" />
+      <div className="mt-4 space-y-0.5">
+        {[100, 72, 54, 40, 31, 22, 15, 10].map((width) => (
+          <div key={width} className="flex h-9 items-center gap-3 px-2.5">
+            <Skeleton className="h-3.5" style={{ width: `${width * 0.6}%` }} />
+            <Skeleton className="ml-auto h-3.5 w-8" />
+          </div>
+        ))}
+      </div>
+    </SectionSkeleton>
   );
 }

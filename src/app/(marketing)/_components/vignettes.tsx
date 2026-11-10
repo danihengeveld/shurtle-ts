@@ -13,7 +13,6 @@ import {
   Sun,
 } from "lucide-react";
 import { SHADE_BACKGROUNDS } from "../../dashboard/_components/analytics/shade-legend";
-import { worldDots } from "../../dashboard/_components/analytics/world-geometry";
 
 /*
  * Miniature, static UI scenes for the feature bento. All decorative: each card's heading and copy
@@ -120,51 +119,28 @@ export function ProxyVignette() {
   );
 }
 
-/** Illustrative clicks per country, as map shades (1 = few … 5 = most); not real data. */
-const SAMPLE_SHADES: Record<string, 1 | 2 | 3 | 4 | 5> = {
-  US: 5,
-  GB: 5,
-  NL: 5,
-  DE: 4,
-  IN: 4,
-  CA: 3,
-  BR: 3,
-  FR: 3,
-  AU: 2,
-  JP: 2,
-  ES: 2,
-  SE: 2,
-  PL: 2,
-  MX: 1,
-  ZA: 1,
-  AR: 1,
-  NG: 1,
-  ID: 1,
-  KE: 1,
-  NZ: 1,
-};
-
-/** Static class names, so Tailwind sees every one. Index = shade. */
-const DOT_STROKES = [
-  "stroke-foreground/12",
-  "stroke-scale-1",
-  "stroke-scale-2",
-  "stroke-scale-3",
-  "stroke-scale-4",
-  "stroke-scale-5",
+/** Illustrative clicks per day for the chart; not real data. */
+const DAILY = [
+  18, 22, 19, 27, 31, 24, 20, 26, 34, 41, 38, 45, 52, 47, 39, 44, 58, 63, 55,
+  49, 61, 72, 68, 59, 66, 81, 77, 70, 85, 92,
 ] as const;
 
-/** Map units between dots: dense enough to read as a world, light enough to ship. */
-const DOT_SPACING = 10;
+const CHART_WIDTH = 600;
+const CHART_HEIGHT = 160;
 
-/** One path per shade: each dot is a zero-length line with a round cap. */
-function dotPaths() {
-  const { width, height, dots } = worldDots(DOT_SPACING);
-  const paths = DOT_STROKES.map(() => "");
-  for (const { x, y, code } of dots) {
-    paths[SAMPLE_SHADES[code] ?? 0] += `M${Math.round(x)} ${Math.round(y)}h0`;
-  }
-  return { width, height, paths };
+/** The clicks chart's line and the area under it, scaled into the viewBox. */
+function chartPaths() {
+  const max = Math.max(...DAILY);
+  const step = CHART_WIDTH / (DAILY.length - 1);
+  const points = DAILY.map(
+    (clicks, day) =>
+      `${Math.round(day * step)} ${Math.round(CHART_HEIGHT - (clicks / max) * (CHART_HEIGHT - 12))}`,
+  );
+  const line = `M${points.join("L")}`;
+  return {
+    line,
+    area: `${line}L${CHART_WIDTH} ${CHART_HEIGHT}L0 ${CHART_HEIGHT}Z`,
+  };
 }
 
 const miniCard =
@@ -174,25 +150,33 @@ const miniCard =
 const HOURS = [1, 1, 0, 0, 1, 2, 3, 4, 3, 3, 4, 5, 4, 3] as const;
 
 /**
- * A link's page in miniature: clicks on a dotted world map, with the numbers, the busiest time
- * and the top sources in a row of cards tucked under it (over the empty southern ocean, so no
- * country is hidden).
+ * A link's page in miniature: the clicks chart, with the numbers, the busiest time and the top
+ * sources in a row of cards tucked under it.
  */
 export function AnalyticsVignette() {
-  const { width, height, paths } = dotPaths();
+  const { line, area } = chartPaths();
   return (
     <div className="w-full max-w-2xl">
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="block h-auto w-full"
-        fill="none"
-        strokeLinecap="round"
-        strokeWidth={DOT_SPACING * 0.74}
-      >
-        {paths.map((d, shade) =>
-          d ? <path key={shade} d={d} className={DOT_STROKES[shade]} /> : null,
-        )}
-      </svg>
+      <div className="rounded-xl border bg-card/80 px-4 pt-3 pb-8 shadow-soft sm:pb-12">
+        <p className="text-[0.6875rem] font-medium text-muted-foreground">
+          Clicks over time
+        </p>
+        <svg
+          viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+          preserveAspectRatio="none"
+          className="mt-3 block h-28 w-full sm:h-36"
+        >
+          <path d={area} className="fill-chart-1/12" />
+          <path
+            d={line}
+            fill="none"
+            strokeWidth={2}
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+            className="stroke-chart-1"
+          />
+        </svg>
+      </div>
 
       <div className="relative -mt-6 grid grid-cols-2 gap-3 sm:-mt-10 sm:grid-cols-3">
         <div className={miniCard}>

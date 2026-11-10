@@ -25,9 +25,7 @@ export function Hero() {
             <span className="shrink-0 rounded-full bg-brand px-2.5 py-0.5 text-xs font-semibold text-brand-foreground">
               Analytics
             </span>
-            <span className="truncate font-medium">
-              Every click, on the map
-            </span>
+            <span className="truncate font-medium">Every click, counted</span>
             <ArrowRight
               aria-hidden="true"
               className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5"

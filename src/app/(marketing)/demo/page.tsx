@@ -11,7 +11,7 @@ import { LinkAnalytics } from "../../dashboard/_components/analytics/link-analyt
 export const metadata: Metadata = {
   title: "Demo: link analytics",
   description:
-    "See what Shurtle shows for every link: clicks over time, a world map, when people click, which sites send them and what they use.",
+    "See what Shurtle shows for every link: clicks over time, where they come from, when people click, which sites send them and what they use.",
 };
 
 const DAY_MS = 86_400_000;
