@@ -339,13 +339,23 @@ export async function recordHit(shurtleId: string, geo: Geo, visit: Visit) {
       return;
     }
 
-    await db.transaction(async (tx) => {
-      await tx.insert(shurtleHits).values(hit);
-      await tx
-        .update(shurtles)
-        .set({ hits: sql`${shurtles.hits} + 1`, lastHitAt: sql`now()` })
-        .where(eq(shurtles.id, shurtleId));
-    });
+    // One statement, so one round trip, and atomic like a transaction: the hit and the link's
+    // counter are written together or not at all. The update joins the inserted row, so it only
+    // runs when the insert did (a link deleted a moment ago fails the foreign key: neither happens).
+    const inserted = db
+      .$with("inserted")
+      .as(
+        db
+          .insert(shurtleHits)
+          .values(hit)
+          .returning({ shurtleId: shurtleHits.shurtleId }),
+      );
+    await db
+      .with(inserted)
+      .update(shurtles)
+      .set({ hits: sql`${shurtles.hits} + 1`, lastHitAt: sql`now()` })
+      .from(inserted)
+      .where(eq(shurtles.id, inserted.shurtleId));
   } catch (error) {
     logger.error({ err: error, shurtleId }, "failed to record hit");
   }
