@@ -18,6 +18,7 @@ import {
   CopyIcon,
   EllipsisIcon,
   ExternalLinkIcon,
+  PencilIcon,
   RotateCcwIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -26,6 +27,7 @@ import { useRef, useState } from "react";
 import { useCopyShortLink } from "../copy-button";
 import { useNow } from "../time";
 import { DeleteLinkDialog } from "./delete-link-dialog";
+import { EditDestinationDialog } from "./edit-destination-dialog";
 import { useOpenExpiryEditor } from "./expiry-editor";
 import type { LinkRow } from "./link-rows";
 import { useLinks } from "./links-provider";
@@ -52,6 +54,7 @@ export function LinkActions({
   );
   const expired = state !== "live";
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   return (
@@ -102,6 +105,15 @@ export function LinkActions({
               Change expiry…
             </DropdownMenuItem>
           )}
+          {state !== "released" && (
+            <DropdownMenuItem
+              onSelect={() => setEditOpen(true)}
+              className="h-9 rounded-lg"
+            >
+              <PencilIcon aria-hidden />
+              Edit destination…
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem asChild className="h-9 rounded-lg">
             <a href={url} target="_blank" rel="noopener noreferrer">
               <ExternalLinkIcon aria-hidden />
@@ -119,6 +131,13 @@ export function LinkActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <EditDestinationDialog
+        link={link}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        returnFocus={() => triggerRef.current?.focus()}
+      />
 
       <DeleteLinkDialog
         link={link}
