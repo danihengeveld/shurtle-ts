@@ -4,7 +4,7 @@ import type { createShurtleSchema } from "@/lib/schemas";
 import { GENERATED_SLUG_LENGTH, isReservedSlug } from "@/lib/slugs";
 import { db } from "@/server/db";
 import { shurtles } from "@/server/db/schema";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 import type { z } from "zod";
 import { requireUserId } from "./auth";
@@ -174,6 +174,91 @@ export async function setOwnShurtleExpiry(
     .where(and(eq(shurtles.id, id), eq(shurtles.userId, userId), holdsSlug))
     .returning({ slug: shurtles.slug });
   if (updated) return { status: "updated", slug: updated.slug };
+
+  const [existing] = await db
+    .select({ id: shurtles.id })
+    .from(shurtles)
+    .where(and(eq(shurtles.id, id), eq(shurtles.userId, userId)));
+  return existing ? { status: "released" } : { status: "not-found" };
+}
+
+export type SetUrlResult =
+  | { status: "updated"; slug: string; url: string }
+  /** No such link for this user (deleted, or someone else's). */
+  | { status: "not-found" }
+  /** Its renewal window is over: the slug may already belong to someone else. */
+  | { status: "released" }
+  /** Another of the user's unreleased links already goes to this URL. */
+  | { status: "url-taken"; slug: string };
+
+/** Postgres' unique_violation on `constraint`; drizzle wraps driver errors in `cause`. */
+function isUniqueViolation(error: unknown, constraint: string) {
+  for (
+    let e = error;
+    e instanceof Object;
+    e = (e as { cause?: unknown }).cause
+  ) {
+    const { code, constraint: name } = e as {
+      code?: unknown;
+      constraint?: unknown;
+    };
+    if (code === "23505" && name === constraint) return true;
+  }
+  return false;
+}
+
+/**
+ * Points one of the signed-in user's links somewhere else, keeping its slug and click history. Only
+ * a link that still holds its slug (live, or renewable) can be changed. Expects a validated,
+ * normalized URL (see `createShurtleSchema`); throws on database errors.
+ */
+export async function setOwnShurtleUrl(
+  id: string,
+  url: string,
+): Promise<SetUrlResult> {
+  const userId = await requireUserId();
+
+  /** The user's other unreleased link for the URL (the scope of the unique (user_id, url) index). */
+  const findOtherLink = async () => {
+    const [other] = await db
+      .select({ slug: shurtles.slug })
+      .from(shurtles)
+      .where(
+        and(
+          eq(shurtles.userId, userId),
+          eq(shurtles.url, url),
+          isNull(shurtles.archivedAt),
+          ne(shurtles.id, id),
+        ),
+      )
+      .limit(1);
+    return other;
+  };
+
+  // Fast path; the unique index is what guarantees it against a concurrent create or edit.
+  const other = await findOtherLink();
+  if (other) return { status: "url-taken", slug: other.slug };
+
+  let updated: { slug: string; url: string } | undefined;
+  try {
+    // `holdsSlug`, as for a new expiry: a released link's slug may already be someone else's.
+    [updated] = await db
+      .update(shurtles)
+      .set({ url })
+      .where(and(eq(shurtles.id, id), eq(shurtles.userId, userId), holdsSlug))
+      .returning({ slug: shurtles.slug, url: shurtles.url });
+  } catch (error) {
+    if (!isUniqueViolation(error, "user_id_url_idx")) throw error;
+    const raced = await findOtherLink();
+    // Gone again already (deleted or released in between): rare enough to let the user retry.
+    if (!raced) throw error;
+    logger.info(
+      { userId, slug: raced.slug },
+      "concurrent use of the same url caught by unique index",
+    );
+    return { status: "url-taken", slug: raced.slug };
+  }
+  if (updated) return { status: "updated", ...updated };
 
   const [existing] = await db
     .select({ id: shurtles.id })

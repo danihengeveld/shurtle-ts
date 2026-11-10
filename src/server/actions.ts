@@ -11,6 +11,7 @@ import {
   deleteOwnShurtle,
   insertShurtle,
   setOwnShurtleExpiry,
+  setOwnShurtleUrl,
 } from "./mutations";
 import { rateLimits } from "./ratelimits";
 import { shurtlesTag, statsTag } from "./tags";
@@ -256,6 +257,73 @@ export async function setShurtleExpiry(
     return { ok: true, slug: result.slug, expiresAt: expiry };
   } catch (error) {
     logger.error({ err: error, userId, id }, "failed to set shurtle expiry");
+    return {
+      ok: false,
+      error: "Something went wrong while saving. Please try again.",
+    };
+  }
+}
+
+export type SetShurtleUrlResult =
+  { ok: true; slug: string; url: string } | { ok: false; error: string };
+
+/**
+ * Points a link somewhere else, keeping its slug and click history. The URL is validated and
+ * normalized like a new link's, and the user can't have two unreleased links to the same URL.
+ */
+export async function setShurtleUrl(
+  id: string,
+  url: string,
+): Promise<SetShurtleUrlResult> {
+  const userId = await requireUserId();
+
+  if (!linkIdSchema.safeParse(id).success) {
+    logger.warn({ userId, type: typeof id }, "set url rejected: bad id");
+    return { ok: false, error: "Invalid shurtle." };
+  }
+  const parsedUrl = createShurtleSchema.shape.url.safeParse(url);
+  if (!parsedUrl.success) {
+    // Not the value: it may contain tokens or personal data.
+    logger.debug({ userId, id }, "set url rejected by validation");
+    return {
+      ok: false,
+      error: parsedUrl.error.issues[0]?.message ?? "Enter a valid URL.",
+    };
+  }
+
+  const host = urlHost(parsedUrl.data);
+  try {
+    const result = await setOwnShurtleUrl(id, parsedUrl.data);
+    switch (result.status) {
+      case "not-found":
+        logger.info({ userId, id }, "set url found no such shurtle");
+        return { ok: false, error: "This shurtle no longer exists." };
+      case "released":
+        logger.info({ userId, id }, "set url rejected: slug released");
+        return {
+          ok: false,
+          error:
+            "Its 24 hours to renew are over, so the slug is free for anyone to claim again.",
+        };
+      case "url-taken":
+        logger.debug(
+          { userId, id, slug: result.slug },
+          "set url rejected: url already shortened",
+        );
+        return {
+          ok: false,
+          error: `You already shortened this URL as /${result.slug}.`,
+        };
+    }
+
+    logger.info({ userId, id, slug: result.slug, host }, "shurtle url set");
+    // Redirects read the database on every visit (resolveSlug isn't cached) and answer 307, so
+    // they follow at once; this refreshes the dashboard's cached copies.
+    updateTag(shurtlesTag(userId));
+    updateTag(statsTag(userId));
+    return { ok: true, slug: result.slug, url: result.url };
+  } catch (error) {
+    logger.error({ err: error, userId, id, host }, "failed to set shurtle url");
     return {
       ok: false,
       error: "Something went wrong while saving. Please try again.",

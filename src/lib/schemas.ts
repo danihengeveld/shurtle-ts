@@ -27,13 +27,20 @@ function emptyToUndefined(value: unknown) {
 }
 
 /**
- * Accept `example.com/page` (and `example.com:8080/page`) by assuming https when no `scheme://` is
- * given. Inputs like `mailto:x` still fail the URL check below.
+ * A leading `scheme:`, unless what follows the colon is a port (`example.com:8080/page`). Not just
+ * `scheme://`: `mailto:me@example.com` would otherwise become `https://mailto:me@example.com`, a
+ * valid URL with `mailto` as its user name.
+ */
+const SCHEME_PATTERN = /^[a-z][a-z\d+\-.]*:(?!\d+(?:[/?#]|$))/i;
+
+/**
+ * Accept `example.com/page` (and `example.com:8080/page`) by assuming https when no scheme is
+ * given. Inputs like `mailto:x` keep theirs and fail the URL check below.
  */
 function withDefaultScheme(value: unknown) {
   if (typeof value !== "string") return value;
   const trimmed = value.trim();
-  return trimmed && !/^[a-z][a-z\d+\-.]*:\/\//i.test(trimmed)
+  return trimmed && !SCHEME_PATTERN.test(trimmed)
     ? `https://${trimmed}`
     : trimmed;
 }
