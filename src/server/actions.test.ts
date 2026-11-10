@@ -47,6 +47,7 @@ describe("setShurtleUrl", () => {
   it.each([
     ["", "Enter a URL to shorten."],
     ["not a url", "Enter a valid web address"],
+    ["mailto:someone@example.com", "Enter a valid web address"],
     ["ftp://example.com/file", "Enter a valid web address"],
     ["http://localhost:3000/x", "Enter a valid web address"],
     ["https://shurtle.app/abc", "can't point to Shurtle itself"],

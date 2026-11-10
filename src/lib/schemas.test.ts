@@ -27,6 +27,12 @@ describe("createShurtleSchema", () => {
     expect(
       createShurtleSchema.parse({ url: "example.com:8080/page" }).url,
     ).toBe("https://example.com:8080/page");
+    expect(createShurtleSchema.parse({ url: "example.com:8080" }).url).toBe(
+      "https://example.com:8080/",
+    );
+    expect(createShurtleSchema.parse({ url: "example.com:8443?q=1" }).url).toBe(
+      "https://example.com:8443/?q=1",
+    );
   });
 
   it("normalizes the URL so equivalent addresses match", () => {
@@ -48,6 +54,10 @@ describe("createShurtleSchema", () => {
     for (const url of [
       "ftp://example.com",
       "javascript:alert(1)",
+      // Not `https://mailto:…@example.com` (a user name and a host).
+      "mailto:someone@example.com",
+      "tel:+31612345678",
+      "data:text/html,hi",
       "not a url",
       "",
       `https://example.com/${"a".repeat(URL_MAX_LENGTH)}`,
