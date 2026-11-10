@@ -1,5 +1,6 @@
 "use client";
 
+import { BROWSE_LIST, listChange } from "@/components/view-transitions";
 import { cn } from "cn";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,7 @@ import {
   useRef,
   useState,
   useTransition,
+  ViewTransition,
 } from "react";
 
 /** What started a list navigation, so each control can show its own pending state. */
@@ -77,7 +79,8 @@ export function LinksProvider({ children }: { children: React.ReactNode }) {
       document.getElementById("links")?.contains(document.activeElement) ??
       false;
     startNavigation(() => {
-      router[history](href, { scroll });
+      // Browsing the list, not changing it: rows don't animate in or out (see RowTransition).
+      router[history](href, { scroll, transitionTypes: [BROWSE_LIST] });
     });
   }
 
@@ -196,14 +199,35 @@ export function LinkTableRow({
   const onClick = useRowClick(href);
   const isDeleting = deleting.has(id);
   return (
-    <tr
-      data-deleting={isDeleting || undefined}
-      inert={isDeleting}
-      onClick={onClick}
-      className={cn("cursor-pointer", className)}
+    <RowTransition>
+      <tr
+        data-deleting={isDeleting || undefined}
+        inert={isDeleting}
+        onClick={onClick}
+        className={cn("cursor-pointer", className)}
+      >
+        {children}
+      </tr>
+    </RowTransition>
+  );
+}
+
+/**
+ * A link joining the list rises in, one leaving fades out, and the rows around them glide to make
+ * room. Only when the list itself changed (created, deleted, renewed, expired), not while browsing
+ * it; a whole list arriving (another tab, the first load) sits in LinksPanel's boundary, so its
+ * rows don't animate one by one.
+ */
+function RowTransition({ children }: { children: React.ReactNode }) {
+  return (
+    <ViewTransition
+      enter={listChange("vt-row-enter")}
+      exit={listChange("vt-row-exit")}
+      update={listChange("vt-row-move")}
+      default="none"
     >
       {children}
-    </tr>
+    </ViewTransition>
   );
 }
 
@@ -222,13 +246,15 @@ export function LinkListItem({
   const onClick = useRowClick(href);
   const isDeleting = deleting.has(id);
   return (
-    <li
-      data-deleting={isDeleting || undefined}
-      inert={isDeleting}
-      onClick={onClick}
-      className={cn("cursor-pointer", className)}
-    >
-      {children}
-    </li>
+    <RowTransition>
+      <li
+        data-deleting={isDeleting || undefined}
+        inert={isDeleting}
+        onClick={onClick}
+        className={cn("cursor-pointer", className)}
+      >
+        {children}
+      </li>
+    </RowTransition>
   );
 }
