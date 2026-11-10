@@ -165,7 +165,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain.example/api/cro
 
 New installs only need `pnpm db:push`. When upgrading an existing database, check the [release notes](https://github.com/danihengeveld/shurtle-ts/releases) for steps. Manual migrations live in [`drizzle/manual/`](drizzle/manual/) and must run before the new version is deployed. For example, upgrading from a version before 2.2 requires `0001_link_ids_and_slug_reuse.sql`. Upgrading to 3.0 only adds columns for click details: run `pnpm db:push` before deploying it.
 
-Upgrading past 3.1 drops the coordinates stored with each click, the one manual migration that runs the other way round. Deploy the new version first, then run [`0002_drop_hit_coordinates.sql`](drizzle/manual/0002_drop_hit_coordinates.sql) (or `pnpm db:push`). Dropping the column while an older version is still live makes its click inserts fail, since it still writes coordinates.
+Upgrading past 3.1 drops the unused coordinates column from click history, and runs the other way round: deploy first, then run `pnpm db:push`. Dropping the column while an older version is still live makes its click inserts fail, since it still writes coordinates.
 
 ## Contributing
 
