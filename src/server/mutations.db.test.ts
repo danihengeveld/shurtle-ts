@@ -67,6 +67,9 @@ describe.skipIf(!runnable)("editing a link's destination", async () => {
   });
 
   afterAll(async () => {
+    // `end()` can resolve while the pool's connections are still closing; the forced drop below
+    // then terminates them (57P01), which would surface as an unhandled error. Expected here.
+    db.$client.on("error", () => {});
     await db.$client.end();
     await admin.query(`drop database if exists ${TEST_DB} with (force)`);
     await admin.end();
