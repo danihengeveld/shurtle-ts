@@ -25,6 +25,8 @@ const WEEKDAYS = [
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 const hourName = formatHour;
+/** Keeps "9 PM UTC" on one line in the heading. */
+const noBreak = (text: string) => text.replaceAll(" ", " ");
 
 /** Axis labels every 6 hours: "12a", "6a", "12p", "6p". */
 function hourTick(hour: number) {
@@ -54,7 +56,7 @@ export async function WeekHours({ data }: { data: Promise<WeekHourClicks[]> }) {
           <p className="mt-1 font-display text-lg font-semibold tracking-tight text-pretty">
             {peak.ties > 1
               ? "No clear busiest time yet"
-              : `Busiest on ${WEEKDAYS[peak.top.weekday]}s around ${hourName(peak.top.hour)} UTC`}
+              : `Busiest on ${WEEKDAYS[peak.top.weekday]}s around ${noBreak(`${hourName(peak.top.hour)} UTC`)}`}
           </p>
           <div className="-mx-0.5 mt-5 sm:-mx-1">
             <table className={table}>

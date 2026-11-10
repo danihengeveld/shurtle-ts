@@ -131,7 +131,14 @@ export async function SummaryCards({
       <Tile
         label="Last click"
         icon={ClockIcon}
-        value={last ? <AgoTime date={last.at} /> : <Nothing />}
+        value={
+          // An old click reads "May 30, 2025": let it wrap like the busiest day does.
+          last ? (
+            <AgoTime date={last.at} className="whitespace-normal" />
+          ) : (
+            <Nothing />
+          )
+        }
         footnote={
           last ? (
             <span className="flex min-w-0 items-center gap-1.5">

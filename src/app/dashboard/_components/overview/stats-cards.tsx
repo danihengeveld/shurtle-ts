@@ -20,7 +20,7 @@ export type StatsData = {
 };
 
 export const tile =
-  "flex flex-col rounded-2xl border bg-card p-4 shadow-soft sm:p-5";
+  "flex min-w-0 flex-col rounded-2xl border bg-card p-4 shadow-soft sm:p-5";
 const grid =
   "grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 lg:auto-rows-fr lg:grid-cols-2";
 

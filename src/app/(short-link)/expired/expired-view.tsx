@@ -181,7 +181,7 @@ function Ticket({
         </div>
         <p
           className={cn(
-            "mt-6 truncate font-mono text-lg",
+            "mt-6 font-mono text-lg break-all",
             available
               ? "text-foreground"
               : "text-muted-foreground line-through decoration-muted-foreground/50",
