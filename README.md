@@ -110,7 +110,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 To develop without touching a hosted database, run Postgres in Docker and fill it with sample data. You need Docker, plus a Clerk **development** instance (its keys start with `pk_test_` and `sk_test_`).
 
-1. Start Postgres and the WebSocket proxy the app connects through ([`compose.yaml`](compose.yaml)):
+1. Start Postgres ([`compose.yaml`](compose.yaml)):
 
    ```bash
    docker compose up -d
@@ -142,7 +142,7 @@ To develop without touching a hosted database, run Postgres in Docker and fill i
 
 Notes:
 
-- **The database driver.** In production the app uses Neon's serverless driver, which connects over WebSockets. For a `localhost` `POSTGRES_URL`, [`src/server/db/index.ts`](src/server/db/index.ts) routes it through the `wsproxy` container on port 54321, without TLS. drizzle-kit and the seed connect to Postgres directly on port 54320.
+- **The database driver.** In production the app uses Neon's HTTP driver: every query is one HTTPS request, so there are no interactive transactions. A plain Postgres doesn't speak that, so for a `localhost` `POSTGRES_URL`, [`src/server/db/index.ts`](src/server/db/index.ts) connects with node-postgres instead, on port 54320 like drizzle-kit and the seed. Both run the same queries, and the `Database` type leaves out `transaction` and `batch` so local code can't depend on them.
 - **Rate limiting is optional.** Without Upstash credentials, the rate limiter fails open: it logs `rate limiter unavailable` and allows the request. To exercise it, run `docker compose --profile redis up -d` (a local Redis behind an Upstash-compatible REST API) and set the `KV_*` values shown in `.env.example`. A free Upstash database works too.
 - **Short links.** Open `http://localhost:3000/hello` to follow a seeded link. Live links redirect and record a click, `spring-sale` shows the renewable page and `winter-promo` the released one.
 - **Pushing to a hosted database.** Once `.env.development.local` exists, `pnpm db:push` targets the local database. To push elsewhere, set the URL inline: `POSTGRES_URL=... pnpm db:push` (a variable in the environment wins over both files).
@@ -161,7 +161,6 @@ Notes:
 | `NEXT_PUBLIC_SITE_URL`              | No         | Public origin for short links and metadata. Defaults to `http://localhost:3000` in development and `https://shurtle.app` otherwise. |
 | `LOG_LEVEL`                         | No         | `trace`, `debug`, `info`, `warn` or `error`. Defaults to `debug` in development and `info` in production.                           |
 | `DEBUG_SQL`                         | No         | Set to `1` to log every SQL query in development.                                                                                   |
-| `POSTGRES_WSPROXY`                  | No         | Host and port of the local WebSocket proxy, used only when `POSTGRES_URL` points at `localhost`. Defaults to `localhost:54321`.     |
 
 ### Scripts
 

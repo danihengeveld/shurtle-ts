@@ -37,7 +37,12 @@ const NOW = Date.now();
 const ago = (ms: number) => new Date(NOW - ms);
 
 describe.skipIf(!runnable)("link analytics queries", async () => {
-  const { db } = await import("@/server/db");
+  // The mock above: node-postgres, with the pool and schema push the app's `Database` type hides.
+  const { db } = (await import("@/server/db")) as unknown as {
+    db: import("drizzle-orm/node-postgres").NodePgDatabase & {
+      $client: import("pg").Pool;
+    };
+  };
   const schema = await import("@/server/db/schema");
   const { getOwnLinkAnalytics } = await import("./analytics");
   const { analyticsWindow } = await import("@/lib/analytics");
