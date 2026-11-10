@@ -83,7 +83,7 @@ describe.skipIf(!runnable)("link analytics queries", async () => {
         createdAt: new Date(MONDAY_1330 - DAY),
       },
     ]);
-    const hit = { region: null, browser: null, os: null, coordinates: null };
+    const hit = { region: null, browser: null, os: null };
     await db.insert(schema.shurtleHits).values([
       {
         ...hit,

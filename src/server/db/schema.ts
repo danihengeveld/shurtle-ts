@@ -4,7 +4,6 @@ import {
   index,
   integer,
   pgSchema,
-  point,
   text,
   timestamp,
   uniqueIndex,
@@ -94,10 +93,10 @@ export const shurtleHits = schema.table(
     at: timestamp("at", { withTimezone: true, mode: "date", precision: 0 })
       .defaultNow()
       .notNull(),
+    // Where a visit came from: country, region and city only, never coordinates.
     country: varchar("country", { length: 255 }),
     region: varchar("region", { length: 255 }),
     city: varchar("city", { length: 255 }),
-    coordinates: point("coordinates", { mode: "xy" }),
     // Visit details (see src/lib/visit.ts). Never the raw user agent, the full referring URL or the
     // IP address. Hits recorded before these columns existed have no device: the analytics page
     // shows their source and device as unknown.
