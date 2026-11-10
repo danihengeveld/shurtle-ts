@@ -38,12 +38,12 @@ export function LinkAnalyticsSkeleton({
       <div className={analyticsStack}>
         <SummaryCardsSkeleton />
         <ClicksOverTimeSkeleton />
-        <LocationsSkeleton />
         <WeekHoursSkeleton />
         <div className={splitGrid}>
+          <LocationsSkeleton />
           <SourcesSkeleton />
-          <DevicesSkeleton />
         </div>
+        <DevicesSkeleton />
         <RecentClicksSkeleton />
       </div>
       <p className="sr-only" role="status">

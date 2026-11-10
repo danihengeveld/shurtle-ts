@@ -22,7 +22,7 @@ Shurtle turns long URLs into short, readable links (`shurtle.app/x7Kp2qR`) and s
 
 - **Short links, your way.** Paste a URL and get a short link, or pick your own slug. URLs without `https://` are fixed up, and equivalent URLs are recognised as the same link.
 - **Click stats.** Per-link clicks and last-click time, totals with a week-over-week trend, and a 30-day clicks chart.
-- **A page for every link.** Clicks over time with the change from the previous period, a world map with top countries and cities, the busiest weekday and hour, the sites that send people, and their devices, browsers and systems, from the last 24 hours to all time. Bots and link previews don't count. [See the demo](https://shurtle.app/demo).
+- **A page for every link.** Clicks over time with the change from the previous period, the top countries and cities, the busiest weekday and hour, the sites that send people, and their devices, browsers and systems, from the last 24 hours to all time. Bots and link previews don't count. [See the demo](https://shurtle.app/demo).
 - **Links with a shelf life.** Expire a link at a chosen date and time, and change it whenever you like. Expired links stop redirecting but keep their stats.
 - **A second chance.** For 24 hours after a link expires, its slug stays reserved for you: renew it and it's back with every click. After that, anyone can claim the slug, and the expired page counts down to that moment.
 - **Claim a free slug.** Visiting an unused short link offers to create it on the spot.
@@ -54,17 +54,17 @@ GET shurtle.app/x7Kp2qR
 
 ## Tech stack
 
-| Area          | Technology                                                                                                                                                                                                                                    |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework     | [Next.js 16](https://nextjs.org/) (App Router, Cache Components, React Compiler, Turbopack)                                                                                                                                                   |
-| UI            | [React 19](https://react.dev/), [Tailwind CSS 4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) on [Radix](https://www.radix-ui.com/), [Recharts](https://recharts.org/), [d3-geo](https://d3js.org/d3-geo) for the world map |
-| Database      | [Neon Postgres](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/)                                                                                                                                                             |
-| Auth          | [Clerk](https://clerk.com/)                                                                                                                                                                                                                   |
-| Rate limiting | [Upstash Redis](https://upstash.com/) with `@upstash/ratelimit`                                                                                                                                                                               |
-| Validation    | [Zod 4](https://zod.dev/)                                                                                                                                                                                                                     |
-| Logging       | [pino](https://getpino.io/), with no IP addresses, emails or full URLs in logs                                                                                                                                                                |
-| Hosting       | [Vercel](https://vercel.com/) (Cron, Analytics, Speed Insights)                                                                                                                                                                               |
-| Tooling       | TypeScript, ESLint, Prettier, [Vitest](https://vitest.dev/), GitHub Actions, CodeQL, Dependabot                                                                                                                                               |
+| Area          | Technology                                                                                                                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework     | [Next.js 16](https://nextjs.org/) (App Router, Cache Components, React Compiler, Turbopack)                                                                                              |
+| UI            | [React 19](https://react.dev/), [Tailwind CSS 4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) on [Radix](https://www.radix-ui.com/), [Recharts](https://recharts.org/) |
+| Database      | [Neon Postgres](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/)                                                                                                        |
+| Auth          | [Clerk](https://clerk.com/)                                                                                                                                                              |
+| Rate limiting | [Upstash Redis](https://upstash.com/) with `@upstash/ratelimit`                                                                                                                          |
+| Validation    | [Zod 4](https://zod.dev/)                                                                                                                                                                |
+| Logging       | [pino](https://getpino.io/), with no IP addresses, emails or full URLs in logs                                                                                                           |
+| Hosting       | [Vercel](https://vercel.com/) (Cron, Analytics, Speed Insights)                                                                                                                          |
+| Tooling       | TypeScript, ESLint, Prettier, [Vitest](https://vitest.dev/), GitHub Actions, CodeQL, Dependabot                                                                                          |
 
 ## Getting started
 

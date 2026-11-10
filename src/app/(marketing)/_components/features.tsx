@@ -66,12 +66,12 @@ function AnalyticsCard({ className }: { className?: string }) {
           Link analytics
         </p>
         <h3 className={cn(cardTitle, "mt-4 text-2xl text-balance sm:text-3xl")}>
-          Every click, on the map.
+          Every click, counted.
         </h3>
         <p className={cn(cardCopy, "mt-3")}>
-          Every link gets its own page: clicks over time, a world map of where
-          they came from, the busiest hours, which sites send people and what
-          they use.
+          Every link gets its own page: clicks over time, the countries and
+          cities they came from, the busiest hours, which sites send people and
+          what they use.
         </p>
         <ul className="mt-5 space-y-2 text-sm">
           {[

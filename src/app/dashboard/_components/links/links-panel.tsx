@@ -24,6 +24,7 @@ import {
   SearchXIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { CreateLinkButton } from "../create/create-link-provider";
 import { formatCount } from "../format";
 import { ServerNowProvider } from "../time";
@@ -170,14 +171,19 @@ export function LinksPanel({
               : `${formatCount(totalCount)} ${noun} for “${query}”.`
             : ""}
         </p>
-        {renewable && renewable.links.length > 0 && (
-          <RenewableLinks
-            links={renewable.links}
-            total={renewable.total}
-            expiredHref={linksHref({ status: "expired", perPage })}
-          />
-        )}
-        {list}
+        {/* A list arriving whole is still; only its rows animate, as links join or leave it. */}
+        <ViewTransition default="none">
+          <div>
+            {renewable && renewable.links.length > 0 && (
+              <RenewableLinks
+                links={renewable.links}
+                total={renewable.total}
+                expiredHref={linksHref({ status: "expired", perPage })}
+              />
+            )}
+            {list}
+          </div>
+        </ViewTransition>
       </ExpiryEditorProvider>
     </ServerNowProvider>
   );

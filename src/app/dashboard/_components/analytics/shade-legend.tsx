@@ -2,15 +2,6 @@ import type { Shade } from "@/lib/analytics";
 import { cn } from "cn";
 
 /** Static class names, so Tailwind sees every one of them. Index = shade. */
-export const SHADE_FILLS = [
-  "fill-scale-0",
-  "fill-scale-1",
-  "fill-scale-2",
-  "fill-scale-3",
-  "fill-scale-4",
-  "fill-scale-5",
-] as const satisfies Record<Shade, string>;
-
 export const SHADE_BACKGROUNDS = [
   "bg-scale-0",
   "bg-scale-1",
@@ -21,8 +12,8 @@ export const SHADE_BACKGROUNDS = [
 ] as const satisfies Record<Shade, string>;
 
 /**
- * "No clicks ▢ · Fewer ▤▤▤▤▤ More". For the eye only: the map and heatmap say the same in words
- * (a description, a table).
+ * "No clicks ▢ · Fewer ▤▤▤▤▤ More". For the eye only: the heatmap says the same in words (a
+ * table).
  */
 export function ShadeLegend({ className }: { className?: string }) {
   return (

@@ -269,3 +269,62 @@
     }
   }
 }
+
+/*
+ * View transitions: list rows (React's <ViewTransition>, see RowTransition in links-provider.tsx)
+ * and the theme switch (theme-toggle.tsx). Every <ViewTransition> sets default="none", so only the
+ * classes below ever animate.
+ */
+
+/* Clicks during an animation reach the live page instead of the transition overlay. */
+::view-transition {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* A link joining or leaving the list, and the rows around it making room. */
+  ::view-transition-new(.vt-row-enter) {
+    animation:
+      250ms ease-out 100ms both vt-fade,
+      400ms var(--ease-out-expo) both vt-rise;
+  }
+  ::view-transition-old(.vt-row-exit) {
+    animation: 200ms ease-in both vt-fade reverse;
+  }
+  ::view-transition-group(.vt-row-move) {
+    animation-duration: 350ms;
+    animation-timing-function: var(--ease-out-expo);
+  }
+}
+
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+@keyframes vt-rise {
+  from {
+    transform: translateY(8px);
+  }
+}
+
+/* Theme switch: the new theme spreads out from the toggle in a circle animated by script. */
+html[data-theme-reveal]::view-transition-old(root),
+html[data-theme-reveal]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}

@@ -22,7 +22,7 @@ import { WeekHours, WeekHoursSkeleton } from "./week-hours";
 
 /** Everything below the header, shared by the page and its loading state. */
 export const analyticsStack = "mt-4 flex flex-col gap-3 sm:gap-4";
-/** Sources and devices, side by side from lg. */
+/** Locations and sources, side by side from lg. */
 export const splitGrid = "grid gap-3 sm:gap-4 lg:grid-cols-2";
 
 /**
@@ -101,12 +101,6 @@ export function LinkAnalytics({
                   </Suspense>
                 </SectionErrorBoundary>
 
-                <SectionErrorBoundary what="locations" className="min-h-96">
-                  <Suspense fallback={<LocationsSkeleton />}>
-                    <Locations data={source.locations(window)} />
-                  </Suspense>
-                </SectionErrorBoundary>
-
                 <SectionErrorBoundary
                   what="when people click"
                   className="min-h-72"
@@ -117,17 +111,23 @@ export function LinkAnalytics({
                 </SectionErrorBoundary>
 
                 <div className={splitGrid}>
+                  <SectionErrorBoundary what="locations" className="min-h-96">
+                    <Suspense fallback={<LocationsSkeleton />}>
+                      <Locations data={source.locations(window)} />
+                    </Suspense>
+                  </SectionErrorBoundary>
                   <SectionErrorBoundary what="sources" className="min-h-96">
                     <Suspense fallback={<SourcesSkeleton />}>
                       <Sources data={source.sources(window)} />
                     </Suspense>
                   </SectionErrorBoundary>
-                  <SectionErrorBoundary what="devices" className="min-h-96">
-                    <Suspense fallback={<DevicesSkeleton />}>
-                      <Devices data={source.devices(window)} />
-                    </Suspense>
-                  </SectionErrorBoundary>
                 </div>
+
+                <SectionErrorBoundary what="devices" className="min-h-96">
+                  <Suspense fallback={<DevicesSkeleton />}>
+                    <Devices data={source.devices(window)} />
+                  </Suspense>
+                </SectionErrorBoundary>
 
                 <SectionErrorBoundary what="recent clicks" className="min-h-96">
                   <Suspense fallback={<RecentClicksSkeleton />}>
