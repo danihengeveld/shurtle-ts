@@ -211,6 +211,8 @@ New installs only need `pnpm db:push`. When upgrading an existing database, chec
 
 Upgrading past 3.1 drops the unused coordinates column from click history, and runs the other way round: deploy first, then run `pnpm db:push`. Dropping the column while an older version is still live makes its click inserts fail, since it still writes coordinates.
 
+In a checkout with a `.env.development.local`, `pnpm db:push` targets the local database: pass the hosted one inline, as in `POSTGRES_URL=... pnpm db:push` (see [Local development](#local-development)).
+
 ## Contributing
 
 Contributions are welcome. For anything larger than a small fix, please [open an issue](https://github.com/danihengeveld/shurtle-ts/issues) first so we can agree on the approach.
