@@ -25,6 +25,7 @@ import {
   CalendarClockIcon,
   EllipsisIcon,
   ExternalLinkIcon,
+  PencilIcon,
   Trash2Icon,
 } from "lucide-react";
 import Link from "next/link";
@@ -34,6 +35,7 @@ import { CopyButton } from "../copy-button";
 import { ExpiryBadge } from "../expiry-badge";
 import { formatDate } from "../format";
 import { DeleteLinkDialog } from "../links/delete-link-dialog";
+import { EditDestinationDialog } from "../links/edit-destination-dialog";
 import {
   LinkExpiry,
   RenewButton,
@@ -145,7 +147,13 @@ export function LinkHeader({
           </dl>
         </div>
 
-        {!demo && <HeaderActions link={link} live={live} />}
+        {!demo && (
+          <HeaderActions
+            link={link}
+            live={live}
+            holdsSlug={state !== "released"}
+          />
+        )}
       </div>
     </header>
   );
@@ -153,10 +161,20 @@ export function LinkHeader({
 
 const action = "h-10 flex-1 sm:h-9 sm:flex-none";
 
-function HeaderActions({ link, live }: { link: AnalyticsLink; live: boolean }) {
+function HeaderActions({
+  link,
+  live,
+  holdsSlug,
+}: {
+  link: AnalyticsLink;
+  live: boolean;
+  /** Live or renewable: its destination can still be changed. */
+  holdsSlug: boolean;
+}) {
   const router = useRouter();
   const openExpiryEditor = useOpenExpiryEditor(link);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
 
   return (
@@ -203,6 +221,15 @@ function HeaderActions({ link, live }: { link: AnalyticsLink; live: boolean }) {
                 Change expiry…
               </DropdownMenuItem>
             )}
+            {holdsSlug && (
+              <DropdownMenuItem
+                onSelect={() => setEditOpen(true)}
+                className="h-9 rounded-lg"
+              >
+                <PencilIcon aria-hidden />
+                Edit destination…
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               variant="destructive"
               onSelect={() => setConfirmOpen(true)}
@@ -214,6 +241,13 @@ function HeaderActions({ link, live }: { link: AnalyticsLink; live: boolean }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </ButtonGroup>
+
+      <EditDestinationDialog
+        link={link}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        returnFocus={() => menuRef.current?.focus()}
+      />
 
       <DeleteLinkDialog
         link={link}
