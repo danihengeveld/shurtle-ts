@@ -1,33 +1,43 @@
 import "server-only";
 
 import { logger } from "@/server/logger";
-import { neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import type { Logger } from "drizzle-orm/logger";
+import { drizzle as drizzleHttp } from "drizzle-orm/neon-http";
+import type { NeonHttpDatabase } from "drizzle-orm/neon-http";
+import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 import { isLocalDatabase } from "./local";
 
-if (!process.env.POSTGRES_URL) {
+const url = process.env.POSTGRES_URL;
+if (!url) {
   throw new Error(
     "POSTGRES_URL is not set. Add it to .env.local (see README).",
   );
 }
 
-// Local development (compose.yaml): Neon's driver speaks Postgres over WebSockets, so a local
-// Postgres needs a WebSocket proxy in front of it, without TLS. Never applies to a remote database.
-if (isLocalDatabase(process.env.POSTGRES_URL)) {
-  const proxy = process.env.POSTGRES_WSPROXY ?? "localhost:54321";
-  neonConfig.wsProxy = () => `${proxy}/v1`;
-  neonConfig.useSecureWebSocket = false;
-  neonConfig.pipelineTLS = false;
-  neonConfig.pipelineConnect = false;
-}
+/**
+ * What the app may use: Neon's HTTP driver without what only one of the two drivers below has.
+ * Every query is one statement over one HTTP request, so there are no interactive transactions
+ * (`transaction`) and no Neon-only batches (`batch`): an atomic write is a single statement, such
+ * as recordHit's insert and update in one query. Leaving them out of the type keeps local
+ * development from relying on something production can't do.
+ */
+export type Database = Omit<
+  NeonHttpDatabase,
+  "transaction" | "batch" | "$client"
+>;
 
-// WebSocket-backed pool: supports interactive transactions (used when recording hits) and reuses
-// connections across invocations on Vercel Fluid compute.
-export const db = drizzle(process.env.POSTGRES_URL, {
-  // Opt-in SQL logging (`DEBUG_SQL=1 pnpm dev`) at debug level; always-on logging drowns out real
-  // dev warnings.
-  logger: process.env.NODE_ENV === "development" &&
-    process.env.DEBUG_SQL === "1" && {
-      logQuery: (query, params) => logger.debug({ query, params }, "sql"),
-    },
-});
+// Opt-in SQL logging (`DEBUG_SQL=1 pnpm dev`) at debug level; always-on logging drowns out real
+// dev warnings.
+const sqlLogger: Logger | false = process.env.NODE_ENV === "development" &&
+  process.env.DEBUG_SQL === "1" && {
+    logQuery: (query, params) => logger.debug({ query, params }, "sql"),
+  };
+
+/**
+ * Neon's HTTP driver for the hosted database: a query is a single fetch, with no connection to
+ * open or keep alive. Neon serves that over HTTPS, which a plain Postgres doesn't, so the local
+ * database (compose.yaml) is reached with node-postgres instead. Same SQL, same dialect.
+ */
+export const db: Database = isLocalDatabase(url)
+  ? (drizzlePg(url, { logger: sqlLogger }) as unknown as Database)
+  : drizzleHttp(url, { logger: sqlLogger });

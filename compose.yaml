@@ -23,21 +23,6 @@ services:
       timeout: 5s
       retries: 15
 
-  # The app talks to Postgres with Neon's serverless driver, which connects over WebSockets. Neon
-  # provides that in production; locally this proxy does. drizzle-kit and the seed script connect to
-  # Postgres directly. src/server/db/index.ts routes localhost connections through it.
-  wsproxy:
-    image: ghcr.io/neondatabase/wsproxy:latest
-    environment:
-      APPEND_PORT: "postgres:5432"
-      ALLOW_ADDR_REGEX: ".*"
-      LOG_TRAFFIC: "false"
-    ports:
-      - "54321:80"
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   # Optional, for working on rate limiting: an Upstash-compatible REST API in front of a local
   # Redis. Without it, rate limiting fails open (it logs an error and lets every request through).
   #

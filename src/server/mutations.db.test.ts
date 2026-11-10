@@ -47,7 +47,12 @@ const DAY = 24 * HOUR;
 describe.skipIf(!runnable)("editing a link's destination", async () => {
   const { Client } = await import("pg");
   const admin = new Client({ connectionString: url });
-  const { db } = await import("@/server/db");
+  // The mock above: node-postgres, with the pool and schema push the app's `Database` type hides.
+  const { db } = (await import("@/server/db")) as unknown as {
+    db: import("drizzle-orm/node-postgres").NodePgDatabase & {
+      $client: import("pg").Pool;
+    };
+  };
   const schema = await import("@/server/db/schema");
   const { setOwnShurtleUrl } = await import("./mutations");
   const { eq, sql } = await import("drizzle-orm");
@@ -62,7 +67,7 @@ describe.skipIf(!runnable)("editing a link's destination", async () => {
   });
 
   afterAll(async () => {
-    await (db.$client as { end: () => Promise<void> }).end();
+    await db.$client.end();
     await admin.query(`drop database if exists ${TEST_DB} with (force)`);
     await admin.end();
   });
