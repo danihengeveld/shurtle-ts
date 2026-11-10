@@ -106,6 +106,48 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Local development
+
+To develop without touching a hosted database, run Postgres in Docker and fill it with sample data. You need Docker, plus a Clerk **development** instance (its keys start with `pk_test_` and `sk_test_`).
+
+1. Start Postgres and the WebSocket proxy the app connects through ([`compose.yaml`](compose.yaml)):
+
+   ```bash
+   docker compose up -d
+   ```
+
+2. Copy [`.env.example`](.env.example) to `.env.development.local` and add your Clerk development keys. `next dev`, `pnpm db:push` and `pnpm db:seed` read this file before `.env.local`. Set every variable in it: anything you leave out falls back to `.env.local`.
+
+3. Create the schema:
+
+   ```bash
+   pnpm db:push
+   ```
+
+   drizzle-kit prints the database host before it changes anything. Check that it says `localhost:54320`.
+
+4. Start the dev server, open [http://localhost:3000](http://localhost:3000) and sign in once, so Clerk creates your user:
+
+   ```bash
+   pnpm dev
+   ```
+
+5. Copy your user id (`user_...`) from the Clerk dashboard under **Users**, then seed links for it:
+
+   ```bash
+   pnpm db:seed user_...
+   ```
+
+   This creates seven links with about four months of clicks (countries, cities, referrers, devices and a few bots): a busy link, a quiet one, one expiring within the hour, one created minutes ago with no clicks, one that expired a few hours ago and can still be renewed, and one released a month ago. Running it again replaces that user's links. The seed only runs against a database on `localhost`.
+
+Notes:
+
+- **The database driver.** In production the app uses Neon's serverless driver, which connects over WebSockets. For a `localhost` `POSTGRES_URL`, [`src/server/db/index.ts`](src/server/db/index.ts) routes it through the `wsproxy` container on port 54321, without TLS. drizzle-kit and the seed connect to Postgres directly on port 54320.
+- **Rate limiting is optional.** Without Upstash credentials, the rate limiter fails open: it logs `rate limiter unavailable` and allows the request. To exercise it, run `docker compose --profile redis up -d` (a local Redis behind an Upstash-compatible REST API) and set the `KV_*` values shown in `.env.example`. A free Upstash database works too.
+- **Short links.** Open `http://localhost:3000/hello` to follow a seeded link. Live links redirect and record a click, `spring-sale` shows the renewable page and `winter-promo` the released one.
+- **Pushing to a hosted database.** Once `.env.development.local` exists, `pnpm db:push` targets the local database. To push elsewhere, set the URL inline: `POSTGRES_URL=... pnpm db:push` (a variable in the environment wins over both files).
+- **Starting over.** `docker compose down -v` removes the database and its data.
+
 ### Environment variables
 
 | Variable                            | Required   | Description                                                                                                                         |
@@ -119,6 +161,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `NEXT_PUBLIC_SITE_URL`              | No         | Public origin for short links and metadata. Defaults to `http://localhost:3000` in development and `https://shurtle.app` otherwise. |
 | `LOG_LEVEL`                         | No         | `trace`, `debug`, `info`, `warn` or `error`. Defaults to `debug` in development and `info` in production.                           |
 | `DEBUG_SQL`                         | No         | Set to `1` to log every SQL query in development.                                                                                   |
+| `POSTGRES_WSPROXY`                  | No         | Host and port of the local WebSocket proxy, used only when `POSTGRES_URL` points at `localhost`. Defaults to `localhost:54321`.     |
 
 ### Scripts
 
@@ -132,6 +175,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `pnpm format` / `format:check` | Format with Prettier / check formatting  |
 | `pnpm db:push`                 | Apply the Drizzle schema to the database |
 | `pnpm db:studio`               | Open Drizzle Studio                      |
+| `pnpm db:seed <user id>`       | Fill the local database with sample data |
 
 ## Project structure
 
@@ -166,6 +210,8 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain.example/api/cro
 New installs only need `pnpm db:push`. When upgrading an existing database, check the [release notes](https://github.com/danihengeveld/shurtle-ts/releases) for steps. Manual migrations live in [`drizzle/manual/`](drizzle/manual/) and must run before the new version is deployed. For example, upgrading from a version before 2.2 requires `0001_link_ids_and_slug_reuse.sql`. Upgrading to 3.0 only adds columns for click details: run `pnpm db:push` before deploying it.
 
 Upgrading past 3.1 drops the unused coordinates column from click history, and runs the other way round: deploy first, then run `pnpm db:push`. Dropping the column while an older version is still live makes its click inserts fail, since it still writes coordinates.
+
+In a checkout with a `.env.development.local`, `pnpm db:push` targets the local database: pass the hosted one inline, as in `POSTGRES_URL=... pnpm db:push` (see [Local development](#local-development)).
 
 ## Contributing
 

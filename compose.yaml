@@ -1,0 +1,62 @@
+# Local development services. See "Local development" in the README.
+#
+#   docker compose up -d
+#
+# Ports are offset from the defaults so they don't clash with a Postgres or Redis already running
+# on this machine.
+name: shurtle
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: shurtle
+      POSTGRES_PASSWORD: shurtle
+      POSTGRES_DB: shurtle
+    ports:
+      - "54320:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "shurtle", "-d", "shurtle"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  # The app talks to Postgres with Neon's serverless driver, which connects over WebSockets. Neon
+  # provides that in production; locally this proxy does. drizzle-kit and the seed script connect to
+  # Postgres directly. src/server/db/index.ts routes localhost connections through it.
+  wsproxy:
+    image: ghcr.io/neondatabase/wsproxy:latest
+    environment:
+      APPEND_PORT: "postgres:5432"
+      ALLOW_ADDR_REGEX: ".*"
+      LOG_TRAFFIC: "false"
+    ports:
+      - "54321:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Optional, for working on rate limiting: an Upstash-compatible REST API in front of a local
+  # Redis. Without it, rate limiting fails open (it logs an error and lets every request through).
+  #
+  #   docker compose --profile redis up -d
+  redis:
+    image: redis:7
+    profiles: [redis]
+
+  redis-http:
+    image: hiett/serverless-redis-http:latest
+    profiles: [redis]
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: shurtle-local-token
+      SRH_CONNECTION_STRING: "redis://redis:6379"
+    ports:
+      - "54379:80"
+    depends_on:
+      - redis
+
+volumes:
+  postgres:
