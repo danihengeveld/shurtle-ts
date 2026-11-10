@@ -25,6 +25,7 @@ import {
   CalendarClockIcon,
   EllipsisIcon,
   ExternalLinkIcon,
+  QrCodeIcon,
   Trash2Icon,
 } from "lucide-react";
 import Link from "next/link";
@@ -40,6 +41,7 @@ import {
   useOpenExpiryEditor,
 } from "../links/expiry-editor";
 import { Destination } from "../links/link-rows";
+import { QrCodeDialog } from "../links/qr-code-dialog";
 import { useNow } from "../time";
 
 const host = siteInfo.baseUrl.host;
@@ -157,6 +159,7 @@ function HeaderActions({ link, live }: { link: AnalyticsLink; live: boolean }) {
   const router = useRouter();
   const openExpiryEditor = useOpenExpiryEditor(link);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
 
   return (
@@ -196,6 +199,15 @@ function HeaderActions({ link, live }: { link: AnalyticsLink; live: boolean }) {
           <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5">
             {live && (
               <DropdownMenuItem
+                onSelect={() => setQrOpen(true)}
+                className="h-9 rounded-lg"
+              >
+                <QrCodeIcon aria-hidden />
+                QR code…
+              </DropdownMenuItem>
+            )}
+            {live && (
+              <DropdownMenuItem
                 onSelect={() => openExpiryEditor(menuRef.current)}
                 className="h-9 rounded-lg"
               >
@@ -214,6 +226,15 @@ function HeaderActions({ link, live }: { link: AnalyticsLink; live: boolean }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </ButtonGroup>
+
+      {live && (
+        <QrCodeDialog
+          slug={link.slug}
+          open={qrOpen}
+          onOpenChange={setQrOpen}
+          returnFocus={() => menuRef.current?.focus()}
+        />
+      )}
 
       <DeleteLinkDialog
         link={link}

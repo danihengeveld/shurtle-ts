@@ -18,6 +18,7 @@ import {
   CopyIcon,
   EllipsisIcon,
   ExternalLinkIcon,
+  QrCodeIcon,
   RotateCcwIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import { DeleteLinkDialog } from "./delete-link-dialog";
 import { useOpenExpiryEditor } from "./expiry-editor";
 import type { LinkRow } from "./link-rows";
 import { useLinks } from "./links-provider";
+import { QrCodeDialog } from "./qr-code-dialog";
 
 export function LinkActions({
   link,
@@ -52,6 +54,7 @@ export function LinkActions({
   );
   const expired = state !== "live";
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   return (
@@ -95,6 +98,15 @@ export function LinkActions({
           )}
           {!expired && (
             <DropdownMenuItem
+              onSelect={() => setQrOpen(true)}
+              className="h-9 rounded-lg"
+            >
+              <QrCodeIcon aria-hidden />
+              QR code…
+            </DropdownMenuItem>
+          )}
+          {!expired && (
+            <DropdownMenuItem
               onSelect={() => openExpiryEditor(triggerRef.current)}
               className="h-9 rounded-lg"
             >
@@ -119,6 +131,15 @@ export function LinkActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {!expired && (
+        <QrCodeDialog
+          slug={slug}
+          open={qrOpen}
+          onOpenChange={setQrOpen}
+          returnFocus={() => triggerRef.current?.focus()}
+        />
+      )}
 
       <DeleteLinkDialog
         link={link}
