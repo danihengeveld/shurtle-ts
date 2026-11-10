@@ -92,6 +92,8 @@ export function OpenSource() {
                     # add Postgres, Upstash and Clerk keys to .env.local
                   </span>
                   {"\n"}
+                  <span className="text-brand select-none">$ </span>pnpm db:push
+                  {"\n"}
                   <span className="text-brand select-none">$ </span>pnpm dev
                 </code>
               </pre>

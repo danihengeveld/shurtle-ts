@@ -5,7 +5,6 @@ import {
   Archive,
   ArrowUpRight,
   CalendarClock,
-  Check,
   Flame,
   Moon,
   RotateCcw,
@@ -42,10 +41,6 @@ export function SlugVignette() {
           </span>
           <span className="ml-px h-4 w-0.5 shrink-0 animate-blink rounded-full bg-brand-ink" />
         </div>
-        <span className="flex h-7 shrink-0 items-center gap-1 rounded-full bg-success/12 px-2.5 text-xs font-medium text-foreground">
-          <Check className="size-3.5 text-success" strokeWidth={2.5} />
-          <span className="max-[25rem]:hidden">Available</span>
-        </span>
       </div>
       <div className="flex items-center gap-3">
         <span className={cn(miniLabel, "max-sm:hidden")}>Generated</span>
@@ -55,8 +50,9 @@ export function SlugVignette() {
             <span className="font-semibold">x7Kp2qR</span>
           </span>
         </div>
-        <span className="grid size-7 shrink-0 place-items-center rounded-full border bg-card text-muted-foreground shadow-xs">
+        <span className="flex h-7 shrink-0 items-center gap-1 rounded-full border bg-card px-2.5 text-xs font-medium text-muted-foreground shadow-xs">
           <Shuffle className="size-3.5" />
+          <span className="max-[25rem]:hidden">Random</span>
         </span>
       </div>
     </div>
@@ -256,7 +252,7 @@ export function RateLimitVignette() {
     <div className="w-full max-w-xs">
       <div className="flex items-center justify-between text-[0.6875rem] font-medium tracking-[0.06em] text-muted-foreground uppercase">
         <span>Opens this minute</span>
-        <span className="font-mono tracking-normal">1 IP</span>
+        <span className="font-mono tracking-normal">60 per IP</span>
       </div>
       <div className="mt-2.5 flex gap-1.5">
         {Array.from({ length: 5 }, (_, i) => (
