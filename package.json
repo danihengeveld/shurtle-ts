@@ -38,8 +38,8 @@
   },
   "dependencies": {
     "@clerk/nextjs": "7.10.0",
-    "@neondatabase/serverless": "1.2.0",
-    "@upstash/ratelimit": "2.2.0",
+    "@neondatabase/serverless": "1.2.1",
+    "@upstash/ratelimit": "2.2.1",
     "@upstash/redis": "1.41.0",
     "@vercel/analytics": "2.0.1",
     "@vercel/functions": "3.11.0",
